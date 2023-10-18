@@ -145,10 +145,10 @@ func initLogger(writer io.Writer, config *Config, level slog.Level) {
 
 	slog.Info("log initialized",
 		slog.Group("config",
-			slog.String("fileName", config.FileName),
-			slog.String("logType", config.LogType),
-			slog.String("level", level.String()),
-			slog.Bool("addSource", config.AddSource),
+			slog.String("FileName", config.FileName),
+			slog.String("LogType", config.LogType),
+			slog.String("Level", level.String()),
+			slog.Bool("AddSource", config.AddSource),
 		),
 	)
 }
