@@ -36,7 +36,7 @@ func New(opts ...Option) (*Handler, error) {
 		return nil, errors.New("AppName is required")
 	}
 
-	slog.Info("new handler",
+	slog.Debug("new handler",
 		slog.Group("handler",
 			slog.String("AppName", h.AppName),
 		),

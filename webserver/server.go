@@ -52,43 +52,48 @@ func Run(ctx context.Context, srv *http.Server) error {
 
 	errCh := make(chan error, 1)
 
-	// Start server in a goroutine so it doesn't block the signal listening.
+	slog.Info("starting server", slog.String("addr", ln.Addr().String()))
+
+	// Start the server in a separate goroutine, and push any errors to errCh.
 	go func() {
+		//err = http.ErrNotSupported
 		err = srv.Serve(ln)
 		if err != nil && err != http.ErrServerClosed {
-			slog.Error("failed to serve", "err", err)
 			errCh <- err
-			return
 		}
 	}()
 
-	slog.Info("started server", slog.String("addr", ln.Addr().String()))
-
-	// Listen for shutdown signals to gracefully shutdown the server.
+	// Ask for notification of shutdown signals to gracefully shutdown server.
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	select {
-	case sig := <-sigChan:
-		signal.Stop(sigChan)
-		slog.Info("shutting down server", "signal", sig)
-
-		// Create context with timeout for server Shutdown.
-		timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-		defer cancel()
-
-		// Attemp to gracefully shutdown the server.
-		err := srv.Shutdown(timeoutCtx)
-		if err != nil {
-			slog.Error("server shutdown error", "err", err)
-			return err
-		}
-
-		slog.Info("server shutdown")
-		return nil
-	case err := <-errCh:
-		return err
 	case <-ctx.Done():
+		// If the context is done, return its error.
 		return ctx.Err()
+	case err := <-errCh:
+		// If there's an error from the server, return it.
+		return err
+	case sig := <-sigChan:
+		// If a shutdown signal received, gracefully shut down server.
+		return shutdownServer(sig, sigChan, srv, ctx)
 	}
+}
+
+// shutdownServer attempts to gracefully shut down the server.
+func shutdownServer(sig os.Signal, sigChan chan os.Signal, srv *http.Server, ctx context.Context) error {
+	signal.Stop(sigChan)
+	slog.Info("shutting down server", "signal", sig)
+
+	// Create a context with a timeout to shut down within a reasonable time.
+	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	err := srv.Shutdown(shutdownCtx)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("server shutdown")
+	return nil
 }

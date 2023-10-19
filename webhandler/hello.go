@@ -12,10 +12,9 @@ import (
 // This method can be used to check if the web server is running.
 func (h *Handler) HelloHandler(w http.ResponseWriter, r *http.Request) {
 	logger := Logger(r.Context())
-	logger.Debug("hello handler")
 
 	if !webutils.ValidMethod(w, r, http.MethodGet) {
-		logger.Error("invalid method")
+		logger.Error("invalid method for HelloHandler")
 		return
 	}
 

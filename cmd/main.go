@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -95,6 +96,7 @@ func main() {
 	// Run the web server.
 	err = webserver.Run(ctx, srv)
 	if err != nil {
+		slog.Error("error running server", "err", err)
 		fmt.Fprintln(os.Stderr, "Error running server:", err)
 		os.Exit(ExitServer)
 	}
