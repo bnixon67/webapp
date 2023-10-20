@@ -12,22 +12,19 @@ type LoggerKey int
 // loggerKey is used as a unique key for the logger to avoid key collisions.
 const loggerKey LoggerKey = iota
 
-// AttachRequestLogger is middleware that both logs the details of
-// incoming HTTP requests and adds a specialized logger to the request's
-// context. This logger, enriched with request-specific details, can be
-// retrieved in downstream handlers using the Logger function.
-func (h Handler) AttachRequestLogger(next http.Handler) http.Handler {
+// AttachRequestLogger is middleware adds a specialized logger to the
+// request's context. This logger, enriched with request-specific details,
+// can be retrieved in downstream handlers using the Logger function.
+func (h Handler) AddLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Create a logger with fields for the request's method and URL.
 		logger := slog.With(
 			slog.Group("request",
 				slog.String("method", r.Method),
 				slog.String("url", r.URL.String()),
+				slog.Int64("id", RequestID(r.Context())),
 			),
 		)
-
-		// Log the incoming request.
-		logger.Info("received request")
 
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)

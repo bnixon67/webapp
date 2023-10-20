@@ -79,11 +79,13 @@ func main() {
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", h.HelloHandler)
+	mux.HandleFunc("/build", h.BuildHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(flags.Addr),
-		webserver.WithHandler(h.AttachRequestLogger(mux)),
+		webserver.WithHandler(
+			h.AddRequestID(h.AddLogger(h.LogRequest(mux)))),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating server:", err)
@@ -100,5 +102,4 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Error running server:", err)
 		os.Exit(ExitServer)
 	}
-
 }

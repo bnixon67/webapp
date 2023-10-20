@@ -20,7 +20,7 @@ func TestHelloHandler(t *testing.T) {
 			name:       "Valid GET Request",
 			method:     http.MethodGet,
 			wantStatus: http.StatusOK,
-			wantBody:   "hello AppName: TestApp",
+			wantBody:   "hello from TestApp",
 		},
 		{
 			name:       "Invalid POST Request",

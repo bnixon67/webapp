@@ -18,5 +18,8 @@ func (h *Handler) HelloHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, "hello", "AppName:", h.AppName)
+	logger.Info("HelloHandler")
+
+	webutils.SetTextContentType(w)
+	fmt.Fprintln(w, "hello from", h.AppName)
 }
