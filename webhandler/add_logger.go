@@ -6,25 +6,31 @@ import (
 	"net/http"
 )
 
-// LoggerKey is a type used for context keys associated with request loggers.
-type LoggerKey int
+// loggerKeyType is a unique key type to avoid key collisions with other context values.
+type loggerKeyType struct{}
 
-// loggerKey is used as a unique key for the logger to avoid key collisions.
-const loggerKey LoggerKey = iota
+// loggerKey is as a key for storing and retrieving the logger from the context.
+var loggerKey = loggerKeyType{}
 
 // AttachRequestLogger is middleware adds a specialized logger to the
 // request's context. This logger, enriched with request-specific details,
 // can be retrieved in downstream handlers using the Logger function.
 func (h Handler) AddLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Create a logger with fields for the request's method and URL.
-		logger := slog.With(
-			slog.Group("request",
-				slog.String("method", r.Method),
-				slog.String("url", r.URL.String()),
-				slog.Int64("id", RequestID(r.Context())),
-			),
-		)
+		// Create a slice to hold the basic log attributes.
+		attrValues := []interface{}{
+			"method", r.Method,
+			"url", r.URL.String(),
+		}
+
+		// If request ID is not zero, add it to the log attributes.
+		id := RequestID(r.Context())
+		if id != 0 {
+			attrValues = append(attrValues, "id", id)
+		}
+
+		// Create a new logger instance with the specified attributes.
+		logger := slog.With(slog.Group("req", attrValues...))
 
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)

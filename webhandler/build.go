@@ -20,9 +20,10 @@ func (h *Handler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set no-cache headers to prevent caching of the response.
 	webutils.SetNoCacheHeaders(w)
 
-	// get executable date/time
+	// Retrieve the executable's modification date/time.
 	dt, err := ExecutableDateTime()
 	if err != nil {
 		logger.Error(MsgExecDateTimeErr, "err", err)
@@ -34,23 +35,26 @@ func (h *Handler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("BuildHandler", "build", build)
 
+	// Set the content type of the response to text.
 	webutils.SetTextContentType(w)
+
 	fmt.Fprintln(w, build)
 }
 
 // ExecutableDateTime returns the modification date/time of the executable file.
 func ExecutableDateTime() (time.Time, error) {
-	// Get the path of the executable
+	// Get path of the current executable.
 	executablePath, err := os.Executable()
 	if err != nil {
 		return time.Time{}, fmt.Errorf("error getting executable path: %w", err)
 	}
 
-	// Get file information
+	// Get file information of the executable.
 	fileInfo, err := os.Stat(executablePath)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("error getting file info: %w", err)
 	}
 
+	// Return modification date/time.
 	return fileInfo.ModTime(), nil
 }

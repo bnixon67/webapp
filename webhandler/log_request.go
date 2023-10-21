@@ -10,7 +10,7 @@ func (h Handler) LogRequest(next http.Handler) http.Handler {
 		logger := Logger(r.Context())
 
 		// Log the incoming request.
-		logger.Info("received request")
+		logger.Info("received")
 
 		// Call the next handler in the chain with the updated context.
 		next.ServeHTTP(w, r)

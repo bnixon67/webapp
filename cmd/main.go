@@ -85,7 +85,8 @@ func main() {
 	srv, err := webserver.New(
 		webserver.WithAddr(flags.Addr),
 		webserver.WithHandler(
-			h.AddRequestID(h.AddLogger(h.LogRequest(mux)))),
+			h.AddRequestID(h.AddLogger(h.LogRequest(mux))),
+		),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating server:", err)
