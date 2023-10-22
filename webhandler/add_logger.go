@@ -25,12 +25,12 @@ func (h Handler) AddLogger(next http.Handler) http.Handler {
 
 		// If request ID is not zero, add it to the log attributes.
 		id := RequestID(r.Context())
-		if id != 0 {
+		if id != "" {
 			attrValues = append(attrValues, "id", id)
 		}
 
 		// Create a new logger instance with the specified attributes.
-		logger := slog.With(slog.Group("req", attrValues...))
+		logger := slog.With(slog.Group("request", attrValues...))
 
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)

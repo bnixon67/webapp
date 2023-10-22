@@ -1,10 +1,12 @@
+*~
 *.dll
 *.dylib
 *.exe
 *.exe~
+go.work
 *.log
 *.out
 *.so
 *.swp
+targets.txt
 *.test
-go.work
