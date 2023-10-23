@@ -6,6 +6,7 @@
 go.work
 *.log
 *.out
+*.pem
 *.so
 *.swp
 targets.txt

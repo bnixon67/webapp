@@ -28,6 +28,8 @@ type Flags struct {
 	LogLevel  string
 	LogSource bool
 	Addr      string
+	CertFile  string
+	KeyFile   string
 }
 
 // parseFlags parses the command line flags and returns them in a Flags struct.
@@ -39,6 +41,8 @@ func parseFlags() (*Flags, error) {
 	flag.StringVar(&flags.LogLevel, "loglevel", "INFO", "Logging level. Valid levels are: "+weblog.Levels())
 	flag.BoolVar(&flags.LogSource, "logsource", false, "Add source code position to log statement.")
 	flag.StringVar(&flags.Addr, "addr", ":8080", "Address for server.")
+	flag.StringVar(&flags.CertFile, "cert", "", "Path to cert file.")
+	flag.StringVar(&flags.KeyFile, "key", "", "Path to key file.")
 
 	flag.Parse()
 
@@ -59,7 +63,7 @@ func main() {
 
 	// Initialize logging.
 	err = weblog.Init(
-		weblog.WithFileName(flags.LogFile),
+		weblog.WithFilename(flags.LogFile),
 		weblog.WithLogType(flags.LogType),
 		weblog.WithLevel(flags.LogLevel),
 		weblog.WithSource(flags.LogSource),
@@ -87,6 +91,7 @@ func main() {
 		webserver.WithHandler(
 			h.AddRequestID(h.AddLogger(h.LogRequest(mux))),
 		),
+		webserver.WithTLS(flags.CertFile, flags.KeyFile),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating server:", err)
@@ -96,8 +101,8 @@ func main() {
 	// Create a new context.
 	ctx := context.Background()
 
-	// Run the web server.
-	err = webserver.Run(ctx, srv)
+	// Start the web server.
+	err = srv.Start(ctx)
 	if err != nil {
 		slog.Error("error running server", "err", err)
 		fmt.Fprintln(os.Stderr, "Error running server:", err)

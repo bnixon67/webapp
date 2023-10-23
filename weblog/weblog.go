@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"slices"
 	"sort"
 	"strings"
-
-	"log/slog"
 )
 
 const (
@@ -30,7 +29,7 @@ var Types = []string{"json", "text"}
 
 // Config contains configuration options to initialize the logging system.
 type Config struct {
-	FileName  string // The name of the log file.
+	Filename  string // The name of the log file.
 	LogType   string // The type of logging, e.g., json or text.
 	Level     string // The log level, e.g., DEBUG, INFO, etc.
 	AddSource bool   // Indicates if source code position is included in log.
@@ -39,10 +38,10 @@ type Config struct {
 // Option is a function type that modifies the Config.
 type Option func(*Config)
 
-// WithFileName returns an Option that sets the Config's FileName field.
-func WithFileName(fileName string) Option {
+// WithFilename returns an Option that sets the Config's Filename field.
+func WithFilename(filename string) Option {
 	return func(c *Config) {
-		c.FileName = fileName
+		c.Filename = filename
 	}
 }
 
@@ -96,7 +95,7 @@ func Init(opts ...Option) error {
 			Levels())
 	}
 
-	writer, err := getWriter(config.FileName)
+	writer, err := getWriter(config.Filename)
 	if err != nil {
 		return err
 	}
@@ -106,14 +105,14 @@ func Init(opts ...Option) error {
 	return nil
 }
 
-// getWriter opens and returns a writer based on the provided fileName.
-// If fileName is empty, return os.Stderr.
-func getWriter(fileName string) (io.Writer, error) {
-	if fileName == "" {
+// getWriter opens and returns a writer based on the provided filename.
+// If filename is empty, return os.Stderr.
+func getWriter(filename string) (io.Writer, error) {
+	if filename == "" {
 		return os.Stderr, nil
 	}
 
-	file, err := os.OpenFile(fileName, logFileFlag, logFilePerm)
+	file, err := os.OpenFile(filename, logFileFlag, logFilePerm)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrLogFileOpenError, err)
 	}
@@ -145,7 +144,7 @@ func initLogger(writer io.Writer, config *Config, level slog.Level) {
 
 	slog.Info("log initialized",
 		slog.Group("config",
-			slog.String("FileName", config.FileName),
+			slog.String("Filename", config.Filename),
 			slog.String("LogType", config.LogType),
 			slog.String("Level", level.String()),
 			slog.Bool("AddSource", config.AddSource),
@@ -164,7 +163,7 @@ var LevelMap = map[string]slog.Level{
 // Level converts a string representation of a log level to a slog.Level.
 // It returns an error if the string does not represent a valid log level.
 func Level(s string) (slog.Level, error) {
-	//assume LogLevelMap keys are uppercase
+	// assume LogLevelMap keys are uppercase
 	s = strings.ToUpper(s)
 
 	level, ok := LevelMap[s]

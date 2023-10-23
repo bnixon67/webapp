@@ -38,10 +38,10 @@ func TestInit(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Valid JSON Log Type with FileName",
+			name: "Valid JSON Log Type with Filename",
 			opts: []weblog.Option{
 				weblog.WithLogType("json"),
-				weblog.WithFileName("test_json.log"),
+				weblog.WithFilename("test_json.log"),
 			},
 			wantErr: nil,
 		},
@@ -53,24 +53,24 @@ func TestInit(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Valid Text Log Type with FileName",
+			name: "Valid Text Log Type with Filename",
 			opts: []weblog.Option{
 				weblog.WithLogType("text"),
-				weblog.WithFileName("test_text.log"),
+				weblog.WithFilename("test_text.log"),
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Valid FileName",
+			name: "Valid Filename",
 			opts: []weblog.Option{
-				weblog.WithFileName("test.log"),
+				weblog.WithFilename("test.log"),
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Invalid FileName",
+			name: "Invalid Filename",
 			opts: []weblog.Option{
-				weblog.WithFileName("/no/such/file"),
+				weblog.WithFilename("/no/such/file"),
 			},
 			wantErr: weblog.ErrLogFileOpenError,
 		},
@@ -96,8 +96,8 @@ func TestInit(t *testing.T) {
 					opt(config)
 				}
 
-				if config.FileName != "" {
-					os.Remove(config.FileName) // ignore error
+				if config.Filename != "" {
+					os.Remove(config.Filename) // ignore error
 				}
 			}
 		})
