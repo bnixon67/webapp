@@ -3,12 +3,14 @@ package webhandler
 
 import (
 	"errors"
+	"html/template"
 	"log/slog"
 )
 
 // Handler represents a web handler with configuration options.
 type Handler struct {
-	AppName string // AppName is the name of the application for this handler.
+	AppName string             // AppName is the name of the application.
+	Tmpl    *template.Template // Tmpl holds parsed templates.
 }
 
 // Option is a function type used to apply configuration options to a Handler.
@@ -18,6 +20,13 @@ type Option func(*Handler)
 func WithAppName(appName string) Option {
 	return func(h *Handler) {
 		h.AppName = appName
+	}
+}
+
+// WithTemplate returns an Option to set the AppName of a Handler.
+func WithTemplate(tmpl *template.Template) Option {
+	return func(h *Handler) {
+		h.Tmpl = tmpl
 	}
 }
 

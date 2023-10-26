@@ -2,6 +2,7 @@ package webhandler
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/bnixon67/webapp/webutils"
@@ -18,7 +19,7 @@ func (h *Handler) HelloHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("HelloHandler")
+	logger.Info("exec", slog.String("func", "HelloHandler"))
 
 	webutils.SetTextContentType(w)
 	fmt.Fprintln(w, "hello from", h.AppName)

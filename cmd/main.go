@@ -7,18 +7,21 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/webserver"
+	"github.com/bnixon67/webapp/webutils"
 )
 
 const (
-	ExitUsage   = iota + 1 // ExitUsage indicates a usage error.
-	ExitLog                // ExitLog indicates a log error.
-	ExitHandler            // ExitHandler indicates a handler error.
-	ExitServer             // ExitServer indicates a server error.
+	ExitUsage    = iota + 1 // ExitUsage indicates a usage error.
+	ExitLog                 // ExitLog indicates a log error.
+	ExitHandler             // ExitHandler indicates a handler error.
+	ExitServer              // ExitServer indicates a server error.
+	ExitTemplate            // ExitTemplate indicates a template error.
 )
 
 // Flags struct holds the command line flags values.
@@ -28,6 +31,7 @@ type Flags struct {
 	LogLevel  string
 	LogSource bool
 	Addr      string
+	TmplDir   string
 }
 
 // parseFlags parses the command line flags and returns them in a Flags struct.
@@ -39,6 +43,7 @@ func parseFlags() (*Flags, error) {
 	flag.StringVar(&flags.LogLevel, "loglevel", "INFO", "Logging level. Valid levels are: "+weblog.Levels())
 	flag.BoolVar(&flags.LogSource, "logsource", false, "Add source code position to log statement.")
 	flag.StringVar(&flags.Addr, "addr", ":8080", "Address for server.")
+	flag.StringVar(&flags.TmplDir, "tmpldir", "../assets/tmpl", "Path to remplate director.")
 
 	flag.Parse()
 
@@ -69,8 +74,15 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
+	// Initialize templates
+	tmpl, err := webutils.InitTemplates(filepath.Join(flags.TmplDir, "*.html"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
+		os.Exit(ExitTemplate)
+	}
+
 	// Create the web handler.
-	h, err := webhandler.New(webhandler.WithAppName("Web Server"))
+	h, err := webhandler.New(webhandler.WithAppName("Web Server"), webhandler.WithTemplate(tmpl))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating new handler:", err)
 		os.Exit(ExitHandler)
@@ -79,7 +91,9 @@ func main() {
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", h.HelloHandler)
+	mux.HandleFunc("/hellohtml", h.HelloHTMLHandler)
 	mux.HandleFunc("/build", h.BuildHandler)
+	mux.HandleFunc("/headers", h.HeadersHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
