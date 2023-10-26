@@ -3,36 +3,52 @@ package webserver
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"log/slog"
 )
 
+// WebServer represents an HTTP server.
+type WebServer struct {
+	HTTPServer http.Server
+	CertFile   string
+	KeyFile    string
+}
+
 // Option is a function type for configuring the HTTP server.
-type Option func(*http.Server)
+type Option func(*WebServer)
 
 // WithAddr returns an Option to set the address the server will bind to.
 func WithAddr(addr string) Option {
-	return func(s *http.Server) {
-		s.Addr = addr
+	return func(s *WebServer) {
+		s.HTTPServer.Addr = addr
 	}
 }
 
 // WithHandler returns an Option to set the HTTP handler of the server.
 func WithHandler(h http.Handler) Option {
-	return func(s *http.Server) {
-		s.Handler = h
+	return func(s *WebServer) {
+		s.HTTPServer.Handler = h
+	}
+}
+
+// WithTLS returns an Option to set TLS configuration for the server.
+func WithTLS(certFile, keyFile string) Option {
+	return func(s *WebServer) {
+		s.CertFile = certFile
+		s.KeyFile = keyFile
 	}
 }
 
 // New creates a new HTTP server with the given options and returns it.
-func New(opts ...Option) (*http.Server, error) {
-	s := &http.Server{}
+func New(opts ...Option) (*WebServer, error) {
+	s := &WebServer{}
 
 	// Apply configuration options to the server.
 	for _, opt := range opts {
@@ -42,28 +58,35 @@ func New(opts ...Option) (*http.Server, error) {
 	return s, nil
 }
 
-// Run starts the HTTP server and waits for a shutdown signal.
-// It returns an error if there's an issue starting the server.
-func Run(ctx context.Context, srv *http.Server) error {
-	ln, err := net.Listen("tcp", srv.Addr)
-	if err != nil {
-		return err
-	}
+var ErrServerStart = errors.New("failed to start server")
 
-	errCh := make(chan error, 1)
+// Start starts the HTTP server and waits for a shutdown signal.
+// It returns an error if there's an issue starting the server.
+func (s *WebServer) Start(ctx context.Context) error {
+	ln, err := net.Listen("tcp", s.HTTPServer.Addr)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrServerStart, err)
+	}
 
 	slog.Info("starting server", slog.String("addr", ln.Addr().String()))
 
-	// Start the server in a separate goroutine, and push any errors to errCh.
+	errCh := make(chan error, 1)
+
+	// Start the server in a separate goroutine.
 	go func() {
-		//err = http.ErrNotSupported
-		err = srv.Serve(ln)
-		if err != nil && err != http.ErrServerClosed {
-			errCh <- err
+		var serverErr error
+		if s.CertFile != "" && s.KeyFile != "" {
+			serverErr = s.HTTPServer.ServeTLS(ln, s.CertFile, s.KeyFile)
+		} else {
+			serverErr = s.HTTPServer.Serve(ln)
+		}
+
+		if serverErr != nil && serverErr != http.ErrServerClosed {
+			errCh <- serverErr
 		}
 	}()
 
-	// Ask for notification of shutdown signals to gracefully shutdown server.
+	// Ask for notification of shutdown signals to shut down server.
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
@@ -71,25 +94,24 @@ func Run(ctx context.Context, srv *http.Server) error {
 	case <-ctx.Done():
 		// If the context is done, return its error.
 		return ctx.Err()
-	case err := <-errCh:
-		// If there's an error from the server, return it.
-		return err
 	case sig := <-sigChan:
-		// If a shutdown signal received, gracefully shut down server.
-		return shutdownServer(sig, sigChan, srv, ctx)
+		// If a shutdown signal, gracefully shut down the server.
+		return s.shutdownServer(sig, ctx)
+	case err := <-errCh:
+		// Handle the error that occurred during server startup.
+		return fmt.Errorf("%w: %v", ErrServerStart, err)
 	}
 }
 
 // shutdownServer attempts to gracefully shut down the server.
-func shutdownServer(sig os.Signal, sigChan chan os.Signal, srv *http.Server, ctx context.Context) error {
-	signal.Stop(sigChan)
+func (s *WebServer) shutdownServer(sig os.Signal, ctx context.Context) error {
 	slog.Info("shutting down server", "signal", sig)
 
-	// Create a context with a timeout to shut down within a reasonable time.
+	// Create a context with timeout to shut down within a reasonable time.
 	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	err := srv.Shutdown(shutdownCtx)
+	err := s.HTTPServer.Shutdown(shutdownCtx)
 	if err != nil {
 		return err
 	}

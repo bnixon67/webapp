@@ -10,8 +10,90 @@ import (
 	"github.com/bnixon67/webapp/webserver"
 )
 
-const addr = ":9080"
+func TestWebServer(t *testing.T) {
+	tests := []struct {
+		name         string
+		options      []webserver.Option
+		expectedErr  error
+		expectedAddr string
+	}{
+		{
+			name:        "Empty Configuration",
+			options:     []webserver.Option{},
+			expectedErr: nil,
+		},
+		{
+			name: "Default Configuration",
+			options: []webserver.Option{
+				webserver.WithAddr(":9080"),
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Default Configuration With Handler",
+			options: []webserver.Option{
+				webserver.WithAddr(":9081"),
+				webserver.WithHandler(http.DefaultServeMux),
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "TLS Configuration",
+			options: []webserver.Option{
+				webserver.WithAddr(":9443"),
+				webserver.WithTLS(
+					"testdata/cert.pem", "testdata/key.pem"),
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Invalid Address",
+			options: []webserver.Option{
+				webserver.WithAddr("invalid address"),
+			},
+			expectedErr: webserver.ErrServerStart,
+		},
+		{
+			name: "Invalid TLS Configuration",
+			options: []webserver.Option{
+				webserver.WithAddr(":9443"),
+				webserver.WithTLS(
+					"cert.none", "key.none"),
+			},
+			expectedErr: webserver.ErrServerStart,
+		},
+	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server, err := webserver.New(tt.options...)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			ctx := context.Background()
+			ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			defer cancel()
+
+			errChan := make(chan error)
+
+			go func() {
+				errChan <- server.Start(ctx)
+			}()
+
+			select {
+			case err := <-errChan:
+				if !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, tt.expectedErr) {
+					t.Errorf("expected context deadline exceeded error, got %v", err)
+				}
+			case <-time.After(3 * time.Second):
+				t.Error("test timed out")
+			}
+		})
+	}
+}
+
+/*
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -54,7 +136,7 @@ func TestRun(t *testing.T) {
 	errChan := make(chan error)
 
 	go func() {
-		errChan <- webserver.Run(ctx, server)
+		errChan <- server.Start(ctx)
 	}()
 
 	select {
@@ -66,3 +148,4 @@ func TestRun(t *testing.T) {
 		t.Error("test timed out")
 	}
 }
+*/
