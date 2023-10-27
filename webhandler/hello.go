@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/bnixon67/webapp/webutils"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 // HelloHandler is an HTTP handler method of the Handler type.
@@ -14,13 +14,13 @@ import (
 func (h *Handler) HelloHandler(w http.ResponseWriter, r *http.Request) {
 	logger := Logger(r.Context())
 
-	if !webutils.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.ValidMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method for HelloHandler")
 		return
 	}
 
 	logger.Info("exec", slog.String("func", "HelloHandler"))
 
-	webutils.SetTextContentType(w)
+	webutil.SetTextContentType(w)
 	fmt.Fprintln(w, "hello from", h.AppName)
 }

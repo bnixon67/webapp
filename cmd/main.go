@@ -13,7 +13,7 @@ import (
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/webserver"
-	"github.com/bnixon67/webapp/webutils"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 const (
@@ -79,7 +79,7 @@ func main() {
 	}
 
 	// Initialize templates
-	tmpl, err := webutils.InitTemplates(filepath.Join(flags.TmplDir, "*.html"))
+	tmpl, err := webutil.InitTemplates(filepath.Join(flags.TmplDir, "*.html"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)

@@ -1,11 +1,11 @@
-package webutils_test
+package webutil_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bnixon67/webapp/webutils"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 func TestValidMethod(t *testing.T) {
@@ -52,7 +52,7 @@ func TestValidMethod(t *testing.T) {
 			}
 
 			rec := httptest.NewRecorder()
-			isValid := webutils.ValidMethod(rec, req, tt.allowedMethods...)
+			isValid := webutil.ValidMethod(rec, req, tt.allowedMethods...)
 
 			if isValid != tt.expectValid {
 				t.Errorf("Expected valid: %v, got: %v", tt.expectValid, isValid)

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/bnixon67/webapp/webutils"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 const MsgExecDateTimeErr = "Cannot get executable datetime"
@@ -15,13 +15,13 @@ const MsgExecDateTimeErr = "Cannot get executable datetime"
 func (h *Handler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 	logger := Logger(r.Context())
 
-	if !webutils.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.ValidMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
 	// Set no-cache headers to prevent caching of the response.
-	webutils.SetNoCacheHeaders(w)
+	webutil.SetNoCacheHeaders(w)
 
 	// Retrieve the executable's modification date/time.
 	dt, err := ExecutableDateTime()
@@ -36,7 +36,7 @@ func (h *Handler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Info("BuildHandler", "build", build)
 
 	// Set the content type of the response to text.
-	webutils.SetTextContentType(w)
+	webutil.SetTextContentType(w)
 
 	fmt.Fprintln(w, build)
 }

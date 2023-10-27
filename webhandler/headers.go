@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/bnixon67/webapp/webutils"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 // HeadersPageName is the name of the HTTP template to execute.
@@ -42,7 +42,7 @@ func (h *Handler) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 	logger := Logger(r.Context())
 
 	// check for valid methods
-	if !webutils.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.ValidMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
@@ -59,7 +59,7 @@ func (h *Handler) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 		slog.Any("data", data),
 	)
 
-	err := webutils.RenderTemplate(h.Tmpl, w, HeadersPageName, data)
+	err := webutil.RenderTemplate(h.Tmpl, w, HeadersPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return

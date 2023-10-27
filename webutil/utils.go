@@ -1,5 +1,5 @@
 // Package webutils provides utility functions.
-package webutils
+package webutil
 
 import (
 	"net/http"

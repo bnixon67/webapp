@@ -1,4 +1,4 @@
-package webutils
+package webutil
 
 import (
 	"bytes"
