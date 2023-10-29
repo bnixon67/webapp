@@ -40,7 +40,7 @@ func GetRequestLogger(r *http.Request) *slog.Logger {
 
 // AddRequestLogger is middleware that adds a specialized logger to the request's context.
 // This logger is enriched with request-specific attributes and can be retrieved in downstream handlers using the Logger function.
-func (h Handler) AddRequestLogger(next http.Handler) http.Handler {
+func AddRequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Create a new logger instance with the specified attributes.
 		logger := GetRequestLogger(r)

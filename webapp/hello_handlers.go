@@ -1,7 +1,7 @@
 // Copyright 2023 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-package webhandler
+package webapp
 
 import (
 	"fmt"
@@ -9,13 +9,14 @@ import (
 	"net/http"
 
 	"github.com/bnixon67/webapp/assets"
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
 
 // HelloTextHandler responds with a simple "hello" message in plain text format.
-func (h *Handler) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
+func (app *WebApp) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
+	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -33,13 +34,13 @@ func (h *Handler) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
 	webutil.SetNoCacheHeaders(w)
 
 	// Write the "hello" message to the response with the application name.
-	fmt.Fprintln(w, "hello from", h.AppName)
+	fmt.Fprintln(w, "hello from", app.AppName)
 }
 
 // HelloHTMLHandler responds with a simple "hello" message in HTML format.
-func (h *Handler) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
+func (app *WebApp) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
+	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

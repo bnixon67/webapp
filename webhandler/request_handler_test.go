@@ -11,37 +11,31 @@ import (
 )
 
 func TestGetRequestInfo(t *testing.T) {
-	tests := []TestCase{
+	tests := []webhandler.TestCase{
 		{
-			name:          "Valid GET Request",
-			requestMethod: http.MethodGet,
-			wantStatus:    http.StatusOK,
-			wantBody:      "GET /test HTTP/1.1\r\nHost: example.com\r\n\r\n\n",
+			Name:          "Valid GET Request",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusOK,
+			WantBody:      "GET /test HTTP/1.1\r\nHost: example.com\r\n\r\n\n",
 		},
 		{
-			name:          "Valid GET Request with Header",
-			requestMethod: http.MethodGet,
-			requestHeaders: http.Header{
+			Name:          "Valid GET Request with Header",
+			RequestMethod: http.MethodGet,
+			RequestHeaders: http.Header{
 				"Foo": {"foo1"},
 				"bar": {"bar1"},
 			},
-			wantStatus: http.StatusOK,
-			wantBody:   "GET /test HTTP/1.1\r\nHost: example.com\r\nFoo: foo1\r\nbar: bar1\r\n\r\n\n",
+			WantStatus: http.StatusOK,
+			WantBody:   "GET /test HTTP/1.1\r\nHost: example.com\r\nFoo: foo1\r\nbar: bar1\r\n\r\n\n",
 		},
 		{
-			name:          "Invalid POST Request",
-			requestMethod: http.MethodPost,
-			wantStatus:    http.StatusMethodNotAllowed,
-			wantBody:      "POST Method Not Allowed\n",
+			Name:          "Invalid POST Request",
+			RequestMethod: http.MethodPost,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "POST Method Not Allowed\n",
 		},
-	}
-
-	// Create a web handler instance for testing.
-	handler, err := webhandler.New(webhandler.WithAppName("Test App"))
-	if err != nil {
-		t.Fatalf("could not create web handler: %v", err)
 	}
 
 	// Test the handler using the utility function.
-	HandlerTestWithCases(t, handler.RequestHandler, tests)
+	webhandler.HandlerTestWithCases(t, webhandler.RequestHandler, tests)
 }

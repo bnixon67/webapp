@@ -1,13 +1,14 @@
 // Copyright 2023 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-package webhandler
+package webapp
 
 import (
 	"log/slog"
 	"net/http"
 	"sort"
 
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -51,9 +52,9 @@ func SortedHeaders(httpHeader http.Header) []HeaderPair {
 }
 
 // HeadersHandler prints the headers of the request in sorted order.
-func (h *Handler) HeadersHandler(w http.ResponseWriter, r *http.Request) {
+func (app *WebApp) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
+	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -73,7 +74,7 @@ func (h *Handler) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response", slog.Any("data", data))
 
 	// Render the template with the data.
-	err := webutil.RenderTemplate(h.Tmpl, w, HeadersPageName, data)
+	err := webutil.RenderTemplate(app.Tmpl, w, HeadersPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return

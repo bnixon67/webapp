@@ -81,7 +81,7 @@ type reqIDType struct{}
 var reqIDKey = reqIDType{}
 
 // AddRequestID is middleware that adds a unique request ID for each request to the request's context and a X-Request-ID header to the response.
-func (h Handler) AddRequestID(next http.Handler) http.Handler {
+func AddRequestID(next http.Handler) http.Handler {
 	var counter uint32
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

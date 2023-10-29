@@ -11,34 +11,28 @@ import (
 )
 
 func TestGetRemoteAddr(t *testing.T) {
-	tests := []TestCase{
+	tests := []webhandler.TestCase{
 		{
-			name:          "Valid GET Request with no headers",
-			requestMethod: http.MethodGet,
-			wantStatus:    http.StatusOK,
-			wantBody:      "RemoteAddr: 192.0.2.1:1234\n",
+			Name:          "Valid GET Request with no headers",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusOK,
+			WantBody:      "RemoteAddr: 192.0.2.1:1234\n",
 		},
 		{
-			name:           "Valid GET Request with headers",
-			requestMethod:  http.MethodGet,
-			requestHeaders: http.Header{"X-Real-Ip": {"192.0.2.1:5678"}},
-			wantStatus:     http.StatusOK,
-			wantBody:       "RemoteAddr: 192.0.2.1:1234\nX-Real-Ip: 192.0.2.1:5678\n",
+			Name:           "Valid GET Request with headers",
+			RequestMethod:  http.MethodGet,
+			RequestHeaders: http.Header{"X-Real-Ip": {"192.0.2.1:5678"}},
+			WantStatus:     http.StatusOK,
+			WantBody:       "RemoteAddr: 192.0.2.1:1234\nX-Real-Ip: 192.0.2.1:5678\n",
 		},
 		{
-			name:          "Invalid Request Method",
-			requestMethod: http.MethodPost,
-			wantStatus:    http.StatusMethodNotAllowed,
-			wantBody:      "POST Method Not Allowed\n",
+			Name:          "Invalid Request Method",
+			RequestMethod: http.MethodPost,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "POST Method Not Allowed\n",
 		},
-	}
-
-	// Create a web handler instance for testing.
-	handler, err := webhandler.New(webhandler.WithAppName("Test App"))
-	if err != nil {
-		t.Fatalf("could not create web handler: %v", err)
 	}
 
 	// Test the handler using the utility function.
-	HandlerTestWithCases(t, handler.RemoteHandler, tests)
+	webhandler.HandlerTestWithCases(t, webhandler.RemoteHandler, tests)
 }

@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/webserver"
@@ -88,8 +89,8 @@ func main() {
 		os.Exit(ExitTemplate)
 	}
 
-	// Create the web handler.
-	h, err := webhandler.New(webhandler.WithAppName("Web Server"), webhandler.WithTemplate(tmpl))
+	// Create the web app.
+	app, err := webapp.New(webapp.WithAppName("Web Server"), webapp.WithTemplate(tmpl))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating new handler:", err)
 		os.Exit(ExitHandler)
@@ -97,18 +98,18 @@ func main() {
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", h.RootHandler)
-	mux.HandleFunc("/hello", h.HelloTextHandler)
-	mux.HandleFunc("/hellohtml", h.HelloHTMLHandler)
-	mux.HandleFunc("/build", h.BuildHandler)
-	mux.HandleFunc("/headers", h.HeadersHandler)
-	mux.HandleFunc("/remote", h.RemoteHandler)
-	mux.HandleFunc("/request", h.RequestHandler)
+	mux.HandleFunc("/", app.RootHandler)
+	mux.HandleFunc("/hello", app.HelloTextHandler)
+	mux.HandleFunc("/hellohtml", app.HelloHTMLHandler)
+	mux.HandleFunc("/build", app.BuildHandler)
+	mux.HandleFunc("/headers", app.HeadersHandler)
+	mux.HandleFunc("/remote", webhandler.RemoteHandler)
+	mux.HandleFunc("/request", webhandler.RequestHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(flags.Addr),
-		webserver.WithHandler(h.AddRequestID(h.AddRequestLogger(h.LogRequest(mux)))),
+		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddRequestLogger(webhandler.LogRequest(mux)))),
 		webserver.WithTLS(flags.CertFile, flags.KeyFile),
 	)
 	if err != nil {

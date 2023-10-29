@@ -26,11 +26,6 @@ func TestLogRequest(t *testing.T) {
 		},
 	}
 
-	handler, err := webhandler.New(webhandler.WithAppName("TestApp"))
-	if err != nil {
-		t.Fatalf("Error creating handler: %v", err)
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a request with the specified HTTP method and URL.
@@ -48,7 +43,7 @@ func TestLogRequest(t *testing.T) {
 			})
 
 			// Wrap and call next handler with LogRequest middleware.
-			middleware := handler.LogRequest(next)
+			middleware := webhandler.LogRequest(next)
 			middleware.ServeHTTP(rec, req)
 
 			// Check if the status code is what we expect.

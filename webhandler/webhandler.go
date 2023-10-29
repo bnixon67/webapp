@@ -6,68 +6,46 @@
 package webhandler
 
 import (
-	"errors"
-	"fmt"
-	"html/template"
-	"log/slog"
-	"time"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
-// Handler represents a web handler with configuration options.
-type Handler struct {
-	AppName       string             // AppName is the application's name.
-	Tmpl          *template.Template // Tmpl stores parsed templates.
-	BuildDateTime time.Time          // BuildDateTime is the executable's modification time.
+type TestCase struct {
+	Name           string
+	RequestMethod  string
+	RequestHeaders http.Header
+	WantStatus     int
+	WantBody       string
 }
 
-// Option is a function type used to apply configuration options to a Handler.
-// This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
-type Option func(*Handler)
+// HandlerTestWithCases is a utility function for testing a handler.
+func HandlerTestWithCases(t *testing.T, handlerFunc http.HandlerFunc, testCases []TestCase) {
+	for _, tt := range testCases {
+		t.Run(tt.Name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.RequestMethod, "/test", nil)
 
-// WithAppName returns an Option to set the AppName of a Handler.
-func WithAppName(appName string) Option {
-	return func(h *Handler) {
-		h.AppName = appName
+			req.Header = tt.RequestHeaders
+
+			w := httptest.NewRecorder()
+
+			handlerFunc(w, req)
+
+			resp := w.Result()
+
+			if resp.StatusCode != tt.WantStatus {
+				t.Errorf("Want status code %d, got %d", tt.WantStatus, resp.StatusCode)
+			}
+
+			body, _ := io.ReadAll(resp.Body)
+
+			diff := cmp.Diff(tt.WantBody, string(body))
+			if diff != "" {
+				t.Errorf("Body mismatch (-want +got)\n:%s", diff)
+			}
+		})
 	}
-}
-
-// WithTemplate returns an Option to set the Tmpl of a Handler.
-func WithTemplate(tmpl *template.Template) Option {
-	return func(h *Handler) {
-		h.Tmpl = tmpl
-	}
-}
-
-// New creates a new Handler with the given options and returns it.
-// It returns an error if no AppName is provided through the options or other error occurs.
-// The BuildDateTime is also set.
-func New(opts ...Option) (*Handler, error) {
-	// Retrieve the executable's modification time.
-	dt, err := ExecutableModTime()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get executable modification time: %v", err)
-	}
-
-	h := &Handler{
-		BuildDateTime: dt,
-	}
-
-	// Apply configuration options to the Handler.
-	for _, opt := range opts {
-		opt(h)
-	}
-
-	// Ensure AppName is set.
-	if h.AppName == "" {
-		return nil, errors.New("AppName is required")
-	}
-
-	slog.Debug("created new handler",
-		slog.Group("handler",
-			slog.String("AppName", h.AppName),
-			slog.Time("BuildDateTime", h.BuildDateTime),
-		),
-	)
-
-	return h, nil
 }

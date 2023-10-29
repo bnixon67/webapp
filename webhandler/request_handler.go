@@ -13,7 +13,7 @@ import (
 )
 
 // RequestHandler responds with a dump of the HTTP request.
-func (h *Handler) RequestHandler(w http.ResponseWriter, r *http.Request) {
+func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the logger from the request context and add calling function name.
 	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
@@ -40,6 +40,6 @@ func (h *Handler) RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// Set no-cache headers to prevent caching.
 	webutil.SetNoCacheHeaders(w)
 
-	// Write the "hello" message to the response with the application name.
+	// Write the request information to the response.
 	fmt.Fprintln(w, string(b))
 }
