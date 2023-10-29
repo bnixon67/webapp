@@ -51,7 +51,7 @@ func parseFlags() (*Flags, error) {
 	flag.StringVar(&flags.Addr, "addr", ":8080", "Address for server.")
 	flag.StringVar(&flags.CertFile, "cert", "", "Path to cert file.")
 	flag.StringVar(&flags.KeyFile, "key", "", "Path to key file.")
-	flag.StringVar(&flags.TmplDir, "tmpldir", "../assets/tmpl", "Path to remplate directory.")
+	flag.StringVar(&flags.TmplDir, "tmpldir", "../../assets/tmpl", "Path to remplate directory.")
 
 	flag.Parse()
 
