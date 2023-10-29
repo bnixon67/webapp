@@ -1,3 +1,6 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 // Package webserver provides utilities for creating and managing web servers.
 package webserver
 
@@ -22,6 +25,7 @@ type WebServer struct {
 }
 
 // Option is a function type for configuring the HTTP server.
+// This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
 type Option func(*WebServer)
 
 // WithAddr returns an Option to set the address the server will bind to.

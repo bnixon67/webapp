@@ -21,7 +21,7 @@ type Handler struct {
 }
 
 // Option is a function type used to apply configuration options to a Handler.
-// This follows the Option pattern as document in https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
+// This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
 type Option func(*Handler)
 
 // WithAppName returns an Option to set the AppName of a Handler.

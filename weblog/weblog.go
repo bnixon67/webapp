@@ -1,3 +1,6 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 // Package weblog provides a logging system for the webapp based on slog.
 package weblog
 
@@ -36,6 +39,7 @@ type Config struct {
 }
 
 // Option is a function type that modifies the Config.
+// This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
 type Option func(*Config)
 
 // WithFilename returns an Option that sets the Config's Filename field.
