@@ -21,7 +21,7 @@ type RootPageData struct {
 // RootHandler handles the root ("/") route.
 func (h *Handler) RootHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

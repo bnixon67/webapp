@@ -17,27 +17,33 @@ type loggerKeyType struct{}
 // loggerKey is used as a key for storing and retrieving the logger from the context.
 var loggerKey = loggerKeyType{}
 
-// AddLogger is middleware that adds a specialized logger to the request's context.
+// GetRequestLogger returns a logger with a "request" group with request-specific information.
+// This function can be a substitute to AddLogger middleware.
+func GetRequestLogger(r *http.Request) *slog.Logger {
+	// Create a slice with basic attributes of the request.
+	// This allows addition of attributes to the group based on additional logic or conditions.
+	// I could not determine another method to do this with the existing slog package.
+	attrValues := []interface{}{
+		"method", r.Method,
+		"url", r.URL.String(),
+		"ip", webutil.RealRemoteAddr(r),
+	}
+
+	// If request ID is not empty, add it to the log attributes.
+	if id := RequestID(r.Context()); id != "" {
+		attrValues = append(attrValues, "id", id)
+	}
+
+	// Return a new logger instance with the specified attributes.
+	return slog.With(slog.Group("request", attrValues...))
+}
+
+// AddRequestLogger is middleware that adds a specialized logger to the request's context.
 // This logger is enriched with request-specific attributes and can be retrieved in downstream handlers using the Logger function.
-func (h Handler) AddLogger(next http.Handler) http.Handler {
+func (h Handler) AddRequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Create a slice to hold the basic log attributes.
-		// A slice is used to simplify adding other attributes, such as RequestID,
-		// to the "request" group based on other logic.
-		attrValues := []interface{}{
-			"method", r.Method,
-			"url", r.URL.String(),
-			"ip", webutil.RealRemoteAddr(r),
-		}
-
-		// If request ID is not empty, add it to the log attributes.
-		id := RequestID(r.Context())
-		if id != "" {
-			attrValues = append(attrValues, "id", id)
-		}
-
 		// Create a new logger instance with the specified attributes.
-		logger := slog.With(slog.Group("request", attrValues...))
+		logger := GetRequestLogger(r)
 
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)
@@ -47,9 +53,9 @@ func (h Handler) AddLogger(next http.Handler) http.Handler {
 	})
 }
 
-// Logger retrieves the logger from the given context.
+// LoggerFromContext retrieves the logger from the given context.
 // If the context is nil or does not contain a logger, the default logger is returned.
-func Logger(ctx context.Context) *slog.Logger {
+func LoggerFromContext(ctx context.Context) *slog.Logger {
 	// Return the default logger if the context is nil.
 	if ctx == nil {
 		return slog.Default()

@@ -8,12 +8,14 @@ import (
 	"net/http"
 )
 
-// LogRequest is middleware that logs the details of incoming HTTP requests.
-// It assumes that AddLogger was called prior to enrich the logger with request-specific attributes.
+// LogRequest is a middleware function that logs the details of incoming HTTP requests.
+// It is designed to wrap around other HTTP handlers, adding logging functionality to them.
 func (h Handler) LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Get logger with request info from request context and add calling function name.
-		logger := Logger(r.Context()).With(slog.String("func", "LogRequest"))
+		// Retrieve a logger pre-configured with request information.
+		// GetRequestLogger is used instead of obtaining the logger directly from the context.
+		// This ensures compatibility if AddLogger middleware was not.
+		logger := GetRequestLogger(r).With(slog.String("func", "LogRequest"))
 
 		// Log the incoming request.
 		logger.Info("received")

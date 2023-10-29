@@ -105,7 +105,7 @@ func main() {
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(flags.Addr),
-		webserver.WithHandler(h.AddRequestID(h.AddLogger(h.LogRequest(mux)))),
+		webserver.WithHandler(h.AddRequestID(h.AddRequestLogger(h.LogRequest(mux)))),
 		webserver.WithTLS(flags.CertFile, flags.KeyFile),
 	)
 	if err != nil {

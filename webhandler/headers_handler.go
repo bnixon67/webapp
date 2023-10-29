@@ -53,7 +53,7 @@ func SortedHeaders(httpHeader http.Header) []HeaderPair {
 // HeadersHandler prints the headers of the request in sorted order.
 func (h *Handler) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

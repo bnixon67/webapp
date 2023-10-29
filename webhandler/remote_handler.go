@@ -14,7 +14,7 @@ import (
 // GetGetRemoteAddr responds with RemoteAddr and common headers for the actual RemoteAddr if a proxy, load balancer, or similar is used to route the request.
 func (h *Handler) RemoteHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

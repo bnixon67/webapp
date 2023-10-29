@@ -15,7 +15,7 @@ import (
 // HelloTextHandler responds with a simple "hello" message in plain text format.
 func (h *Handler) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -39,7 +39,7 @@ func (h *Handler) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
 // HelloHTMLHandler responds with a simple "hello" message in HTML format.
 func (h *Handler) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

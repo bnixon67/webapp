@@ -14,8 +14,8 @@ import (
 
 // RequestHandler responds with a dump of the HTTP request.
 func (h *Handler) RequestHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the logger from the request contexti and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	// Get the logger from the request context and add calling function name.
+	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

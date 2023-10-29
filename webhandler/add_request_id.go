@@ -11,37 +11,42 @@ import (
 	"math/big"
 	"net/http"
 	"sync/atomic"
+	"unicode/utf8"
 )
 
-// randomLower generates a random string of the specified length composed of lowercase letters.
-func randomLower(length int) (string, error) {
-	const lowerLetters = "abcdefghijklmnopqrstuvwxyz"
+// RandomStringFromCharset generates a random string of length from characters in the charset.
+// This version is Unicode-aware and works correctly with multi-byte characters.
+func RandomStringFromCharset(charset string, length int) (string, error) {
+	// Ensure the charset is not empty and contains valid Unicode characters.
+	if len(charset) == 0 || utf8.RuneCountInString(charset) == 0 {
+		return "", errors.New("empty or invalid charset")
+	}
 
-	// check for valid length
+	// Check for valid length.
 	if length <= 0 {
 		return "", errors.New("invalid length")
 	}
 
-	// Create a random source using a secure random number generator.
-	source := rand.Reader
+	// Initialize a slice of runes to store the result. Using runes to support Unicode characters.
+	result := make([]rune, length)
 
-	// Define the set of characters to choose from.
-	charsetLength := len(lowerLetters)
+	// Convert the charset string into a slice of runes to handle potential Unicode characters.
+	charsetRunes := []rune(charset)
 
-	// Define location to store the result.
-	result := make([]byte, length)
+	// Calculate the total number of unique characters (runes) in the charset.
+	charsetLength := big.NewInt(int64(len(charsetRunes)))
 
 	for i := 0; i < length; i++ {
-		// Generate a random index within the character set.
-		idx, err := rand.Int(source, big.NewInt(int64(charsetLength)))
+		// Generate a random index within the range of the charset.
+		idx, err := rand.Int(rand.Reader, charsetLength)
 		if err != nil {
 			return "", err
 		}
-
-		// Use the random index to select a character from the set.
-		result[i] = lowerLetters[idx.Int64()]
+		// Select a rune from the charset based on the random index.
+		result[i] = charsetRunes[idx.Int64()]
 	}
 
+	// Convert the rune slice back to a string and return it.
 	return string(result), nil
 }
 
@@ -53,10 +58,12 @@ const reqIDPrefixLength = 4
 
 // init generates a unique request id prefix at program start.
 func init() {
+	const lowerLetters = "abcdefghijklmnopqrstuvwxyz"
+
 	var err error
 
 	// Generate a random lowercase prefix for request IDs.
-	reqIDPrefix, err = randomLower(reqIDPrefixLength)
+	reqIDPrefix, err = RandomStringFromCharset(lowerLetters, reqIDPrefixLength)
 	if err != nil {
 		panic("Failed to generate request ID prefix: " + err.Error())
 	}
