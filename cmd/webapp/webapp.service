@@ -1,0 +1,13 @@
+[Unit]
+Description=Go Web App
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/ec2-user/src/webapp/cmd/webapp
+ExecStart=/home/ec2-user/src/webapp/cmd/webapp/webapp -addr localhost:8080 -logfile webapp.log -logtype json
+User=ec2-user
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
