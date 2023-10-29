@@ -1,29 +1,36 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package webhandler
 
 import (
 	"context"
 	"log/slog"
 	"net/http"
+
+	"github.com/bnixon67/webapp/webutil"
 )
 
 // loggerKeyType is a unique key type to avoid key collisions with other context values.
 type loggerKeyType struct{}
 
-// loggerKey is as a key for storing and retrieving the logger from the context.
+// loggerKey is used as a key for storing and retrieving the logger from the context.
 var loggerKey = loggerKeyType{}
 
-// AttachRequestLogger is middleware adds a specialized logger to the
-// request's context. This logger, enriched with request-specific details,
-// can be retrieved in downstream handlers using the Logger function.
+// AddLogger is middleware that adds a specialized logger to the request's context.
+// This logger is enriched with request-specific attributes and can be retrieved in downstream handlers using the Logger function.
 func (h Handler) AddLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Create a slice to hold the basic log attributes.
+		// A slice is used to simplify adding other attributes, such as RequestID,
+		// to the "request" group based on other logic.
 		attrValues := []interface{}{
 			"method", r.Method,
 			"url", r.URL.String(),
+			"ip", webutil.RealRemoteAddr(r),
 		}
 
-		// If request ID is not zero, add it to the log attributes.
+		// If request ID is not empty, add it to the log attributes.
 		id := RequestID(r.Context())
 		if id != "" {
 			attrValues = append(attrValues, "id", id)
@@ -35,13 +42,13 @@ func (h Handler) AddLogger(next http.Handler) http.Handler {
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)
 
-		// Call the next handler in the chain with the updated context.
+		// Call the next handler in the chain using the updated context.
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 // Logger retrieves the logger from the given context.
-// If context is nil or does not contain a logger, the default logger is returned.
+// If the context is nil or does not contain a logger, the default logger is returned.
 func Logger(ctx context.Context) *slog.Logger {
 	// Return the default logger if the context is nil.
 	if ctx == nil {

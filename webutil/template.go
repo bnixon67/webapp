@@ -25,6 +25,7 @@ const MsgTemplateError = "The server was unable to display this page."
 func RenderTemplate(t *template.Template, w http.ResponseWriter, name string, data interface{}) error {
 	// handle nil template
 	if t == nil {
+		http.Error(w, MsgTemplateError, http.StatusInternalServerError)
 		return errors.New("RenderTemplate: nil template")
 	}
 

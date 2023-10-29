@@ -1,22 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <title>{{.Title}}</title>
+        <style>
+            table {
+                font-family: Arial, Helvetica, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Display of Response Headers">
-    <title>{{.Title}}</title>
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-</head>
+            td,
+            th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
 
-<body>
-    <div class="w3-container w3-monospace">
-        <table class="w3-table-all w3-hoverable">
+            tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            tr:hover {
+                background-color: #ddd;
+            }
+
+            th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #04aa6d;
+                color: white;
+            }
+        </style>
+    </head>
+
+    <body>
+        <table>
             <caption>
                 <h1>Response Headers</h1>
             </caption>
             <thead>
-                <tr class="w3-grey">
+                <tr>
                     <th>Key</th>
                     <th>Value</th>
                 </tr>
@@ -25,13 +48,13 @@
                 {{- range .Headers}}
                 <tr>
                     <td>{{.Key}}</td>
-                    <td>{{range .Value}}{{.}}<br>{{end}}</td>
+                    <td>
+                        {{range .Value}}{{.}}<br>
+                        {{end}}
+                    </td>
                 </tr>
                 {{- end}}
             </tbody>
         </table>
-    </div>
-
-</body>
-
+    </body>
 </html>

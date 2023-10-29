@@ -1,3 +1,6 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package webhandler
 
 import (
@@ -10,8 +13,7 @@ import (
 	"sync/atomic"
 )
 
-// randomLower generates a random string of the specified length that
-// is composed of lowercase letters.
+// randomLower generates a random string of the specified length composed of lowercase letters.
 func randomLower(length int) (string, error) {
 	const lowerLetters = "abcdefghijklmnopqrstuvwxyz"
 
@@ -60,9 +62,8 @@ func init() {
 	}
 }
 
-// generateRequestID generates a unique request ID based on an atomic counter.
+// generateRequestID generates a unique request ID by combining a random prefix with a hexadecimal representation of an incremented atomic counter. This ensures that each request ID is both unique and contains some randomization.
 func generateRequestID(counter *uint32) string {
-	// Combine the random prefix with a hexadecimal counter.
 	return fmt.Sprintf("%s%08X", reqIDPrefix, atomic.AddUint32(counter, 1))
 }
 
@@ -72,14 +73,12 @@ type reqIDType struct{}
 // reqIDKey is a key for storing and retrieving the request ID from the context.
 var reqIDKey = reqIDType{}
 
-// AddRequestID is middleware that generates a unique request ID for each
-// incoming HTTP request and adds it to the request's context.
-// It uses an atomic counter to ensure that each request ID is unique.
+// AddRequestID is middleware that adds a unique request ID for each request to the request's context and a X-Request-ID header to the response.
 func (h Handler) AddRequestID(next http.Handler) http.Handler {
 	var counter uint32
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Generate a unique request ID using an atomic counter.
+		// Generate a unique request ID using a counter.
 		reqID := generateRequestID(&counter)
 
 		// Add the request ID to the request's context.
@@ -94,17 +93,21 @@ func (h Handler) AddRequestID(next http.Handler) http.Handler {
 }
 
 // RequestID retrieves the request ID from the context.
-// If the context is nil or does not contain a request ID, an empty string
-// is returned.
+// If the context is nil or does not contain a request ID, an empty string is returned.
 func RequestID(ctx context.Context) string {
+	// Return an empty string if the context is nil.
 	if ctx == nil {
 		return ""
 	}
 
+	// Attempt to retrieve the request ID from the context.
 	reqID, ok := ctx.Value(reqIDKey).(string)
+
+	// If the request ID is not found in the context, return an empty string.
 	if !ok {
 		return ""
 	}
 
+	// Return the request ID from the context.
 	return reqID
 }

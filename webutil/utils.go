@@ -8,8 +8,8 @@ import (
 )
 
 // ValidMethod checks if the HTTP method of the request is one of the allowed methods.
-// It sets appropriate headers and HTTP status, and writes an error response if the method is not allowed.
 // Returns true if the method is allowed, false otherwise.
+// If the method is not allowed, w is updated with appropriate headers, HTTP status, and error message in the body. It does not otherwise end the request; the caller should ensure no further writes are done to w.
 func ValidMethod(w http.ResponseWriter, r *http.Request, allowed ...string) bool {
 	// Check if the request's method is in the list of allowed methods.
 	if slices.Contains(allowed, r.Method) {
@@ -44,4 +44,14 @@ func SetNoCacheHeaders(w http.ResponseWriter) {
 // SetTextContentType sets headers for client to interpret response as plain text.
 func SetTextContentType(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+}
+
+func RealRemoteAddr(r *http.Request) string {
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP == "" {
+		realIP = r.RemoteAddr
+	}
+
+	return realIP
 }

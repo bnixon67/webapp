@@ -94,17 +94,18 @@ func main() {
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", h.HelloHandler)
+	mux.HandleFunc("/", h.RootHandler)
+	mux.HandleFunc("/hello", h.HelloTextHandler)
 	mux.HandleFunc("/hellohtml", h.HelloHTMLHandler)
 	mux.HandleFunc("/build", h.BuildHandler)
 	mux.HandleFunc("/headers", h.HeadersHandler)
+	mux.HandleFunc("/remote", h.RemoteHandler)
+	mux.HandleFunc("/request", h.RequestHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(flags.Addr),
-		webserver.WithHandler(
-			h.AddRequestID(h.AddLogger(h.LogRequest(mux))),
-		),
+		webserver.WithHandler(h.AddRequestID(h.AddLogger(h.LogRequest(mux)))),
 		webserver.WithTLS(flags.CertFile, flags.KeyFile),
 	)
 	if err != nil {
