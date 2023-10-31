@@ -1,0 +1,23 @@
+{
+  "Title": "Go Weblogin",
+  "BaseURL": "https://host:port",
+  "ParseGlobPattern": "tmpl/*.html",
+  "SessionExpiresHours": 48,
+
+  "Server": {
+    "Host": "host",
+    "Port": "port"
+  },
+
+  "SQL": {
+    "DriverName": "mysql",
+    "DataSourceName": "weblogin_test:password@/weblogin_test?parseTime=true"
+  },
+
+  "SMTP": {
+    "Host": "smtp.gmail.com",
+    "Port": "587",
+    "User": "user@gmail.com",
+    "Password": "password"
+  }
+}

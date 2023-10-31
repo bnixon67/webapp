@@ -94,7 +94,7 @@ func TestInit(t *testing.T) {
 
 			// Cleanup, remove log file if it was created
 			if err == nil {
-				config := &weblog.Config{}
+				config := &weblog.Log{}
 				for _, opt := range tt.opts {
 					opt(config)
 				}

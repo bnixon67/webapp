@@ -13,11 +13,20 @@ import (
 	"time"
 )
 
-// WebApp contains common variables across the web app.
+// WebApp contains common variables used across various components of the web application.
+// This struct can be used as a receiver in handler or other functions.
 type WebApp struct {
 	AppName       string             // AppName is the application's name.
 	Tmpl          *template.Template // Tmpl stores parsed templates.
 	BuildDateTime time.Time          // BuildDateTime is the executable's modification time.
+}
+
+func (a *WebApp) String() string {
+	if a == nil {
+		return fmt.Sprintf("%v", nil)
+	}
+
+	return fmt.Sprintf("%+v", *a)
 }
 
 // Option is a function type used to apply configuration options to a WebApp.
@@ -62,13 +71,7 @@ func New(opts ...Option) (*WebApp, error) {
 		return nil, errors.New("AppName is required")
 	}
 
-	slog.Debug("created new webapp",
-		slog.Group("handler",
-			slog.String("AppName", a.AppName),
-			// slog.String("DefinedTemplates", a.Tmpl.DefinedTemplates()),
-			slog.Time("BuildDateTime", a.BuildDateTime),
-		),
-	)
+	slog.Debug("created new webapp", "webapp", a)
 
 	return a, nil
 }

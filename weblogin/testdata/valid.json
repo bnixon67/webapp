@@ -1,0 +1,20 @@
+{
+  "Title": "Test Title",
+  "BaseURL": "test URL",
+  "ParseGlobPattern": "testParseGlobPattern",
+  "SessionExpiresHours": 42,
+  "Server": {
+    "Host": "test host",
+    "Port": "test port"
+  },
+  "SQL": {
+    "DriverName": "testSQLDriverName",
+    "DataSourceName": "testSQLDataSourceName"
+  },
+  "SMTP": {
+    "Host": "test SMTP host",
+    "Port": "test SMTP port",
+    "User": "test SMTP user",
+    "Password": "test SMTP password"
+  }
+}

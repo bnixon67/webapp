@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/w3.css">
+  </head>
+  <body>
+    <div class="w3-container w3-indigo w3-large w3-padding">
+      <b>Hello</b>
+    </div>
+
+    <div class="w3-bar w3-mobile w3-light-grey">
+      {{ if .User.UserName }}
+      <div class="w3-bar-item w3-mobile w3-right">
+        <a href="/logout">Logout</a>
+      </div>
+      {{ end}}
+    </div>
+
+    {{ if .User.UserName }}
+    <ul class="w3-ul w3-border">
+      <li><b>User Name:</b> {{ .User.UserName }}</li>
+      <li><b>Full Name:</b> {{ .User.FullName }}</li>
+      <li><b>Email:</b> {{ .User.Email }}</li>
+      <li><b>IsAdmin:</b> {{ .User.IsAdmin }}</li>
+      <li><b>Created:</b> {{ .User.Created.Format "2006-01-02 03:04 PM" }}</li>
+      <li><b>LastLoginTime:</b> {{ .User.LastLoginTime.Format "2006-01-02 03:04 PM" }}</li>
+      <li><b>LastLoginResult:</b> {{ .User.LastLoginResult }}</li>
+      </li>
+    </ul>
+    {{ else }}
+    <div class="w3-panel w3-pale-red">
+      You must <a href="/login?r=/hello">Login</a>
+    </div>
+    {{ end }}
+  </body>
+</html>

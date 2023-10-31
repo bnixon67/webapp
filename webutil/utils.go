@@ -5,7 +5,9 @@
 package webutil
 
 import (
+	"log/slog"
 	"net/http"
+	"os"
 	"slices"
 	"strings"
 )
@@ -57,4 +59,18 @@ func RealRemoteAddr(r *http.Request) string {
 	}
 
 	return realIP
+}
+
+// ServeFileHandler returns a HandlerFunc to serve the specified file.
+func ServeFileHandler(file string) http.HandlerFunc {
+	// check if file exists and is accessible
+	_, err := os.Stat(file)
+	if err != nil {
+		slog.Error("does not exist", "file", file)
+		return nil
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, file)
+	}
 }
