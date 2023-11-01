@@ -50,9 +50,28 @@ func WithTLS(certFile, keyFile string) Option {
 	}
 }
 
+// WithReadTimeout returns an Option to set the ReadTimeout of the server.
+func WithReadTimeout(d time.Duration) Option {
+	return func(s *WebServer) {
+		s.HTTPServer.ReadTimeout = d
+	}
+}
+
+// WithWriteTimeout returns an Option to set the WriteTimeout of the server.
+func WithWriteTimeout(d time.Duration) Option {
+	return func(s *WebServer) {
+		s.HTTPServer.WriteTimeout = d
+	}
+}
+
 // New creates a new HTTP server with the given options and returns it.
 func New(opts ...Option) (*WebServer, error) {
-	s := &WebServer{}
+	s := &WebServer{
+		HTTPServer: http.Server{
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		},
+	}
 
 	// Apply configuration options to the server.
 	for _, opt := range opts {
