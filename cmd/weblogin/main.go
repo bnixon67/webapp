@@ -119,9 +119,15 @@ func main() {
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", app.HelloHandler)
+	mux.Handle("/",
+		http.RedirectHandler("/hello", http.StatusMovedPermanently))
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler("assets/css/w3.css"))
 	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler("assets/ico/favicon.ico"))
+	mux.HandleFunc("/hello", app.HelloHandler)
+	mux.HandleFunc("/login", app.LoginHandler)
+	mux.HandleFunc("/logout", app.LogoutHandler)
+	mux.HandleFunc("/register", app.RegisterHandler)
+	mux.HandleFunc("/users", app.UsersHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
