@@ -38,6 +38,11 @@ func GetRequestLogger(r *http.Request) *slog.Logger {
 	return slog.With(slog.Group("request", attrValues...))
 }
 
+// GetRequestLoggerWithFunc returns a RequestLogger enhanced with the function name.
+func GetRequestLoggerWithFunc(r *http.Request) *slog.Logger {
+	return GetRequestLogger(r).With(slog.String("func", FuncNameParent()))
+}
+
 // AddRequestLogger is middleware that adds a specialized logger to the request's context.
 // This logger is enriched with request-specific attributes and can be retrieved in downstream handlers using the Logger function.
 func AddRequestLogger(next http.Handler) http.Handler {

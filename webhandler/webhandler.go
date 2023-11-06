@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -16,8 +17,11 @@ import (
 
 type TestCase struct {
 	Name           string
+	Target         string
 	RequestMethod  string
 	RequestHeaders http.Header
+	RequestCookies []http.Cookie
+	RequestBody    string
 	WantStatus     int
 	WantBody       string
 }
@@ -26,9 +30,20 @@ type TestCase struct {
 func HandlerTestWithCases(t *testing.T, handlerFunc http.HandlerFunc, testCases []TestCase) {
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.RequestMethod, "/test", nil)
+			// Handle empty Target
+			if tt.Target == "" {
+				tt.Target = "/test"
+			}
 
-			req.Header = tt.RequestHeaders
+			req := httptest.NewRequest(tt.RequestMethod, tt.Target, strings.NewReader(tt.RequestBody))
+
+			if len(tt.RequestHeaders) > 0 {
+				req.Header = tt.RequestHeaders
+			}
+
+			for _, cookie := range tt.RequestCookies {
+				req.AddCookie(&cookie)
+			}
 
 			w := httptest.NewRecorder()
 

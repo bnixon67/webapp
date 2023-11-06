@@ -8,27 +8,43 @@ import (
 	"strings"
 )
 
-// FuncName returns the name of the calling function.
-// If it cannot determine the calling function, it returns "unknown".
-func FuncName() string {
+// funcName retrieves the name of the function at a given call stack depth.
+// 'depth' levels up from the current stack frame. For the calling function use depth 1,
+// for its caller use depth 2, and so on.
+// If the function name cannot be determined, "unknown" is returned.
+func funcName(depth int) string {
 	// Get the program counter (PC) for the function that called this function.
-	// The depth of 1 indicates the immediate caller.
-	pc, _, _, _ := runtime.Caller(1)
+	pc, _, _, ok := runtime.Caller(depth)
+	if !ok {
+		return "unknown"
+	}
 
-	// Retrieve function information for the calling function.
-	callingFunction := runtime.FuncForPC(pc)
-
-	// If the calling function information is not available, return "unknown."
-	if callingFunction == nil {
+	// Retrieve function information.
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
 		return "unknown"
 	}
 
 	// Get the full function name, which includes package and function names.
-	fullFuncName := callingFunction.Name()
+	fullFuncName := fn.Name()
 
-	// Split the full name by the dot separator.
-	parts := strings.Split(fullFuncName, ".")
+	// The last part of the full function name after the last dot is the actual function name.
+	if lastIndex := strings.LastIndex(fullFuncName, "."); lastIndex >= 0 {
+		return fullFuncName[lastIndex+1:]
+	}
 
-	// Return just the function name.
-	return parts[len(parts)-1]
+	// In the rare case that there's no dot, return the full name.
+	return fullFuncName
+}
+
+// FuncName returns the name of the function that called it.
+// If the function name cannot be determined, "unknown" is returned.
+func FuncName() string {
+	return funcName(2) // Depth 2 accounts for this function and its caller.
+}
+
+// FuncNameParent returns the name of the parent of the calling function.
+// If the parent function name cannot be determined, "unknown" is returned.
+func FuncNameParent() string {
+	return funcName(3) // Depth 3 accounts for this function, caller, and parent.
 }

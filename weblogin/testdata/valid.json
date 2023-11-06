@@ -2,7 +2,7 @@
   "Title": "Test Title",
   "BaseURL": "test URL",
   "ParseGlobPattern": "testParseGlobPattern",
-  "SessionExpiresHours": 42,
+  "SessionExpires": "42h",
   "Server": {
     "Host": "test host",
     "Port": "test port"

@@ -49,7 +49,7 @@ func parseFlags() (*Flags, error) {
 	flags := &Flags{}
 
 	flag.StringVar(&flags.LogFile, "logfile", "", "Path to log file.")
-	flag.StringVar(&flags.LogType, "logtype", "text", "Log type. Valid types are: "+strings.Join(weblog.Types, ","))
+	flag.StringVar(&flags.LogType, "logtype", "json", "Log type. Valid types are: "+strings.Join(weblog.Types, ","))
 	flag.StringVar(&flags.LogLevel, "loglevel", "INFO", "Logging level. Valid levels are: "+weblog.Levels())
 	flag.BoolVar(&flags.LogSource, "logsource", false, "Add source code position to log statement.")
 	flag.StringVar(&flags.Addr, "addr", ":8080", "Address for server.")
@@ -113,7 +113,7 @@ func main() {
 		weblogin.WithConfig(cfg), weblogin.WithDB(db),
 	)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed too create new weblogin:", err)
+		fmt.Fprintln(os.Stderr, "failed to create new weblogin:", err)
 		os.Exit(ExitApp)
 	}
 
@@ -128,6 +128,8 @@ func main() {
 	mux.HandleFunc("/logout", app.LogoutHandler)
 	mux.HandleFunc("/register", app.RegisterHandler)
 	mux.HandleFunc("/users", app.UsersHandler)
+	mux.HandleFunc("/forgot", app.ForgotHandler)
+	mux.HandleFunc("/reset", app.ResetHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(

@@ -14,22 +14,25 @@ func TestGetRequestInfo(t *testing.T) {
 	tests := []webhandler.TestCase{
 		{
 			Name:          "Valid GET Request",
+			Target:        "/request",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
-			WantBody:      "GET /test HTTP/1.1\r\nHost: example.com\r\n\r\n\n",
+			WantBody:      "GET /request HTTP/1.1\r\nHost: example.com\r\n\r\n\n",
 		},
 		{
 			Name:          "Valid GET Request with Header",
+			Target:        "/request",
 			RequestMethod: http.MethodGet,
 			RequestHeaders: http.Header{
 				"Foo": {"foo1"},
 				"bar": {"bar1"},
 			},
 			WantStatus: http.StatusOK,
-			WantBody:   "GET /test HTTP/1.1\r\nHost: example.com\r\nFoo: foo1\r\nbar: bar1\r\n\r\n\n",
+			WantBody:   "GET /request HTTP/1.1\r\nHost: example.com\r\nFoo: foo1\r\nbar: bar1\r\n\r\n\n",
 		},
 		{
 			Name:          "Invalid POST Request",
+			Target:        "/request",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
 			WantBody:      "POST Method Not Allowed\n",

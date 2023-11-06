@@ -16,7 +16,7 @@ func (app *LoginApp) LoginUser(userName, password string) (Token, error) {
 	}
 
 	// create and save a new session token
-	token, err := SaveNewToken(app.DB, "session", userName, 32, app.Cfg.SessionExpiresHours)
+	token, err := SaveNewToken(app.DB, "session", userName, 32, app.Cfg.SessionExpires)
 	if err != nil {
 		WriteEvent(app.DB,
 			Event{Name: EventSaveToken, Success: false, UserName: userName, Message: err.Error()})

@@ -1,80 +1,32 @@
-/*
-Copyright 2023 Bill Nixon
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License.  You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations under the License.
-*/
 package weblogin_test
 
 import (
+	"bytes"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
+	"text/template"
 
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
 )
 
-func TestHelloHandlerInvalidMethod(t *testing.T) {
-	app := AppForTest(t)
+func helloBody(data weblogin.HelloPageData) string {
+	// Parse the HTML template from a file.
+	tmpl := template.Must(template.ParseFiles("tmpl/hello.html"))
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/hello", nil)
+	// Create a buffer to store the rendered HTML.
+	var body bytes.Buffer
 
-	app.HelloHandler(w, r)
+	// Execute the template with the data and write the result to the buffer.
+	tmpl.Execute(&body, data)
 
-	expectedStatus := http.StatusMethodNotAllowed
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
+	return body.String()
 }
 
-func TestHelloHandlerWithoutCookie(t *testing.T) {
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/hello", nil)
-
-	app.HelloHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := `You must <a href="/login?r=/hello">Login</a>`
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
-}
-
-func TestHelloHandlerWithBadSessionToken(t *testing.T) {
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/hello", nil)
-	r.AddCookie(&http.Cookie{Name: weblogin.SessionTokenCookieName, Value: "foo"})
-
-	app.HelloHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := `You must <a href="/login?r=/hello">Login</a>`
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
-}
-
-func TestHelloHandlerWithGoodSessionToken(t *testing.T) {
+func TestHelloHandler(t *testing.T) {
 	app := AppForTest(t)
 
 	// TODO: better way to define a test user
@@ -82,20 +34,144 @@ func TestHelloHandlerWithGoodSessionToken(t *testing.T) {
 	if err != nil {
 		t.Errorf("could not login user to get session token")
 	}
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/hello", nil)
-	r.AddCookie(&http.Cookie{Name: weblogin.SessionTokenCookieName, Value: token.Value})
-
-	app.HelloHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
+	user, err := weblogin.GetUserForSessionToken(app.DB, token.Value)
+	if err != nil {
+		t.Errorf("could not get user")
 	}
 
-	expectedInBody := "<a href=\"/logout\">Logout</a>"
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
+	tests := []webhandler.TestCase{
+		{
+			Name:          "Invalid Method",
+			Target:        "/hello",
+			RequestMethod: http.MethodPost,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "POST Method Not Allowed\n",
+		},
+		{
+			Name:          "Valid GET Request without Cookie",
+			Target:        "/hello",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusOK,
+			WantBody: helloBody(weblogin.HelloPageData{
+				Title: app.Cfg.Title,
+			}),
+		},
+		{
+			Name:          "Valid GET Request with Bad Session Token",
+			Target:        "/hello",
+			RequestMethod: http.MethodGet,
+			RequestCookies: []http.Cookie{
+				{Name: weblogin.SessionTokenCookieName, Value: "foo"},
+			},
+			WantStatus: http.StatusOK,
+			WantBody: helloBody(weblogin.HelloPageData{
+				Title: app.Cfg.Title,
+			}),
+		},
+		{
+			Name:          "Valid GET Request with Good Session Token",
+			Target:        "/hello",
+			RequestMethod: http.MethodGet,
+			RequestCookies: []http.Cookie{
+				{Name: weblogin.SessionTokenCookieName, Value: token.Value},
+			},
+			WantStatus: http.StatusOK,
+			WantBody: helloBody(weblogin.HelloPageData{
+				Title: app.Cfg.Title, User: user,
+			}),
+		},
+		/*
+			{
+				Name:           "Missing Email",
+				Target:         "/forgot",
+				RequestMethod:  http.MethodPost,
+				RequestHeaders: header,
+				RequestBody: url.Values{
+					"action": {"user"},
+				}.Encode(),
+				WantStatus: http.StatusOK,
+				WantBody: forgotBody(weblogin.ForgotPageData{
+					Title:   app.Cfg.Title,
+					Message: weblogin.MsgMissingEmail,
+				}),
+			},
+			{
+				Name:           "Missing Action",
+				Target:         "/forgot",
+				RequestMethod:  http.MethodPost,
+				RequestHeaders: header,
+				RequestBody: url.Values{
+					"email": {"test@email"},
+				}.Encode(),
+				WantStatus: http.StatusOK,
+				WantBody: forgotBody(weblogin.ForgotPageData{
+					Title:   app.Cfg.Title,
+					Message: weblogin.MsgMissingAction,
+				}),
+			},
+			{
+				Name:           "Invalid Action",
+				Target:         "/forgot",
+				RequestMethod:  http.MethodPost,
+				RequestHeaders: header,
+				RequestBody: url.Values{
+					"email":  {"test@email"},
+					"action": {"invalid"},
+				}.Encode(),
+				WantStatus: http.StatusOK,
+				WantBody: forgotBody(weblogin.ForgotPageData{
+					Title:   app.Cfg.Title,
+					Message: weblogin.MsgInvalidAction,
+				}),
+			},
+			{
+				Name:           "Valid User Action",
+				Target:         "/forgot",
+				RequestMethod:  http.MethodPost,
+				RequestHeaders: header,
+				RequestBody: url.Values{
+					"action": {"user"},
+					"email":  {"test@email"},
+				}.Encode(),
+				WantStatus: http.StatusOK,
+				WantBody: sentBody(weblogin.ForgotPageData{
+					Title:     app.Cfg.Title,
+					EmailFrom: app.Cfg.SMTP.User,
+				}),
+			},
+			{
+				Name:           "Valid Password Action",
+				Target:         "/forgot",
+				RequestMethod:  http.MethodPost,
+				RequestHeaders: header,
+				RequestBody: url.Values{
+					"action": {"password"},
+					"email":  {"test@email"},
+				}.Encode(),
+				WantStatus: http.StatusOK,
+				WantBody: sentBody(weblogin.ForgotPageData{
+					Title:     app.Cfg.Title,
+					EmailFrom: app.Cfg.SMTP.User,
+				}),
+			},
+			{
+				Name:           "Unknown Email",
+				Target:         "/forgot",
+				RequestMethod:  http.MethodPost,
+				RequestHeaders: header,
+				RequestBody: url.Values{
+					"action": {"user"},
+					"email":  {"unknown@email"},
+				}.Encode(),
+				WantStatus: http.StatusOK,
+				WantBody: sentBody(weblogin.ForgotPageData{
+					Title:     app.Cfg.Title,
+					EmailFrom: app.Cfg.SMTP.User,
+				}),
+			},
+		*/
 	}
+
+	// Test the handler using the utility function.
+	webhandler.HandlerTestWithCases(t, app.HelloHandler, tests)
 }

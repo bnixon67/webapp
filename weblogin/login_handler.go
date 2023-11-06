@@ -1,3 +1,6 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package weblogin
 
 import (
@@ -17,8 +20,8 @@ type LoginPageData struct {
 
 // LoginHandler handles /login requests.
 func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -34,7 +37,7 @@ func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			logger.Error("unable to RenderTemplate", "err", err)
 			return
 		}
-		logger.Info("LoginHandler")
+		logger.Info("success")
 
 	case http.MethodPost:
 		app.loginPost(w, r)
@@ -50,13 +53,12 @@ const (
 
 // loginPost is called for the POST method of the LoginHandler.
 func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
 	// get form values
 	userName := strings.TrimSpace(r.PostFormValue("username"))
 	password := strings.TrimSpace(r.PostFormValue("password"))
-
-	logger := slog.With(slog.Group("form",
-		"userName", userName,
-		"password empty", password == ""))
 
 	// check for missing values
 	var msg string
@@ -69,7 +71,8 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 		msg = MsgMissingPassword
 	}
 	if msg != "" {
-		logger.Info("error", "display", msg)
+		logger.Error("missing form values", slog.String("display", msg))
+
 		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
 			LoginPageData{Title: app.Cfg.Title, Message: msg})
 		if err != nil {
@@ -83,6 +86,7 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 	token, err := app.LoginUser(userName, password)
 	if err != nil {
 		logger.Error("failed to LoginUser", "err", err)
+
 		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
 			LoginPageData{
 				Title:   app.Cfg.Title,

@@ -14,6 +14,11 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	cfg, err := weblogin.GetConfigFromFile(TestConfigFile)
+	if err != nil {
+		t.Fatalf("failed to created config: %v", err)
+	}
+
 	tests := []struct {
 		name     string
 		opts     []interface{}
@@ -24,6 +29,7 @@ func TestNew(t *testing.T) {
 			name: "With AppName",
 			opts: []interface{}{
 				webapp.WithAppName("TestApp"),
+				weblogin.WithConfig(cfg),
 			},
 			wantName: "TestApp",
 			wantErr:  false,
@@ -32,7 +38,7 @@ func TestNew(t *testing.T) {
 			name: "With AppName and Foo",
 			opts: []interface{}{
 				webapp.WithAppName("TestApp"),
-				// weblogin.WithFoo("foo"),
+				weblogin.WithConfig(cfg),
 			},
 			wantName: "TestApp",
 			wantErr:  false,

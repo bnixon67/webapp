@@ -2,7 +2,7 @@
   "Title": "Go Weblogin",
   "BaseURL": "https://host:port",
   "ParseGlobPattern": "tmpl/*.html",
-  "SessionExpiresHours": 48,
+  "SessionExpires": "48h",
 
   "Server": {
     "Host": "host",
@@ -17,7 +17,7 @@
   "SMTP": {
     "Host": "smtp.gmail.com",
     "Port": "587",
-    "User": "user@gmail.com",
-    "Password": "password"
+    "User": "webapptest67@gmail.com",
+    "Password": "ymbxvzswkwzgqolt"
   }
 }

@@ -37,13 +37,13 @@ type ConfigServer struct {
 
 // Config represents the overall application configuration.
 type Config struct {
-	Title               string       // Title of the application.
-	BaseURL             string       // Base URL of the application (e.g., https://example.com).
-	ParseGlobPattern    string       // Glob pattern for parsing template files.
-	SessionExpiresHours int          // Duration in hours for session expiry.
-	Server              ConfigServer // Web server configuration.
-	SQL                 ConfigSQL    // SQL Database configuration.
-	SMTP                ConfigSMTP   // SMTP server configuration.
+	Title            string       // Title of the application.
+	BaseURL          string       // Base URL of the application (e.g., https://example.com).
+	ParseGlobPattern string       // Glob pattern for parsing template files.
+	SessionExpires   string       // Duration string for session expiry. See time#ParseDuration.
+	Server           ConfigServer // Web server configuration.
+	SQL              ConfigSQL    // SQL Database configuration.
+	SMTP             ConfigSMTP   // SMTP server configuration.
 }
 
 // GetConfigFromFile loads configuration settings from a JSON file.
@@ -82,6 +82,7 @@ func (c *Config) IsValid() (bool, []string) {
 	missing = appendIfEmpty(missing, c.Title, "missing Title")
 	missing = appendIfEmpty(missing, c.BaseURL, "missing BaseURL")
 	missing = appendIfEmpty(missing, c.ParseGlobPattern, "missing ParseGlobPattern")
+	missing = appendIfEmpty(missing, c.SessionExpires, "missing SessionExpires")
 	missing = appendIfEmpty(missing, c.Server.Host, "missing Server.Host")
 	missing = appendIfEmpty(missing, c.Server.Port, "missing Server.Port")
 	missing = appendIfEmpty(missing, c.SQL.DriverName, "missing SQL.DriverName")

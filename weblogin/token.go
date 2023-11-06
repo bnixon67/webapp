@@ -16,6 +16,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"log/slog"
 	"time"
 )
 
@@ -34,16 +35,24 @@ func hash(s string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// SaveNewToken creates and saves a token for user of size that expires in hrs.
-func SaveNewToken(db *sql.DB, kind, userName string, size, hrs int) (Token, error) {
+// SaveNewToken creates and saves a token for user of size that expires in duration.
+func SaveNewToken(db *sql.DB, kind, userName string, size int, duration string) (Token, error) {
 	var err error
 
 	token := Token{Kind: kind}
+
 	token.Value, err = GenerateRandomString(size)
 	if err != nil {
 		return Token{}, err
 	}
-	token.Expires = time.Now().Add(time.Duration(hrs) * time.Hour)
+
+	d, err := time.ParseDuration(duration)
+	if err != nil {
+		return Token{}, err
+	}
+	token.Expires = time.Now().Add(d)
+	slog.Debug("SaveNewToken",
+		"duration", duration, "d", d.String(), "expires", token.Expires.String())
 
 	// hash the token to avoid reuse if database is compromised
 	hashedValue := hash(token.Value)

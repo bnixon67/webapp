@@ -50,10 +50,11 @@ func (u User) LogValue() slog.Value {
 
 // Define command error values.
 var (
-	ErrUserSessionNotFound    = errors.New("user session not found")
-	ErrUserNotFound           = errors.New("user not found")
-	ErrUserSessionExpired     = errors.New("user session expired")
-	ErrUserGetLastLoginFailed = errors.New("user failed to get last login")
+	ErrUserSessionNotFound       = errors.New("user session not found")
+	ErrUserNotFound              = errors.New("user not found")
+	ErrUserSessionExpired        = errors.New("user session expired")
+	ErrResetPasswordTokenExpired = errors.New("reset password token expired")
+	ErrUserGetLastLoginFailed    = errors.New("user failed to get last login")
 )
 
 // GetUserForSessionToken returns a user for the given sessionToken.
@@ -146,16 +147,23 @@ func GetUserNameForEmail(db *sql.DB, email string) (string, error) {
 // GetUserNameForResetToken returns the userName for a given reset token.
 func GetUserNameForResetToken(db *sql.DB, tokenValue string) (string, error) {
 	var userName string
+	var expires time.Time
 	hashedValue := hash(tokenValue)
 
-	qry := `SELECT userName FROM tokens WHERE kind="reset" AND hashedValue=?`
+	qry := `SELECT userName, expires FROM tokens WHERE kind="reset" AND hashedValue=?`
 	row := db.QueryRow(qry, hashedValue)
-	err := row.Scan(&userName)
+	err := row.Scan(&userName, &expires)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrUserNotFound
 		}
 		return "", err
+	}
+
+	// check if token is expired
+	if expires.Before(time.Now()) {
+		RemoveToken(db, "reset", tokenValue)
+		return "", ErrResetPasswordTokenExpired
 	}
 
 	return userName, err

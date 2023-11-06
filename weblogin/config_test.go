@@ -44,10 +44,10 @@ func TestNewConfigFromFile(t *testing.T) {
 			configFileName: "testdata/valid.json",
 			wantErr:        nil,
 			wantConfig: weblogin.Config{
-				Title:               "Test Title",
-				BaseURL:             "test URL",
-				ParseGlobPattern:    "testParseGlobPattern",
-				SessionExpiresHours: 42,
+				Title:            "Test Title",
+				BaseURL:          "test URL",
+				ParseGlobPattern: "testParseGlobPattern",
+				SessionExpires:   "42h",
 				Server: weblogin.ConfigServer{
 					Host: "test host",
 					Port: "test port",
@@ -100,6 +100,7 @@ func TestConfigIsValid(t *testing.T) {
 		"Title",
 		"BaseURL",
 		"ParseGlobPattern",
+		"SessionExpires",
 		"Server.Host",
 		"Server.Port",
 		"SQL.DriverName",
@@ -158,7 +159,7 @@ func TestConfigMarshalJSON(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{"Title":"AppConfig","BaseURL":"","ParseGlobPattern":"","SessionExpiresHours":0,"Server":{"Host":"","Port":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`,
+			want: `{"Title":"AppConfig","BaseURL":"","ParseGlobPattern":"","SessionExpires":"","Server":{"Host":"","Port":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`,
 		},
 	}
 
@@ -169,8 +170,8 @@ func TestConfigMarshalJSON(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Error during MarshalJSON: %v", err)
 			}
-			if string(got) != tc.want {
-				t.Errorf("got\n%s\n, want\n%s\n", got, tc.want)
+			if diff := cmp.Diff(string(got), tc.want); diff != "" {
+				t.Errorf("config mismatch for (-got +want):\n%s", diff)
 			}
 		})
 	}
@@ -193,7 +194,7 @@ func TestConfigString(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{Title:AppConfig BaseURL: ParseGlobPattern: SessionExpiresHours:0 Server:{Host: Port:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
+			want: `{Title:AppConfig BaseURL: ParseGlobPattern: SessionExpires: Server:{Host: Port:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
 		},
 	}
 
@@ -201,8 +202,8 @@ func TestConfigString(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := tc.input.String()
-			if got != tc.want {
-				t.Errorf("got\n%s\n, want\n%s\n", got, tc.want)
+			if diff := cmp.Diff(got, tc.want); diff != "" {
+				t.Errorf("config mismatch for (-got +want):\n%s", diff)
 			}
 		})
 	}

@@ -6,8 +6,11 @@ package weblogin
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
+	"time"
 
 	"github.com/bnixon67/webapp/webapp"
 )
@@ -45,6 +48,8 @@ func WithConfig(cfg Config) Option {
 	}
 }
 
+var ErrAppInvalidConfig = errors.New("invalid config")
+
 // New creates a new LoginApp with the given options and returns it.
 // These options can be either LoginApp or WebApp Options.
 func New(options ...interface{}) (*LoginApp, error) {
@@ -74,6 +79,18 @@ func New(options ...interface{}) (*LoginApp, error) {
 	loginApp.WebApp, err = webapp.New(webAppOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing WebApp: %w", err)
+	}
+
+	isValid, missing := loginApp.Cfg.IsValid()
+	if !isValid {
+		return nil, fmt.Errorf("%w: %s",
+			ErrAppInvalidConfig, strings.Join(missing, ", "))
+	}
+
+	_, err = time.ParseDuration(loginApp.Cfg.SessionExpires)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s",
+			ErrAppInvalidConfig, err)
 	}
 
 	slog.Debug("created new login app", slog.String("loginApp", loginApp.String()))

@@ -17,3 +17,16 @@ func TestGetCallingFuncName(t *testing.T) {
 		t.Errorf("Expected: %s, Got: %s", want, funcName)
 	}
 }
+
+func testParentFunc() string {
+	return webhandler.FuncNameParent()
+}
+
+func TestGetCallingFuncNameParent(t *testing.T) {
+	funcName := testParentFunc()
+	want := "TestGetCallingFuncNameParent"
+
+	if funcName != want {
+		t.Errorf("Expected: %s, Got: %s", want, funcName)
+	}
+}
