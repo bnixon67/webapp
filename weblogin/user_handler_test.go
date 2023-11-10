@@ -6,16 +6,22 @@ package weblogin_test
 import (
 	"bytes"
 	"net/http"
+	"path/filepath"
 	"testing"
 	"text/template"
 
+	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
 )
 
 func userBody(data weblogin.UserPageData) string {
+	// Get path to template file.
+	assetDir := assets.AssetPath()
+	tmplFile := filepath.Join(assetDir, "tmpl", "user.html")
+
 	// Parse the HTML template from a file.
-	tmpl := template.Must(template.ParseFiles("tmpl/user.html"))
+	tmpl := template.Must(template.ParseFiles(tmplFile))
 
 	// Create a buffer to store the rendered HTML.
 	var body bytes.Buffer

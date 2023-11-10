@@ -10,10 +10,12 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 
+	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblog"
@@ -52,10 +54,10 @@ func parseFlags() (*Flags, error) {
 	flag.StringVar(&flags.LogType, "logtype", "json", "Log type. Valid types are: "+strings.Join(weblog.Types, ","))
 	flag.StringVar(&flags.LogLevel, "loglevel", "INFO", "Logging level. Valid levels are: "+weblog.Levels())
 	flag.BoolVar(&flags.LogSource, "logsource", false, "Add source code position to log statement.")
-	flag.StringVar(&flags.Addr, "addr", ":8080", "Address for server.")
-	flag.StringVar(&flags.CertFile, "cert", "", "Path to cert file.")
-	flag.StringVar(&flags.KeyFile, "key", "", "Path to key file.")
-	flag.StringVar(&flags.TmplDir, "tmpldir", "tmpl", "Path to template directory.")
+	flag.StringVar(&flags.Addr, "addr", ":8443", "Address for server.")
+	flag.StringVar(&flags.CertFile, "cert", "cert/cert.pem", "Path to cert file.")
+	flag.StringVar(&flags.KeyFile, "key", "cert/key.pem", "Path to key file.")
+	flag.StringVar(&flags.TmplDir, "tmpldir", "", "Path to template directory.")
 
 	flag.Parse()
 
@@ -117,12 +119,16 @@ func main() {
 		os.Exit(ExitApp)
 	}
 
+	assetDir := assets.AssetPath()
+	cssFile := filepath.Join(assetDir, "css", "w3.css")
+	icoFile := filepath.Join(assetDir, "ico", "favicon.ico")
+
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
 	mux.Handle("/",
 		http.RedirectHandler("/user", http.StatusMovedPermanently))
-	mux.HandleFunc("/w3.css", webutil.ServeFileHandler("assets/css/w3.css"))
-	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler("assets/ico/favicon.ico"))
+	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
+	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("/user", app.UserHandler)
 	mux.HandleFunc("/login", app.LoginHandler)
 	mux.HandleFunc("/logout", app.LogoutHandler)

@@ -7,16 +7,22 @@ import (
 	"bytes"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"testing"
 	"text/template"
 
+	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
 )
 
 func forgotBody(data weblogin.ForgotPageData) string {
+	// Get path to template file.
+	assetDir := assets.AssetPath()
+	tmplFile := filepath.Join(assetDir, "tmpl", "forgot.html")
+
 	// Parse the HTML template from a file.
-	tmpl := template.Must(template.ParseFiles("tmpl/forgot.html"))
+	tmpl := template.Must(template.ParseFiles(tmplFile))
 
 	// Create a buffer to store the rendered HTML.
 	var body bytes.Buffer
@@ -28,8 +34,12 @@ func forgotBody(data weblogin.ForgotPageData) string {
 }
 
 func sentBody(data weblogin.ForgotPageData) string {
+	// Get path to template file.
+	assetDir := assets.AssetPath()
+	tmplFile := filepath.Join(assetDir, "tmpl", "forgot_sent.html")
+
 	// Parse the HTML template from a file.
-	tmpl := template.Must(template.ParseFiles("tmpl/forgot_sent.html"))
+	tmpl := template.Must(template.ParseFiles(tmplFile))
 
 	// Create a buffer to store the rendered HTML.
 	var body bytes.Buffer
