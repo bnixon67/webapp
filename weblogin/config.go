@@ -100,6 +100,7 @@ type RedactedConfig Config
 
 // MarshalJSON customizes JSON marshalling to redact sensitive Config data.
 func (c Config) MarshalJSON() ([]byte, error) {
+	// Create a copy of Config that will contain the redacted data.
 	r := RedactedConfig(c)
 
 	// Redact sensitive data fields.
@@ -111,6 +112,7 @@ func (c Config) MarshalJSON() ([]byte, error) {
 
 // String returns a string representation of Config with sensitive data redacted.
 func (c Config) String() string {
+	// Create a copy of Config that will contain the redacted data.
 	r := RedactedConfig(c)
 
 	// Redact sensitive data fields.

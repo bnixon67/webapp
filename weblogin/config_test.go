@@ -82,8 +82,15 @@ func TestNewConfigFromFile(t *testing.T) {
 	}
 }
 
-func hasBit(n int, pos uint) bool {
-	val := n & (1 << pos)
+// hasBit returns true if the bit at 'position' in 'n' is set (i.e., is 1).
+func hasBit(n int, position uint) bool {
+	// Perform a bitwise AND operation between n and a bit mask.
+	// The bit mask is obtained by shifting 1 to the left 'pos' times.
+	// This creates a number where only the bit at position 'pos' is set.
+	val := n & (1 << position)
+
+	// If bit at 'position' in 'n' is 1, then 'val' will be greater than 0,
+	// since that is the only bit set in the bit mask.
 	return (val > 0)
 }
 
@@ -111,24 +118,38 @@ func TestConfigIsValid(t *testing.T) {
 		"SMTP.Password",
 	}
 
-	// generate test cases based on required fields by looping thru all the possibilities and using bit logic to set fields
+	// Iterate over all possible combinations of settings in 'required'.
+	// The number of combinations is 2 raised to the power of the
+	// number of items in 'required' since each item in 'required'
+	// can either be included or not in each combination.
 	for a := 0; a < int(math.Pow(2, float64(len(required)))); a++ {
+		// Initialize a new instance of weblogin.Config struct.
 		config := weblogin.Config{}
 
+		// Iterate over each item in 'required' in reverse order.
 		for n := len(required) - 1; n >= 0; n-- {
+			// Check if the bit at position 'n' in 'a' is set.
+			// This determines whether to include the 'n'th item
+			// of 'required' in this combination.
 			if hasBit(a, uint(n)) {
+				// Split the 'n'th required item by '.'
+				// to handle nested fields.
 				f := strings.Split(required[n], ".")
 
+				// Depending on the number of parts after
+				// splitting, set the corresponding field in
+				// 'config' to a predefined value ('x').
 				switch len(f) {
-				case 1:
+				case 1: // top-level field
 					reflect.ValueOf(&config).Elem().FieldByName(required[n]).SetString("x")
-				case 2:
+				case 2: // nested field
 					v := "x"
 					reflect.ValueOf(&config).Elem().FieldByName(f[0]).FieldByName(f[1]).SetString(v)
 				}
 			}
 		}
 
+		// Add the modified 'config' to 'cases'.
 		cases = append(cases, tcase{config, false})
 	}
 	// last case should be true since all required fields are present
