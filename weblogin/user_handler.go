@@ -10,15 +10,15 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// HelloPageData contains data passed to the HTML template.
-type HelloPageData struct {
+// UserPageData contains data passed to the HTML template.
+type UserPageData struct {
 	Title   string
 	Message string
 	User    User
 }
 
-// HelloHandler prints a simple hello and any user information.
-func (app *LoginApp) HelloHandler(w http.ResponseWriter, r *http.Request) {
+// UserHandler show any user information if logged in.
+func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
@@ -39,8 +39,8 @@ func (app *LoginApp) HelloHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Render the template with the data.
-	err = webutil.RenderTemplate(app.Tmpl, w, "hello.html",
-		HelloPageData{Message: "", User: user, Title: app.Cfg.Title})
+	err = webutil.RenderTemplate(app.Tmpl, w, "user.html",
+		UserPageData{Message: "", User: user, Title: app.Cfg.Title})
 	if err != nil {
 		logger.Error("failed to render template", "err", err)
 		return
