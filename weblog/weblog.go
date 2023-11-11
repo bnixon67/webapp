@@ -121,7 +121,7 @@ func getWriter(filename string) (io.Writer, error) {
 		return nil, fmt.Errorf("%w: %v", ErrLogFileOpenError, err)
 	}
 
-	// Do not close file as it is used outside function to write log entries.
+	// Do not close file since it is used outside function to log entries.
 	return file, nil
 }
 
