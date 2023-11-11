@@ -4,7 +4,6 @@
 package weblogin
 
 import (
-	"database/sql"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -32,7 +31,7 @@ func (app *LoginApp) UsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := GetUserFromRequest(w, r, app.DB)
+	currentUser, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -54,7 +53,7 @@ func (app *LoginApp) UsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUsers returns a list of all users.
-func GetUsers(db *sql.DB) ([]User, error) {
+func GetUsers(db *LoginDB) ([]User, error) {
 	var users []User
 	var err error
 

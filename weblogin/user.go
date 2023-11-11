@@ -49,7 +49,7 @@ var (
 )
 
 // GetUserForSessionToken returns a user for the given sessionToken.
-func GetUserForSessionToken(db *sql.DB, sessionToken string) (User, error) {
+func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
 	var (
 		expires time.Time
 		user    User
@@ -84,7 +84,7 @@ func GetUserForSessionToken(db *sql.DB, sessionToken string) (User, error) {
 		return User{}, ErrUserSessionExpired
 	}
 
-	user.LastLoginTime, user.LastLoginResult, err = LastLoginForUser(db, user.UserName)
+	user.LastLoginTime, user.LastLoginResult, err = db.LastLoginForUser(user.UserName)
 	if err != nil {
 		return user, fmt.Errorf("%w: %v", ErrUserGetLastLoginFailed, err)
 	}
@@ -93,7 +93,7 @@ func GetUserForSessionToken(db *sql.DB, sessionToken string) (User, error) {
 }
 
 // GetUserForName returns a user for the given userName.
-func GetUserForName(db *sql.DB, userName string) (User, error) {
+func (db *LoginDB) GetUserForName(userName string) (User, error) {
 	var user User
 
 	qry := `SELECT userName, fullName, email, admin FROM users WHERE userName=? LIMIT 1`
@@ -110,17 +110,17 @@ func GetUserForName(db *sql.DB, userName string) (User, error) {
 }
 
 // UserExists returns true if the given userName already exists in db.
-func UserExists(db *sql.DB, userName string) (bool, error) {
-	return RowExists(db, "SELECT 1 FROM users WHERE userName=? LIMIT 1", userName)
+func (db *LoginDB) UserExists(userName string) (bool, error) {
+	return db.RowExists("SELECT 1 FROM users WHERE userName=? LIMIT 1", userName)
 }
 
 // EmailExists returns true if the given email already exists.
-func EmailExists(db *sql.DB, email string) (bool, error) {
-	return RowExists(db, "SELECT 1 FROM users WHERE email=? LIMIT 1", email)
+func (db *LoginDB) EmailExists(email string) (bool, error) {
+	return db.RowExists("SELECT 1 FROM users WHERE email=? LIMIT 1", email)
 }
 
 // GetUserNameForEmail returns the userName for a given email.
-func GetUserNameForEmail(db *sql.DB, email string) (string, error) {
+func (db *LoginDB) GetUserNameForEmail(email string) (string, error) {
 	var userName string
 
 	row := db.QueryRow("SELECT username FROM users WHERE email=?", email)
@@ -136,7 +136,7 @@ func GetUserNameForEmail(db *sql.DB, email string) (string, error) {
 }
 
 // GetUserNameForResetToken returns the userName for a given reset token.
-func GetUserNameForResetToken(db *sql.DB, tokenValue string) (string, error) {
+func (db *LoginDB) GetUserNameForResetToken(tokenValue string) (string, error) {
 	var userName string
 	var expires time.Time
 	hashedValue := hash(tokenValue)
@@ -153,7 +153,7 @@ func GetUserNameForResetToken(db *sql.DB, tokenValue string) (string, error) {
 
 	// check if token is expired
 	if expires.Before(time.Now()) {
-		RemoveToken(db, "reset", tokenValue)
+		db.RemoveToken("reset", tokenValue)
 		return "", ErrResetPasswordTokenExpired
 	}
 
@@ -164,7 +164,7 @@ var ErrIncorrectPassword = errors.New("incorrect password")
 
 // CompareUserPassword compares the password and hashed password for the user.
 // Returns nil on success or an error on failure.
-func CompareUserPassword(db *sql.DB, userName, password string) error {
+func (db *LoginDB) CompareUserPassword(userName, password string) error {
 	if db == nil {
 		return errors.New("invalid db")
 	}
@@ -193,7 +193,7 @@ func CompareUserPassword(db *sql.DB, userName, password string) error {
 
 // RegisterUser registers a user with the given values.
 // Returns nil on success or an error on failure.
-func RegisterUser(db *sql.DB, userName, fullName, email, password string) error {
+func (db *LoginDB) RegisterUser(userName, fullName, email, password string) error {
 	// hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -211,7 +211,7 @@ func RegisterUser(db *sql.DB, userName, fullName, email, password string) error 
 }
 
 // LastLoginForUser retrieves the last login time and result for a given userName.  It returns zero values in case of no previous login.
-func LastLoginForUser(db *sql.DB, userName string) (time.Time, string, error) {
+func (db *LoginDB) LastLoginForUser(userName string) (time.Time, string, error) {
 	var lastLogin time.Time
 	var success string
 
@@ -237,7 +237,7 @@ func LastLoginForUser(db *sql.DB, userName string) (time.Time, string, error) {
 const SessionTokenCookieName = "session"
 
 // GetUserFromRequest returns the current User or empty User if the session is not found.
-func GetUserFromRequest(w http.ResponseWriter, r *http.Request, db *sql.DB) (User, error) {
+func (db *LoginDB) GetUserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
 	var user User
 
 	// get sessionToken from cookie, if it exists
@@ -248,7 +248,7 @@ func GetUserFromRequest(w http.ResponseWriter, r *http.Request, db *sql.DB) (Use
 
 	// get user if there is a sessionToken
 	if sessionToken != "" {
-		user, err = GetUserForSessionToken(db, sessionToken)
+		user, err = db.GetUserForSessionToken(sessionToken)
 		if err != nil {
 			// delete invalid token to prevent session fixation
 			http.SetCookie(w,

@@ -101,7 +101,7 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 		return
 	}
 
-	userName, err := GetUserNameForResetToken(app.DB, resetToken)
+	userName, err := app.DB.GetUserNameForResetToken(resetToken)
 	if err != nil {
 		logger.Error("failed GetUserNameForResetToken",
 			"resetToken", resetToken,
@@ -151,6 +151,6 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 
 	// register successful
 	logger.Info("successful password reset", "userName", userName)
-	WriteEvent(app.DB, Event{Name: EventResetPass, Success: true, UserName: userName, Message: "success"})
+	app.DB.WriteEvent(EventResetPass, true, userName, "success")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

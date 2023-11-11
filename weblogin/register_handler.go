@@ -101,7 +101,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check that userName doesn't already exist
-	userExists, err := UserExists(app.DB, userName)
+	userExists, err := app.DB.UserExists(userName)
 	if err != nil {
 		logger.Error("UserExists failed", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -109,7 +109,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if userExists {
 		logger.Warn("user already exists")
-		WriteEvent(app.DB, Event{Name: EventRegister, Success: false, UserName: userName, Message: "user already exists"})
+		app.DB.WriteEvent(EventRegister, false, userName, "user already exists")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
 				Title:   app.Cfg.Title,
@@ -123,7 +123,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check that email doesn't already exist
-	emailExists, err := EmailExists(app.DB, email)
+	emailExists, err := app.DB.EmailExists(email)
 	if err != nil {
 		logger.Error("EmailExists failed")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -131,7 +131,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if emailExists {
 		logger.Warn("email already exists")
-		WriteEvent(app.DB, Event{Name: EventRegister, Success: false, UserName: userName, Message: "email already exists"})
+		app.DB.WriteEvent(EventRegister, false, userName, "email already exists")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
 				Title:   app.Cfg.Title,
@@ -145,10 +145,10 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Register User
-	err = RegisterUser(app.DB, userName, fullName, email, password1)
+	err = app.DB.RegisterUser(userName, fullName, email, password1)
 	if err != nil {
 		logger.Error("RegisterUser failed", "err", err)
-		WriteEvent(app.DB, Event{Name: EventRegister, Success: false, UserName: userName, Message: err.Error()})
+		app.DB.WriteEvent(EventRegister, false, userName, err.Error())
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
 				Title:   app.Cfg.Title,
@@ -163,6 +163,6 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 
 	// registration successful
 	logger.Info("registered user")
-	WriteEvent(app.DB, Event{Name: EventRegister, Success: true, UserName: userName, Message: "success"})
+	app.DB.WriteEvent(EventRegister, true, userName, "success")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

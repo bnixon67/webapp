@@ -4,8 +4,6 @@ import (
 	"errors"
 	"testing"
 	"time"
-
-	"github.com/bnixon67/webapp/weblogin"
 )
 
 func TestLastLoginForUser(t *testing.T) {
@@ -28,7 +26,7 @@ func TestLastLoginForUser(t *testing.T) {
 	app := AppForTest(t)
 
 	for _, tc := range cases {
-		got, _, err := weblogin.LastLoginForUser(app.DB, tc.userName)
+		got, _, err := app.DB.LastLoginForUser(tc.userName)
 		if !errors.Is(err, tc.err) {
 			t.Errorf("LastLoginForUser(db, %q)\ngot err '%v' want '%v'", tc.userName, err, tc.err)
 		}

@@ -29,7 +29,7 @@ func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Attempt to get the user from the request.
-	user, err := GetUserFromRequest(w, r, app.DB)
+	user, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user from request", "err", err)
 		http.Error(w,

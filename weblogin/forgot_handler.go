@@ -5,7 +5,6 @@ package weblogin
 
 import (
 	"bytes"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -118,14 +117,14 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get username for email provided on the form.
-	username, err := GetUserNameForEmail(app.DB, email)
+	username, err := app.DB.GetUserNameForEmail(email)
 	if err != nil || username == "" {
 		// Don't use logger since log entry doesn't need to contain the request info.
 		slog.Warn("failed to get username from email", "err", err, "email", email)
 	}
 
 	// create and save a password reset token
-	token, err := createPasswordResetToken(app.DB, username)
+	token, err := app.DB.createPasswordResetToken(username)
 	if err != nil {
 		slog.Error("failed to create password reset token", "err", err, "username", username)
 	}
@@ -232,11 +231,11 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 }
 
 // createPasswordResetToken generates a new token for resetting a user's password.
-func createPasswordResetToken(db *sql.DB, username string) (Token, error) {
+func (db *LoginDB) createPasswordResetToken(username string) (Token, error) {
 	// special case for empty username
 	if username == "" {
 		return Token{}, nil
 	}
 
-	return SaveNewToken(db, "reset", username, ResetTokenSize, ResetTokenExpires)
+	return db.SaveNewToken("reset", username, ResetTokenSize, ResetTokenExpires)
 }

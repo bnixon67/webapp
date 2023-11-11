@@ -5,7 +5,6 @@ package weblogin
 
 import (
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"log/slog"
 	"time"
@@ -27,7 +26,7 @@ func hash(s string) string {
 }
 
 // SaveNewToken creates and saves a token for user of size that expires in duration.
-func SaveNewToken(db *sql.DB, kind, userName string, size int, duration string) (Token, error) {
+func (db *LoginDB) SaveNewToken(kind, userName string, size int, duration string) (Token, error) {
 	var err error
 
 	token := Token{Kind: kind}
@@ -54,7 +53,7 @@ func SaveNewToken(db *sql.DB, kind, userName string, size int, duration string) 
 }
 
 // RemoveToken removes the given sessionToken.
-func RemoveToken(db *sql.DB, kind, value string) error {
+func (db *LoginDB) RemoveToken(kind, value string) error {
 	hashedValue := hash(value)
 
 	qry := `DELETE FROM tokens WHERE kind = ? AND hashedValue = ?`

@@ -5,7 +5,6 @@
 package weblogin
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -17,8 +16,8 @@ import (
 
 // LoginApp extends WebApp with additional variables.
 type LoginApp struct {
-	*webapp.WebApp         // Embedded WebApp
-	DB             *sql.DB // DB is the database connection.
+	*webapp.WebApp          // Embedded WebApp
+	DB             *LoginDB // DB is the database connection.
 	Cfg            Config
 }
 
@@ -35,7 +34,7 @@ func (a *LoginApp) String() string {
 type Option func(*LoginApp)
 
 // WithDB returns an Option to set the DB of a LoginApp.
-func WithDB(db *sql.DB) Option {
+func WithDB(db *LoginDB) Option {
 	return func(a *LoginApp) {
 		a.DB = db
 	}

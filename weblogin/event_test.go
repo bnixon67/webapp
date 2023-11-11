@@ -1,7 +1,6 @@
 package weblogin_test
 
 import (
-	"database/sql"
 	"errors"
 	"testing"
 
@@ -14,7 +13,7 @@ func TestWriteEvent(t *testing.T) {
 	// Test cases
 	testCases := []struct {
 		name    string
-		db      *sql.DB
+		db      *weblogin.LoginDB
 		event   weblogin.Event
 		wantErr error
 	}{
@@ -50,7 +49,7 @@ func TestWriteEvent(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Call the function under test
-			err := weblogin.WriteEvent(tc.db, tc.event)
+			err := tc.db.WriteEvent(tc.event.Name, tc.event.Success, tc.event.UserName, tc.event.Message)
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("got err %v, want %v", err, tc.wantErr)

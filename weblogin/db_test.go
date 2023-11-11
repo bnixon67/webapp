@@ -104,7 +104,7 @@ func TestRowExists(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := weblogin.RowExists(db, tt.query, tt.args...)
+			got, err := db.RowExists(tt.query, tt.args...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RowExists() error = %v, wantErr %v", err, tt.wantErr)
 				return

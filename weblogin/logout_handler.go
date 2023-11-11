@@ -27,7 +27,7 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := GetUserFromRequest(w, r, app.DB)
+	user, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Remove session from database.
 	// TODO: consider removing all sessions for user
 	if sessionTokenValue != "" {
-		err := RemoveToken(app.DB, "session", sessionTokenValue)
+		err := app.DB.RemoveToken("session", sessionTokenValue)
 		if err != nil {
 			logger.Error("filed to RemoveToken",
 				"sessionTokenValue", sessionTokenValue,
@@ -71,5 +71,5 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Info("logged out", "user", user)
-	WriteEvent(app.DB, Event{Name: EventLogout, Success: true, UserName: user.UserName, Message: "success"})
+	app.DB.WriteEvent(EventLogout, true, user.UserName, "success")
 }

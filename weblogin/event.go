@@ -1,7 +1,6 @@
 package weblogin
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -46,11 +45,13 @@ var (
 )
 
 // WriteEvent records an event to the database.
-func WriteEvent(db *sql.DB, event Event) error {
+func (db *LoginDB) WriteEvent(name EventName, success bool, userName, message string) error {
 	if db == nil {
 		slog.Error("db is nil", "func", "WriteEvent")
 		return ErrWriteEventInvalidDB
 	}
+
+	event := Event{Name: name, Success: success, UserName: userName, Message: message}
 
 	const qry = `INSERT INTO events(name, success, userName, message) VALUES(?, ?, ?, ?)`
 	_, err := db.Exec(qry, event.Name, event.Success, event.UserName, event.Message)

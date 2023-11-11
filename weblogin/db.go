@@ -15,8 +15,12 @@ var (
 	ErrDBPing = errors.New("failed to ping db")
 )
 
+type LoginDB struct {
+	*sql.DB
+}
+
 // InitDB initializes a db connection and verifies with a Ping().
-func InitDB(driverName, dataSourceName string) (*sql.DB, error) {
+func InitDB(driverName, dataSourceName string) (*LoginDB, error) {
 	// open connection to database
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
@@ -34,12 +38,12 @@ func InitDB(driverName, dataSourceName string) (*sql.DB, error) {
 		return nil, fmt.Errorf("%w: %v", ErrDBPing, err)
 	}
 
-	return db, err
+	return &LoginDB{DB: db}, err
 }
 
 // RowExists checks if the given SQL query returns at least one row.
 // The query should be in the form "SELECT 1 FROM ... WHERE ... LIMIT 1".
-func RowExists(db *sql.DB, qry string, args ...interface{}) (bool, error) {
+func (db *LoginDB) RowExists(qry string, args ...interface{}) (bool, error) {
 	// QueryRow executes a query that is expected to return at most one row.
 	row := db.QueryRow(qry, args...)
 
