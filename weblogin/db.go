@@ -15,8 +15,7 @@ var (
 	ErrDBPing = errors.New("failed to ping db")
 )
 
-// InitDB initializes a connection to the database with given driver and source names.
-// It sets the database connection parameters and verifies the connection via ping.
+// InitDB initializes a db connection and verifies with a Ping().
 func InitDB(driverName, dataSourceName string) (*sql.DB, error) {
 	// open connection to database
 	db, err := sql.Open(driverName, dataSourceName)
@@ -39,16 +38,18 @@ func InitDB(driverName, dataSourceName string) (*sql.DB, error) {
 }
 
 // RowExists checks if the given SQL query returns at least one row.
-// The query should be in the form "SELECT 1 FROM ... WHERE ...".
+// The query should be in the form "SELECT 1 FROM ... WHERE ... LIMIT 1".
 func RowExists(db *sql.DB, qry string, args ...interface{}) (bool, error) {
-	var num int
-
+	// QueryRow executes a query that is expected to return at most one row.
 	row := db.QueryRow(qry, args...)
-	if err := row.Scan(&num); err != nil {
+
+	// Scan and ignore the result.
+	if err := row.Scan(new(interface{})); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
+			return false, nil // Return false since No Rows.
 		}
-		return false, fmt.Errorf("error checking row existence: %w", err)
+		// Unexpected error.
+		return false, fmt.Errorf("failed to query row: %w", err)
 	}
 
 	return true, nil

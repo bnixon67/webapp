@@ -65,3 +65,53 @@ func TestInitDB(t *testing.T) {
 		})
 	}
 }
+
+func TestRowExists(t *testing.T) {
+	a := AppForTest(t)
+	db := a.DB
+
+	// Define test cases
+	tests := []struct {
+		name    string
+		query   string
+		args    []interface{}
+		want    bool
+		wantErr bool
+	}{
+		{
+			name:    "RowExists",
+			query:   "SELECT 1 FROM users WHERE userName = ?",
+			args:    []interface{}{"test"},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name:    "RowDoesNotExist",
+			query:   "SELECT 1 FROM users WHERE userName = ?",
+			args:    []interface{}{"nosuchuser"},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name:    "BadQuery",
+			query:   "SELECT 1 FROM nosuchtable WHERE userName = ?",
+			args:    []interface{}{"nosuchuser"},
+			want:    false,
+			wantErr: true,
+		},
+		// Add more test cases as needed
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := weblogin.RowExists(db, tt.query, tt.args...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RowExists() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("RowExists() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
