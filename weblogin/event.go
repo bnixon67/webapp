@@ -25,7 +25,7 @@ type Event struct {
 	Success  bool      // Indicates if the event was successful or not.
 	UserName string    // Username associated with the event.
 	Message  string    // Message or details about the event.
-	Created  time.Time // Timestamp when event is recorded. Read-only, set by db when inserted.
+	Created  time.Time // Timestamp of event, set by db when inserted.
 }
 
 // LogValue implements slog.LogValuer to return a group of the Event fields.
@@ -51,15 +51,20 @@ func (db *LoginDB) WriteEvent(name EventName, success bool, userName, message st
 		return ErrWriteEventInvalidDB
 	}
 
-	event := Event{Name: name, Success: success, UserName: userName, Message: message}
+	logger := slog.With(slog.Group("event",
+		slog.String("Name", string(name)),
+		slog.String("Success", fmt.Sprintf("%t", success)),
+		slog.String("UserName", userName),
+		slog.String("Message", message)))
 
 	const qry = `INSERT INTO events(name, success, userName, message) VALUES(?, ?, ?, ?)`
-	_, err := db.Exec(qry, event.Name, event.Success, event.UserName, event.Message)
+	_, err := db.Exec(qry, name, success, userName, message)
 	if err != nil {
-		slog.Error("failed to write event", "err", err, "event", event)
+		logger.Error("failed to write event", "err", err)
+
 		return fmt.Errorf("%w: %v", ErrWriteEventFailed, err)
 	}
 
-	slog.Debug("successfully wrote event to database", "event", event)
+	logger.Debug("successfully wrote event to database")
 	return nil
 }

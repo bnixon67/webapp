@@ -48,7 +48,6 @@ func TestWriteEvent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Call the function under test
 			err := tc.db.WriteEvent(tc.event.Name, tc.event.Success, tc.event.UserName, tc.event.Message)
 
 			if !errors.Is(err, tc.wantErr) {

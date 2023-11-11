@@ -9,6 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
@@ -75,6 +76,12 @@ var app *weblogin.LoginApp //nolint
 // AppForTest is a helper function that returns an App used for testing.
 func AppForTest(t *testing.T) *weblogin.LoginApp {
 	if app == nil {
+		// Initialize logging.
+		err := weblog.Init(weblog.WithLevel("DEBUG"))
+		if err != nil {
+			t.Fatalf("failed to initialize logging: %v", err)
+		}
+
 		cfg, err := weblogin.GetConfigFromFile(TestConfigFile)
 		if err != nil {
 			t.Fatalf("failed to created config: %v", err)
