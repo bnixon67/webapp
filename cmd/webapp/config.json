@@ -1,0 +1,15 @@
+{
+  "Name": "Web App",
+  "Log": {
+    "FileName": "",
+    "Type": "json",
+    "Level": "debug",
+    "WithSource": false
+  },
+  "Server": {
+    "Host": "localhost",
+    "Port": "8443",
+    "CertFile": "cert/cert.pem",
+    "KeyFile": "cert/key.pem"
+  }
+}

@@ -52,14 +52,18 @@ func WithFilename(filename string) Option {
 // WithLogType returns an Option that sets the Config's LogType field.
 func WithLogType(logType string) Option {
 	return func(l *Log) {
-		l.HandlerType = logType
+		if logType != "" { // Ignore empty to allow defaults.
+			l.HandlerType = logType
+		}
 	}
 }
 
 // WithLevel returns an Option that sets the Config's Level field.
 func WithLevel(level string) Option {
 	return func(l *Log) {
-		l.Level = level
+		if level != "" { // Ignore empty to allow defaults.
+			l.Level = level
+		}
 	}
 }
 

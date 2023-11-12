@@ -77,7 +77,8 @@ var app *weblogin.LoginApp //nolint
 func AppForTest(t *testing.T) *weblogin.LoginApp {
 	if app == nil {
 		// Initialize logging.
-		err := weblog.Init(weblog.WithLevel("DEBUG"))
+		logLevel := "INFO"
+		err := weblog.Init(weblog.WithLevel(logLevel))
 		if err != nil {
 			t.Fatalf("failed to initialize logging: %v", err)
 		}
