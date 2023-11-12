@@ -39,7 +39,7 @@ func (app *LoginApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{Title: app.Cfg.Title})
+			RegisterPageData{Title: app.Cfg.Name})
 		if err != nil {
 			logger.Error("unable to parse template", "err", err)
 			return
@@ -76,7 +76,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		logger.Warn("missing values")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
-				Title: app.Cfg.Title, Message: msg,
+				Title: app.Cfg.Name, Message: msg,
 			})
 		if err != nil {
 			logger.Error("unable to execute template", "err", err)
@@ -91,7 +91,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		logger.Warn("passwords do not match")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
-				Title: app.Cfg.Title, Message: msg,
+				Title: app.Cfg.Name, Message: msg,
 			})
 		if err != nil {
 			logger.Error("unable to execute template", "err", err)
@@ -112,7 +112,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		app.DB.WriteEvent(EventRegister, false, userName, "user already exists")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
-				Title:   app.Cfg.Title,
+				Title:   app.Cfg.Name,
 				Message: MsgUserNameExists,
 			})
 		if err != nil {
@@ -134,7 +134,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		app.DB.WriteEvent(EventRegister, false, userName, "email already exists")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
-				Title:   app.Cfg.Title,
+				Title:   app.Cfg.Name,
 				Message: MsgEmailExists,
 			})
 		if err != nil {
@@ -151,7 +151,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		app.DB.WriteEvent(EventRegister, false, userName, err.Error())
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
-				Title:   app.Cfg.Title,
+				Title:   app.Cfg.Name,
 				Message: "Unable to Register User",
 			})
 		if err != nil {

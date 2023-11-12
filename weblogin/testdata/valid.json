@@ -1,12 +1,7 @@
 {
-  "Title": "Test Title",
   "BaseURL": "test URL",
   "ParseGlobPattern": "testParseGlobPattern",
   "SessionExpires": "42h",
-  "Server": {
-    "Host": "test host",
-    "Port": "test port"
-  },
   "SQL": {
     "DriverName": "testSQLDriverName",
     "DataSourceName": "testSQLDataSourceName"

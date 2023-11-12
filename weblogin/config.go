@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/bnixon67/webapp/webapp"
 )
 
 var (
@@ -29,21 +31,15 @@ type ConfigSMTP struct {
 	Password string // SMTP server password.
 }
 
-// ConfigServer holds the settings for the web server.
-type ConfigServer struct {
-	Host string // Server host address.
-	Port string // Server port.
-}
-
 // Config represents the overall application configuration.
 type Config struct {
-	Title            string       // Title of the application.
-	BaseURL          string       // Base URL of the application (e.g., https://example.com).
-	ParseGlobPattern string       // Glob pattern for parsing template files.
-	SessionExpires   string       // Duration string for session expiry. See time#ParseDuration.
-	Server           ConfigServer // Web server configuration.
-	SQL              ConfigSQL    // SQL Database configuration.
-	SMTP             ConfigSMTP   // SMTP server configuration.
+	webapp.Config // Inherit webapp.Config
+
+	BaseURL          string     // Base URL of the application (e.g., https://example.com).
+	ParseGlobPattern string     // Glob pattern for parsing template files.
+	SessionExpires   string     // Duration string for session expiry. See time#ParseDuration.
+	SQL              ConfigSQL  // SQL Database configuration.
+	SMTP             ConfigSMTP // SMTP server configuration.
 }
 
 // GetConfigFromFile loads configuration settings from a JSON file.
@@ -76,10 +72,11 @@ func appendIfEmpty(messages []string, value, message string) []string {
 // IsValid checks if all required Config fields are populated.
 // Returns a boolean indicating validity and a slice of missing field messages.
 func (c *Config) IsValid() (bool, []string) {
-	var missing []string
+	//var missing []string
+
+	_, missing := c.Config.IsValid()
 
 	// Append errors for each missing mandatory field to help identify which are missing.
-	missing = appendIfEmpty(missing, c.Title, "missing Title")
 	missing = appendIfEmpty(missing, c.BaseURL, "missing BaseURL")
 	missing = appendIfEmpty(missing, c.ParseGlobPattern, "missing ParseGlobPattern")
 	missing = appendIfEmpty(missing, c.SessionExpires, "missing SessionExpires")

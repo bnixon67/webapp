@@ -4,6 +4,7 @@
 package weblogin_test
 
 import (
+	"fmt"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -99,13 +100,15 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 		}
 
 		app, err = weblogin.New(
-			webapp.WithAppName("Test App"),
 			webapp.WithTemplate(tmpl),
+			webapp.WithAppName(cfg.Name),
 			weblogin.WithConfig(cfg),
 			weblogin.WithDB(db),
 		)
 		if err != nil {
 			app = nil
+
+			fmt.Println("***", cfg)
 
 			t.Fatalf("cannot create NewApp, %v", err)
 		}

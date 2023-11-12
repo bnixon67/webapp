@@ -5,13 +5,11 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -34,65 +32,30 @@ const (
 	ExitApp                 // ExitHandler indicates an app error.
 )
 
-// Flags struct holds the command line flags values.
-type Flags struct {
-	LogFile   string
-	LogType   string
-	LogLevel  string
-	LogSource bool
-	Addr      string
-	CertFile  string
-	KeyFile   string
-	TmplDir   string
-}
-
-// parseFlags parses the command line flags and returns them in a Flags struct.
-func parseFlags() (*Flags, error) {
-	flags := &Flags{}
-
-	flag.StringVar(&flags.LogFile, "logfile", "", "Path to log file.")
-	flag.StringVar(&flags.LogType, "logtype", "json", "Log type. Valid types are: "+strings.Join(weblog.Types, ","))
-	flag.StringVar(&flags.LogLevel, "loglevel", "INFO", "Logging level. Valid levels are: "+weblog.Levels())
-	flag.BoolVar(&flags.LogSource, "logsource", false, "Add source code position to log statement.")
-	flag.StringVar(&flags.Addr, "addr", ":8443", "Address for server.")
-	flag.StringVar(&flags.CertFile, "cert", "cert/cert.pem", "Path to cert file.")
-	flag.StringVar(&flags.KeyFile, "key", "cert/key.pem", "Path to key file.")
-	flag.StringVar(&flags.TmplDir, "tmpldir", "", "Path to template directory.")
-
-	flag.Parse()
-
-	if flag.NArg() > 0 {
-		return nil, fmt.Errorf("unexpected arguments")
+func main() {
+	// Check for command line argument with config file.
+	if len(os.Args) != 2 {
+		fmt.Fprintf(os.Stderr, "Usage: %s [config file]\n", os.Args[0])
+		os.Exit(ExitUsage)
 	}
 
-	return flags, nil
-}
-
-func main() {
-	flags, err := parseFlags()
+	// Read config.
+	cfg, err := weblogin.GetConfigFromFile(os.Args[1])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
-		flag.Usage()
-		os.Exit(ExitUsage)
+		fmt.Fprintln(os.Stderr, "Failed to get config:", err)
+		os.Exit(ExitConfig)
 	}
 
 	// Initialize logging.
 	err = weblog.Init(
-		weblog.WithFilename(flags.LogFile),
-		weblog.WithLogType(flags.LogType),
-		weblog.WithLevel(flags.LogLevel),
-		weblog.WithSource(flags.LogSource),
+		weblog.WithFilename(cfg.Log.Filename),
+		weblog.WithLogType(cfg.Log.Type),
+		weblog.WithLevel(cfg.Log.Level),
+		weblog.WithSource(cfg.Log.WithSource),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing logger:", err)
 		os.Exit(ExitLog)
-	}
-
-	// Initialize config
-	cfg, err := weblogin.GetConfigFromFile("config.json")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to initialize config:", err)
-		os.Exit(ExitConfig)
 	}
 
 	// Initialize templates
@@ -111,7 +74,7 @@ func main() {
 
 	// Create the web login app.
 	app, err := weblogin.New(
-		webapp.WithAppName("Web Login"), webapp.WithTemplate(tmpl),
+		webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl),
 		weblogin.WithConfig(cfg), weblogin.WithDB(db),
 	)
 	if err != nil {
@@ -139,9 +102,9 @@ func main() {
 
 	// Create the web server.
 	srv, err := webserver.New(
-		webserver.WithAddr(flags.Addr),
+		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
 		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddRequestLogger(webhandler.LogRequest(mux)))),
-		webserver.WithTLS(flags.CertFile, flags.KeyFile),
+		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating server:", err)

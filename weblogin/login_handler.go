@@ -32,7 +32,7 @@ func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
-			LoginPageData{Title: app.Cfg.Title})
+			LoginPageData{Title: app.Cfg.Name})
 		if err != nil {
 			logger.Error("unable to RenderTemplate", "err", err)
 			return
@@ -74,7 +74,7 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 		logger.Error("missing form values", slog.String("display", msg))
 
 		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
-			LoginPageData{Title: app.Cfg.Title, Message: msg})
+			LoginPageData{Title: app.Cfg.Name, Message: msg})
 		if err != nil {
 			logger.Error("unable to RenderTemplate", "err", err)
 			return
@@ -89,7 +89,7 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 
 		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
 			LoginPageData{
-				Title:   app.Cfg.Title,
+				Title:   app.Cfg.Name,
 				Message: MsgLoginFailed,
 			})
 		if err != nil {

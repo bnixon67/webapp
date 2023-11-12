@@ -61,7 +61,7 @@ func (app *LoginApp) forgotGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	err := webutil.RenderTemplate(app.Tmpl, w, TemplateForgot,
-		ForgotPageData{Title: app.Cfg.Title})
+		ForgotPageData{Title: app.Cfg.Name})
 	if err != nil {
 		logger.Error("unable to render forgot template", "err", err)
 		return
@@ -108,7 +108,7 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 	if errMessage != "" {
 		logger.Warn("invalid form data", "errMessage", errMessage)
 		err := webutil.RenderTemplate(app.Tmpl, w, "forgot.html",
-			ForgotPageData{Title: app.Cfg.Title, Message: errMessage})
+			ForgotPageData{Title: app.Cfg.Name, Message: errMessage})
 		if err != nil {
 			logger.Error("unable to RenderTemplate", "err", err)
 			return
@@ -140,7 +140,7 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 
 	err = webutil.RenderTemplate(app.Tmpl, w, TemplateForgotSent,
 		ForgotPageData{
-			Title:     app.Cfg.Title,
+			Title:     app.Cfg.Name,
 			EmailFrom: app.Cfg.SMTP.User,
 		})
 	if err != nil {
@@ -197,7 +197,7 @@ func emailBody(name, text string, data emailData) (string, error) {
 
 // sendEmailForAction sends an email corresponding to a user's reques action.
 func sendEmailForAction(action, username, email string, token Token, cfg Config) error {
-	subj := fmt.Sprintf("%s forgot %s request", cfg.Title, action)
+	subj := fmt.Sprintf("%s forgot %s request", cfg.Name, action)
 
 	var body string
 	var err error
@@ -205,13 +205,13 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 	switch {
 	case username == "":
 		body, err = emailBody("notregistered", emailNotRegisteredTemplate,
-			emailData{Email: email, Title: cfg.Title, BaseURL: cfg.BaseURL})
+			emailData{Email: email, Title: cfg.Name, BaseURL: cfg.BaseURL})
 	case action == "password":
 		body, err = emailBody("password", emailForgotPasswordTemplate,
-			emailData{Token: token, Title: cfg.Title, BaseURL: cfg.BaseURL})
+			emailData{Token: token, Title: cfg.Name, BaseURL: cfg.BaseURL})
 	case action == "user":
 		body, err = emailBody("user", emailForgotUserTemplate,
-			emailData{UserName: username, Title: cfg.Title, BaseURL: cfg.BaseURL})
+			emailData{UserName: username, Title: cfg.Name, BaseURL: cfg.BaseURL})
 	}
 
 	if err != nil {
