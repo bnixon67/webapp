@@ -20,6 +20,15 @@ func InitTemplates(pattern string) (*template.Template, error) {
 	return tmpls, nil
 }
 
+// InitTemplatesWithFuncMap parses the templates with FuncMap.
+func InitTemplatesWithFuncMap(pattern string, funcMap template.FuncMap) (*template.Template, error) {
+	tmpls, err := template.New("html").Funcs(funcMap).ParseGlob(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("InitTemplates: %w", err)
+	}
+	return tmpls, nil
+}
+
 const MsgTemplateError = "The server was unable to display this page."
 
 // RenderTemplate executes the named template with the given data and writes the result to the provided HTTP response writer.
