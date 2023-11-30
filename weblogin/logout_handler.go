@@ -71,5 +71,5 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Info("logged out", "user", user)
-	app.DB.WriteEvent(EventLogout, true, user.UserName, "success")
+	app.DB.WriteEvent(EventLogout, true, user.UserName, "logged out user")
 }

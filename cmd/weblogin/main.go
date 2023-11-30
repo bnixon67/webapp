@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -58,8 +59,13 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
+	// Define the custom function
+	funcMap := template.FuncMap{
+		"ToTimeZone": webutil.ToTimeZone,
+	}
+
 	// Initialize templates
-	tmpl, err := webutil.InitTemplates(cfg.ParseGlobPattern)
+	tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)
@@ -99,6 +105,7 @@ func main() {
 	mux.HandleFunc("/users", app.UsersHandler)
 	mux.HandleFunc("/forgot", app.ForgotHandler)
 	mux.HandleFunc("/reset", app.ResetHandler)
+	mux.HandleFunc("/events", app.EventsHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(

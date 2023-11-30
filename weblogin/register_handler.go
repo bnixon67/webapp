@@ -108,8 +108,8 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if userExists {
-		logger.Warn("user already exists")
-		app.DB.WriteEvent(EventRegister, false, userName, "user already exists")
+		logger.Warn("user name already exists")
+		app.DB.WriteEvent(EventRegister, false, userName, "user name already exists")
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
 				Title:   app.Cfg.Name,
@@ -131,7 +131,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if emailExists {
 		logger.Warn("email already exists")
-		app.DB.WriteEvent(EventRegister, false, userName, "email already exists")
+		app.DB.WriteEvent(EventRegister, false, userName, "email already exists: "+email)
 		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
 			RegisterPageData{
 				Title:   app.Cfg.Name,
@@ -163,6 +163,6 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 
 	// registration successful
 	logger.Info("registered user")
-	app.DB.WriteEvent(EventRegister, true, userName, "success")
+	app.DB.WriteEvent(EventRegister, true, userName, "registered user")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

@@ -22,7 +22,7 @@ func (app *LoginApp) LoginUser(userName, password string) (Token, error) {
 		return Token{}, fmt.Errorf("unable to save token: %w", err)
 	}
 
-	app.DB.WriteEvent(EventLogin, true, userName, "success")
+	app.DB.WriteEvent(EventLogin, true, userName, "user login")
 
 	return token, nil
 }
