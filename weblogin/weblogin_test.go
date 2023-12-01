@@ -6,6 +6,7 @@ package weblogin_test
 import (
 	"fmt"
 	"testing"
+	"text/template"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -89,7 +90,13 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 			t.Fatalf("failed to created config: %v", err)
 		}
 
-		tmpl, err := webutil.InitTemplates(cfg.ParseGlobPattern)
+		// Define the custom function
+		funcMap := template.FuncMap{
+			"ToTimeZone": webutil.ToTimeZone,
+		}
+
+		// Initialize templates
+		tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
 		if err != nil {
 			t.Fatalf("failed to init templates: %v", err)
 		}
@@ -114,5 +121,6 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 		}
 	}
 
+	fmt.Println("***", app)
 	return app
 }

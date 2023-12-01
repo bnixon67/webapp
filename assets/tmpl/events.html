@@ -18,7 +18,7 @@
       {{ end}}
     </div>
 
-    {{ if .User.UserName }}
+    {{ if .User.IsAdmin }}
     <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
       <tr>
 	<th>Event Name</th>
@@ -39,7 +39,7 @@
     </table>
     {{ else }}
     <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/users">Login</a>
+      You must <a href="/login?r=/users">Login</a> as an administrator to see events.
     </div>
     {{ end }}
 
