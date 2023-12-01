@@ -11,6 +11,7 @@ import (
 
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 // headersBody is a utility function that renders an HTML template for the given headers.
@@ -78,8 +79,13 @@ func TestGetHeaders(t *testing.T) {
 		},
 	}
 
+	// Define the custom function
+	funcMap := template.FuncMap{
+		"ToTimeZone": webutil.ToTimeZone,
+	}
+
 	// Initialize templates
-	tmpls, err := template.New("html").ParseGlob("../assets/tmpl/*.html")
+	tmpls, err := template.New("html").Funcs(funcMap).ParseGlob("../assets/tmpl/*.html")
 	if err != nil {
 		t.Fatalf("could not create initialize templates: %v", err)
 	}
