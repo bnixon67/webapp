@@ -10,13 +10,21 @@
       <b>Hello</b>
     </div>
 
+    {{ if .User.UserName }}
     <div class="w3-bar w3-mobile w3-light-grey">
-      {{ if .User.UserName }}
-      <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout</a>
+      <div class="w3-bar-item w3-mobile">
+        <a href="/users">Users</a>
       </div>
-      {{ end}}
+      {{- if .User.IsAdmin }}
+      <div class="w3-bar-item w3-mobile">
+        <a href="/events">Events</a>
+      </div>
+      {{ end -}}
+      <div class="w3-bar-item w3-mobile w3-right">
+        <a href="/logout">Logout {{.User.UserName}}</a>
+      </div>
     </div>
+    {{ end }}
 
     {{ if .User.UserName }}
     <table class="w3-container w3-mobile w3-table w3-responsive">
