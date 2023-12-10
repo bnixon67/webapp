@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -54,11 +55,16 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
+	// Define the custom function
+	funcMap := template.FuncMap{
+		"ToTimeZone": webutil.ToTimeZone,
+	}
+
 	// Initialize templates
 	if cfg.AssetsDir == "" {
 		cfg.AssetsDir = assets.AssetPath()
 	}
-	tmpl, err := webutil.InitTemplates(filepath.Join(cfg.AssetsDir, "tmpl", "*.html"))
+	tmpl, err := webutil.InitTemplatesWithFuncMap(filepath.Join(cfg.AssetsDir, "tmpl", "*.html"), funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)
@@ -73,6 +79,14 @@ func main() {
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
+
+	// Add middleware to mux.
+	// Functions are executed in reverse, so last added is called first.
+	h := webhandler.AddSecurityHeaders(mux)
+	h = webhandler.LogRequest(h)
+	h = webhandler.AddRequestLogger(h)
+	h = webhandler.AddRequestID(h)
+
 	mux.HandleFunc("/", app.RootHandler)
 	mux.HandleFunc("/hello", app.HelloTextHandler)
 	mux.HandleFunc("/hellohtml", app.HelloHTMLHandler)
@@ -84,7 +98,7 @@ func main() {
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
-		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddRequestLogger(webhandler.LogRequest(mux)))),
+		webserver.WithHandler(h),
 		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
 	)
 	if err != nil {

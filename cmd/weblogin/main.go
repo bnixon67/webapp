@@ -94,6 +94,14 @@ func main() {
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
+
+	// Add middleware to mux.
+	// Functions are executed in reverse, so last added is called first.
+	h := webhandler.AddSecurityHeaders(mux)
+	h = webhandler.LogRequest(h)
+	h = webhandler.AddRequestLogger(h)
+	h = webhandler.AddRequestID(h)
+
 	mux.Handle("/",
 		http.RedirectHandler("/user", http.StatusMovedPermanently))
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
@@ -110,7 +118,7 @@ func main() {
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
-		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddRequestLogger(webhandler.LogRequest(mux)))),
+		webserver.WithHandler(h),
 		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
 	)
 	if err != nil {

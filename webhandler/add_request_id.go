@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"net/http"
 	"sync/atomic"
@@ -93,6 +94,11 @@ func AddRequestID(next http.Handler) http.Handler {
 
 		// Add the request ID to headers.
 		w.Header().Set("X-Request-ID", reqID)
+
+		logger := GetRequestLogger(r)
+		logger.Debug("executed",
+			slog.String("id", reqID),
+			slog.String("func", "AddRequestID"))
 
 		// Call the next handler in the chain with the updated context.
 		next.ServeHTTP(w, r.WithContext(ctx))

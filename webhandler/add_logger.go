@@ -53,6 +53,9 @@ func AddRequestLogger(next http.Handler) http.Handler {
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)
 
+		logger.Debug("executed",
+			slog.String("func", "AddRequestLogger"))
+
 		// Call the next handler in the chain using the updated context.
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
