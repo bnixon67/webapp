@@ -111,9 +111,11 @@ func main() {
 	mux.HandleFunc("/logout", app.LogoutHandler)
 	mux.HandleFunc("/register", app.RegisterHandler)
 	mux.HandleFunc("/users", app.UsersHandler)
+	mux.HandleFunc("/userscsv", app.UsersCSVHandler)
 	mux.HandleFunc("/forgot", app.ForgotHandler)
 	mux.HandleFunc("/reset", app.ResetHandler)
 	mux.HandleFunc("/events", app.EventsHandler)
+	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
