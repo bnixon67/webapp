@@ -9,14 +9,19 @@
     <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>{{ .Title }} Events</b>
     </div>
+    {{ if .User.IsAdmin }}
     <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile"> <a href="/">Home</a> </div>
-      {{ if .User.UserName }}
+      <div class="w3-bar-item w3-mobile">
+        <a href="/">Home</a>
+      </div>
+      <div class="w3-bar-item w3-mobile">
+        <a href="/eventscsv">Download</a>
+      </div>
       <div class="w3-bar-item w3-mobile w3-right">
         <a href="/logout">Logout {{.User.UserName}}</a>
       </div>
-      {{ end}}
     </div>
+    {{ end }}
 
     {{ if .User.IsAdmin }}
     <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
@@ -39,7 +44,7 @@
     </table>
     {{ else }}
     <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/users">Login</a> as an administrator to see events.
+      You must <a href="/login?r=/events">Login</a> as an administrator to see events.
     </div>
     {{ end }}
 
