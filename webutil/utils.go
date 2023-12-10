@@ -74,3 +74,8 @@ func ServeFileHandler(file string) http.HandlerFunc {
 		http.ServeFile(w, r, file)
 	}
 }
+
+// HttpError updates response with error code and a default error message.
+func HttpError(w http.ResponseWriter, code int) {
+	http.Error(w, "Error: "+http.StatusText(code), code)
+}
