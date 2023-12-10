@@ -13,7 +13,7 @@
       <div class="w3-bar-item w3-mobile"> <a href="/">Home</a> </div>
       {{ if .User.UserName }}
       <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout</a>
+        <a href="/logout">Logout {{.User.UserName}}</a>
       </div>
       {{ end}}
     </div>
