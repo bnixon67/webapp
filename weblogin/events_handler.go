@@ -57,6 +57,49 @@ func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// EventsCSVHandler provides list of events as a CSV file.
+func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info from request context and add calling function name.
+	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+
+	// Check if the HTTP method is valid.
+	if !webutil.ValidMethod(w, r, http.MethodGet) {
+		logger.Error("invalid method")
+		return
+	}
+
+	user, err := app.DB.GetUserFromRequest(w, r)
+	if err != nil {
+		logger.Error("failed GetUser", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if !user.IsAdmin {
+		logger.Error("user not authorized", "user", user)
+		webutil.HttpError(w, http.StatusUnauthorized)
+		return
+	}
+
+	events, err := GetEvents(app.DB)
+	if err != nil {
+		logger.Error("failed GetEvents", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment;filename=events.csv")
+
+	err = webutil.SliceOfStructsToCSV(w, events)
+	if err != nil {
+		logger.Error("failed to convert struct to CSV",
+			"err", err, "events", events)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+}
+
 // GetEvents returns a list of all events.
 func GetEvents(db *LoginDB) ([]Event, error) {
 	var events []Event
