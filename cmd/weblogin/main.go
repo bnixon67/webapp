@@ -99,7 +99,7 @@ func main() {
 	// Functions are executed in reverse, so last added is called first.
 	h := webhandler.AddSecurityHeaders(mux)
 	h = webhandler.LogRequest(h)
-	h = webhandler.AddRequestLogger(h)
+	h = webhandler.AddLogger(h)
 	h = webhandler.AddRequestID(h)
 
 	mux.Handle("/",

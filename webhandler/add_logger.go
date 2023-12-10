@@ -43,9 +43,9 @@ func GetRequestLoggerWithFunc(r *http.Request) *slog.Logger {
 	return GetRequestLogger(r).With(slog.String("func", FuncNameParent()))
 }
 
-// AddRequestLogger is middleware that adds a specialized logger to the request's context.
+// AddLogger is middleware that adds a specialized logger to the request's context.
 // This logger is enriched with request-specific attributes and can be retrieved in downstream handlers using the Logger function.
-func AddRequestLogger(next http.Handler) http.Handler {
+func AddLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Create a new logger instance with the specified attributes.
 		logger := GetRequestLogger(r)
@@ -54,7 +54,7 @@ func AddRequestLogger(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), loggerKey, logger)
 
 		logger.Debug("executed",
-			slog.String("func", "AddRequestLogger"))
+			slog.String("func", "AddLogger"))
 
 		// Call the next handler in the chain using the updated context.
 		next.ServeHTTP(w, r.WithContext(ctx))
