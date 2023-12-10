@@ -4,7 +4,6 @@
 package weblogin_test
 
 import (
-	"fmt"
 	"testing"
 	"text/template"
 
@@ -115,12 +114,9 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 		if err != nil {
 			app = nil
 
-			fmt.Println("***", cfg)
-
 			t.Fatalf("cannot create NewApp, %v", err)
 		}
 	}
 
-	fmt.Println("***", app)
 	return app
 }
