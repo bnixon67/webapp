@@ -2,56 +2,25 @@
 <html lang="en">
     <head>
         <title>{{.Title}}</title>
-        <style>
-            table {
-                font-family: Arial, Helvetica, sans-serif;
-                border-collapse: collapse;
-                width: 100%;
-            }
-
-            td,
-            th {
-                border: 1px solid #ddd;
-                padding: 8px;
-            }
-
-            tr:nth-child(even) {
-                background-color: #f2f2f2;
-            }
-
-            tr:hover {
-                background-color: #ddd;
-            }
-
-            th {
-                padding-top: 12px;
-                padding-bottom: 12px;
-                text-align: left;
-                background-color: #04aa6d;
-                color: white;
-            }
-        </style>
+        <link rel="stylesheet" href="/w3.css">
     </head>
 
     <body>
-        <table>
+        <table class="w3-table w3-striped w3-bordered">
             <caption>
                 <h1>Response Headers</h1>
             </caption>
             <thead>
-                <tr>
+                <tr class="w3-indigo">
                     <th>Key</th>
-                    <th>Value</th>
+                    <th>Value(s)</th>
                 </tr>
             </thead>
             <tbody>
                 {{- range .Headers}}
                 <tr>
                     <td>{{.Key}}</td>
-                    <td>
-                        {{range .Value}}{{.}}<br>
-                        {{end}}
-                    </td>
+                    <td>{{Join .Values "<br>"}}</td>
                 </tr>
                 {{- end}}
             </tbody>

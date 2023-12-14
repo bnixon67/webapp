@@ -14,7 +14,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestNewConfigFromFile(t *testing.T) {
+// TestConfigFromJSONFile tests the ConfigFromJSONFile function.
+func TestConfigFromJSONFile(t *testing.T) {
+	var emptyConfig webapp.Config
+
 	testCases := []struct {
 		name           string
 		configFileName string
@@ -25,19 +28,19 @@ func TestNewConfigFromFile(t *testing.T) {
 			name:           "emptyFileName",
 			configFileName: "",
 			wantErr:        webapp.ErrConfigOpen,
-			wantConfig:     webapp.Config{},
+			wantConfig:     emptyConfig,
 		},
 		{
 			name:           "emptyJSON",
 			configFileName: "testdata/empty.json",
 			wantErr:        nil,
-			wantConfig:     webapp.Config{},
+			wantConfig:     emptyConfig,
 		},
 		{
 			name:           "invalidJSON",
 			configFileName: "testdata/invalid.json",
 			wantErr:        webapp.ErrConfigDecode,
-			wantConfig:     webapp.Config{},
+			wantConfig:     emptyConfig,
 		},
 		{
 			name:           "validJSON",
@@ -72,21 +75,20 @@ func TestNewConfigFromFile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config, err := webapp.GetConfigFromFile(tc.configFileName)
+			config, err := webapp.ConfigFromJSONFile(tc.configFileName)
 
 			if !errors.Is(err, tc.wantErr) {
-				t.Fatalf("want err: %v, got err: %v", tc.wantErr, err)
+				t.Fatalf("got err: %v, want err: %v", err, tc.wantErr)
 			}
 
-			if diff := cmp.Diff(config, tc.wantConfig); diff != "" {
-				t.Errorf("config mismatch for %q (-got +want):\n%s",
-					tc.configFileName, diff)
+			if diff := cmp.Diff(tc.wantConfig, config); diff != "" {
+				t.Errorf("config mismatch for %q (-want +got):\n%s", tc.configFileName, diff)
 			}
 		})
 	}
 }
 
-// hasBit returns true if the bit at 'position' in 'n' is set (i.e., is 1).
+// hasBit returns true if the bit at 'position' in 'n' is set.
 func hasBit(n int, position uint) bool {
 	// Perform a bitwise AND operation between n and a bit mask.
 	// The bit mask is obtained by shifting 1 to the left 'pos' times.
@@ -98,13 +100,14 @@ func hasBit(n int, position uint) bool {
 	return (val > 0)
 }
 
+// TestConfigIsValid tests the IsValid function.
 func TestConfigIsValid(t *testing.T) {
-	type tcase struct {
-		config   webapp.Config
-		expected bool
+	type tc struct {
+		config webapp.Config
+		want   bool
 	}
 
-	var cases []tcase
+	var cases []tc
 
 	// required fields
 	required := []string{
@@ -143,15 +146,15 @@ func TestConfigIsValid(t *testing.T) {
 		}
 
 		// Add the modified 'config' to 'cases'.
-		cases = append(cases, tcase{config, false})
+		cases = append(cases, tc{config, false})
 	}
 	// last case should be true since all required fields are present
-	cases[len(cases)-1].expected = true
+	cases[len(cases)-1].want = true
 
 	for _, testCase := range cases {
 		got, _ := testCase.config.IsValid()
-		if got != testCase.expected {
-			t.Errorf("c.IsValid(%+v) = %v; expected %v", testCase.config, got, testCase.expected)
+		if got != testCase.want {
+			t.Errorf("got %v, want %v for c.IsValid(%+v)", got, testCase.want, testCase.config)
 		}
 	}
 }

@@ -10,10 +10,13 @@ import (
 	"os"
 )
 
-var (
-	ErrConfigOpen   = errors.New("failed to open config file")
-	ErrConfigDecode = errors.New("failed to decode config file")
-)
+// ConfigServer holds the web server settings.
+type ConfigServer struct {
+	Host     string // Server host address.
+	Port     string // Server port.
+	CertFile string // CertFile is path to the cert file.
+	KeyFile  string // KeyFile is path to the key file.
+}
 
 // ConfigLog holds the log settings.
 type ConfigLog struct {
@@ -23,24 +26,21 @@ type ConfigLog struct {
 	WithSource bool   // WithSource add source info to log.
 }
 
-// ConfigServer holds the settings for the web server.
-type ConfigServer struct {
-	Host     string // Server host address.
-	Port     string // Server port.
-	CertFile string // CertFile is path to the cert file.
-	KeyFile  string // KeyFile is path to the key file.
-}
-
 // Config represents the overall application configuration.
 type Config struct {
 	Name      string       // Name of the application.
-	AssetsDir string       // AssetsDir is directory with server asets.
+	AssetsDir string       // AssetsDir is directory for server asets.
 	Server    ConfigServer // Server configuration.
 	Log       ConfigLog    // Log configuration.
 }
 
-// GetConfigFromFile loads configuration settings from a JSON file.
-func GetConfigFromFile(filename string) (Config, error) {
+var (
+	ErrConfigOpen   = errors.New("failed to open config file")
+	ErrConfigDecode = errors.New("failed to decode config file")
+)
+
+// ConfigFromJSONFile returns a Config with settings from a JSON file.
+func ConfigFromJSONFile(filename string) (Config, error) {
 	var config Config
 
 	file, err := os.Open(filename)
@@ -71,7 +71,7 @@ func appendIfEmpty(messages []string, value, message string) []string {
 func (c *Config) IsValid() (bool, []string) {
 	var missing []string
 
-	// Append errors for each missing mandatory field to help identify which are missing.
+	// Append message for each missing field.
 	missing = appendIfEmpty(missing, c.Name, "missing Name")
 
 	return len(missing) == 0, missing

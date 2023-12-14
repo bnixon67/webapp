@@ -14,7 +14,7 @@ func AddSecurityHeaders(next http.Handler) http.Handler {
 
 		// Set security headers
 
-		// Content-Security-Policy: This header helps prevent Cross-Site Scripting (XSS) and data injection attacks. The policy default-src 'self' means that the browser should only load content (scripts, stylesheets, images, etc.) from the same origin as the document.  'self' restricts resource loading to the same origin.  It can be fine-tuned to specify policies for scripts, styles, images, etc., separately.
+		// Content-Security-Policy: This header helps prevent Cross-Site Scripting (XSS) and data injection attacks. The policy default-src 'self' means that the browser should only load content (scripts, stylesheets, images, etc.) from the same origin as the document.  'self' restricts resource loading to the same origin.  It can be fine-tuned to specify policies for scripts, styles, images, etc., separately. Note that inline styles are no allowed.
 		w.Header().Set("Content-Security-Policy", "default-src 'self'")
 
 		// X-Content-Type-Options: This header is used to protect against MIME type confusion attacks. The value nosniff tells the browser not to perform MIME type sniffing, and instead, to strictly follow the declared content type in the HTTP headers. This can prevent maliciously crafted files from being interpreted as a different MIME type.

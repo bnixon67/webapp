@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// Read config.
-	cfg, err := webapp.GetConfigFromFile(os.Args[1])
+	cfg, err := webapp.ConfigFromJSONFile(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to get config:", err)
 		os.Exit(ExitConfig)
@@ -58,6 +58,7 @@ func main() {
 	// Define the custom function
 	funcMap := template.FuncMap{
 		"ToTimeZone": webutil.ToTimeZone,
+		"Join":       webutil.Join,
 	}
 
 	// Initialize templates
@@ -77,6 +78,10 @@ func main() {
 		os.Exit(ExitHandler)
 	}
 
+	assetDir := assets.AssetPath()
+	cssFile := filepath.Join(assetDir, "css", "w3.css")
+	icoFile := filepath.Join(assetDir, "ico", "favicon.ico")
+
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
 
@@ -88,6 +93,8 @@ func main() {
 	h = webhandler.AddRequestID(h)
 
 	mux.HandleFunc("/", app.RootHandler)
+	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
+	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("/hello", app.HelloTextHandler)
 	mux.HandleFunc("/hellohtml", app.HelloHTMLHandler)
 	mux.HandleFunc("/build", app.BuildHandler)

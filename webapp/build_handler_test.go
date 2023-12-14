@@ -11,7 +11,8 @@ import (
 	"github.com/bnixon67/webapp/webhandler"
 )
 
-func TestGetBuildDateTime(t *testing.T) {
+// TestBuildHandler tests the BuildHandler.
+func TestBuildHandler(t *testing.T) {
 	// Retrieve the executable's modification time.
 	dt, err := webapp.ExecutableModTime()
 	if err != nil {

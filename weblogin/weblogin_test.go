@@ -92,6 +92,7 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 		// Define the custom function
 		funcMap := template.FuncMap{
 			"ToTimeZone": webutil.ToTimeZone,
+			"Join":       webutil.Join,
 		}
 
 		// Initialize templates

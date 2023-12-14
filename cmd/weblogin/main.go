@@ -62,6 +62,7 @@ func main() {
 	// Define the custom function
 	funcMap := template.FuncMap{
 		"ToTimeZone": webutil.ToTimeZone,
+		"Join":       webutil.Join,
 	}
 
 	// Initialize templates

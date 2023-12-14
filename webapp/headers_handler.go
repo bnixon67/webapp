@@ -17,8 +17,8 @@ const HeadersPageName = "headers.html"
 
 // HeaderPair represents a key-value pair in an HTTP header.
 type HeaderPair struct {
-	Key   string
-	Value []string
+	Key    string
+	Values []string
 }
 
 // HeadersPageData holds the data passed to the HTML template.
@@ -27,21 +27,30 @@ type HeadersPageData struct {
 	Headers []HeaderPair // Sorted list of the request headers.
 }
 
-// SortedHeaders returns a slice of headers sorted by header keys.
+// SortedHeaders returns a slice of header pairs sorted by header keys.
 func SortedHeaders(httpHeader http.Header) []HeaderPair {
 	if len(httpHeader) == 0 {
 		return nil
 	}
 
-	// Initialize the slice with the exact size needed.
+	// Pre-allocate slice.
 	headerList := make([]HeaderPair, len(httpHeader))
 
-	// Iterate over the map to fill the slice using the index 'i'.
+	// Fill the slice with header pairs, flattening multiple values.
 	i := 0
 	for key, values := range httpHeader {
-		headerList[i] = HeaderPair{Key: key, Value: values}
+		headerList[i].Key = key
+		headerList[i].Values = values
 		i++
 	}
+	/*
+		// Iterate over the map to fill the slice using the index 'i'.
+		i := 0
+		for key, values := range httpHeader {
+			headerList[i] = HeaderPair{Key: key, Value: values}
+			i++
+		}
+	*/
 
 	// Sort the slice of headers by key name.
 	sort.Slice(headerList, func(i, j int) bool {

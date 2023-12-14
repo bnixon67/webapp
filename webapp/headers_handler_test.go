@@ -7,17 +7,31 @@ import (
 	"bytes"
 	"html/template"
 	"net/http"
+	"path/filepath"
 	"testing"
 
+	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
 
 // headersBody is a utility function that renders an HTML template for the given headers.
-func headersBody(headers http.Header) string {
-	// Parse the HTML template from a file.
-	tmpl := template.Must(template.ParseFiles("../assets/tmpl/headers.html"))
+func headersBody(t *testing.T, headers http.Header, funcMap template.FuncMap) string {
+	tmplName := "headers.html"
+
+	// Directly include the name of the template in New for clarity.
+	tmpl := template.New(tmplName).Funcs(funcMap)
+
+	// Get path to template file.
+	assetDir := assets.AssetPath()
+	tmplFile := filepath.Join(assetDir, "tmpl", tmplName)
+
+	// Parse the template file, checking for errors.
+	tmpl, err := tmpl.ParseFiles(tmplFile)
+	if err != nil {
+		t.Fatalf("could not parse template file '%s': %v", tmplFile, err)
+	}
 
 	// Create a buffer to store the rendered HTML.
 	var body bytes.Buffer
@@ -49,27 +63,33 @@ func TestGetHeaders(t *testing.T) {
 		"Accept-Encoding": {"gzip"},
 	}
 
+	// Define the custom functions
+	funcMap := template.FuncMap{
+		"ToTimeZone": webutil.ToTimeZone,
+		"Join":       webutil.Join,
+	}
+
 	tests := []webhandler.TestCase{
 		{
 			Name:           "Valid GET Request with no headers",
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: noHeaders,
 			WantStatus:     http.StatusOK,
-			WantBody:       headersBody(noHeaders),
+			WantBody:       headersBody(t, noHeaders, funcMap),
 		},
 		{
 			Name:           "Valid GET Request with typical headers",
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: typicalHeaders,
 			WantStatus:     http.StatusOK,
-			WantBody:       headersBody(typicalHeaders),
+			WantBody:       headersBody(t, typicalHeaders, funcMap),
 		},
 		{
 			Name:           "Valid GET Request with multiple header values",
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: multiHeaders,
 			WantStatus:     http.StatusOK,
-			WantBody:       headersBody(multiHeaders),
+			WantBody:       headersBody(t, multiHeaders, funcMap),
 		},
 		{
 			Name:          "Invalid POST Request",
@@ -77,11 +97,6 @@ func TestGetHeaders(t *testing.T) {
 			WantStatus:    http.StatusMethodNotAllowed,
 			WantBody:      "POST Method Not Allowed\n",
 		},
-	}
-
-	// Define the custom function
-	funcMap := template.FuncMap{
-		"ToTimeZone": webutil.ToTimeZone,
 	}
 
 	// Initialize templates
