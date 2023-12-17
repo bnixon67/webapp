@@ -1,3 +1,5 @@
 {
-  "Name": "Test Name"
+  "App": {
+    "Name": "Test Name"
+  }
 }

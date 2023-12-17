@@ -47,7 +47,9 @@ func TestConfigFromJSONFile(t *testing.T) {
 			configFileName: "testdata/valid.json",
 			wantErr:        nil,
 			wantConfig: webapp.Config{
-				Name: "Test Name",
+				App: webapp.ConfigApp{
+					Name: "Test Name",
+				},
 			},
 		},
 		{
@@ -55,8 +57,10 @@ func TestConfigFromJSONFile(t *testing.T) {
 			configFileName: "testdata/all.json",
 			wantErr:        nil,
 			wantConfig: webapp.Config{
-				Name:      "Test Name",
-				AssetsDir: "directory",
+				App: webapp.ConfigApp{
+					Name:      "Test Name",
+					AssetsDir: "directory",
+				},
 				Server: webapp.ConfigServer{
 					Host:     "localhost",
 					Port:     "8080",
@@ -111,7 +115,7 @@ func TestConfigIsValid(t *testing.T) {
 
 	// required fields
 	required := []string{
-		"Name",
+		"App.Name",
 	}
 
 	// Iterate over all possible combinations of settings in 'required'.

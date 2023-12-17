@@ -1,5 +1,7 @@
 {
-  "Name": "Web App",
+  "App": {
+    "Name": "Web App"
+  },
   "Log": {
     "FileName": "webapp.log",
     "Type": "json",

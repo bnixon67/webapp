@@ -84,7 +84,7 @@ func TestUsersHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 			}),
 		},
 		{
@@ -96,7 +96,7 @@ func TestUsersHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 			}),
 		},
 		{
@@ -108,7 +108,7 @@ func TestUsersHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
-				Title: app.Cfg.Name, User: user, Users: users,
+				Title: app.Cfg.App.Name, User: user, Users: users,
 			}),
 		},
 		{
@@ -120,7 +120,7 @@ func TestUsersHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
-				Title: app.Cfg.Name, User: admin, Users: users,
+				Title: app.Cfg.App.Name, User: admin, Users: users,
 			}),
 		},
 	}

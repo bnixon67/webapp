@@ -46,7 +46,7 @@ func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 	// display page
 	err = webutil.RenderTemplate(app.Tmpl, w, "events.html",
 		EventsPageData{
-			Title:   app.Cfg.Name,
+			Title:   app.Cfg.App.Name,
 			Message: "",
 			User:    currentUser,
 			Events:  events,

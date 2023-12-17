@@ -10,6 +10,12 @@ import (
 	"os"
 )
 
+// ConfigApp holds the web app settings.
+type ConfigApp struct {
+	Name      string // Name of the application.
+	AssetsDir string // AssetsDir is directory for web asets.
+}
+
 // ConfigServer holds the web server settings.
 type ConfigServer struct {
 	Host     string // Server host address.
@@ -28,10 +34,9 @@ type ConfigLog struct {
 
 // Config represents the overall application configuration.
 type Config struct {
-	Name      string       // Name of the application.
-	AssetsDir string       // AssetsDir is directory for server asets.
-	Server    ConfigServer // Server configuration.
-	Log       ConfigLog    // Log configuration.
+	App    ConfigApp    // App configuration.
+	Server ConfigServer // Server configuration.
+	Log    ConfigLog    // Log configuration.
 }
 
 var (
@@ -72,7 +77,7 @@ func (c *Config) IsValid() (bool, []string) {
 	var missing []string
 
 	// Append message for each missing field.
-	missing = appendIfEmpty(missing, c.Name, "missing Name")
+	missing = appendIfEmpty(missing, c.App.Name, "missing Name")
 
 	return len(missing) == 0, missing
 }

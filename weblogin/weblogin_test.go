@@ -108,7 +108,7 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 
 		app, err = weblogin.New(
 			webapp.WithTemplate(tmpl),
-			webapp.WithName(cfg.Name),
+			webapp.WithName(cfg.App.Name),
 			weblogin.WithConfig(cfg),
 			weblogin.WithDB(db),
 		)

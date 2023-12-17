@@ -61,7 +61,7 @@ func TestForgotHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 			}),
 		},
 		{
@@ -81,7 +81,7 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title:   app.Cfg.Name,
+				Title:   app.Cfg.App.Name,
 				Message: weblogin.MsgMissingEmail,
 			}),
 		},
@@ -95,7 +95,7 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title:   app.Cfg.Name,
+				Title:   app.Cfg.App.Name,
 				Message: weblogin.MsgMissingAction,
 			}),
 		},
@@ -110,7 +110,7 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title:   app.Cfg.Name,
+				Title:   app.Cfg.App.Name,
 				Message: weblogin.MsgInvalidAction,
 			}),
 		},
@@ -125,7 +125,7 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(weblogin.ForgotPageData{
-				Title:     app.Cfg.Name,
+				Title:     app.Cfg.App.Name,
 				EmailFrom: app.Cfg.SMTP.User,
 			}),
 		},
@@ -140,7 +140,7 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(weblogin.ForgotPageData{
-				Title:     app.Cfg.Name,
+				Title:     app.Cfg.App.Name,
 				EmailFrom: app.Cfg.SMTP.User,
 			}),
 		},
@@ -155,7 +155,7 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(weblogin.ForgotPageData{
-				Title:     app.Cfg.Name,
+				Title:     app.Cfg.App.Name,
 				EmailFrom: app.Cfg.SMTP.User,
 			}),
 		},

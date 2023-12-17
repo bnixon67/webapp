@@ -81,7 +81,7 @@ func main() {
 
 	// Create the web login app.
 	app, err := weblogin.New(
-		webapp.WithName(cfg.Name), webapp.WithTemplate(tmpl),
+		webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl),
 		weblogin.WithConfig(cfg), weblogin.WithDB(db),
 	)
 	if err != nil {

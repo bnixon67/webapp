@@ -56,10 +56,10 @@ func main() {
 	}
 
 	// Get directory for assets, using a default if not specified in config.
-	if cfg.AssetsDir == "" {
-		cfg.AssetsDir = assets.AssetPath()
+	if cfg.App.AssetsDir == "" {
+		cfg.App.AssetsDir = assets.AssetPath()
 	}
-	assetsDir := cfg.AssetsDir
+	assetsDir := cfg.App.AssetsDir
 
 	// Show config in log.
 	slog.Info("using config", "config", cfg)
@@ -79,7 +79,8 @@ func main() {
 	}
 
 	// Create the web app.
-	app, err := webapp.New(webapp.WithName(cfg.Name), webapp.WithTemplate(tmpl))
+	app, err := webapp.New(
+		webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating new handler:", err)
 		os.Exit(ExitHandler)

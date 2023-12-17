@@ -7,7 +7,7 @@ After=network-online.target
 WorkingDirectory=/home/bnixon/src/webapp/cmd/webapp
 ExecStart=/home/bnixon/src/webapp/cmd/webapp/webapp /home/bnixon/src/webapp/cmd/webapp/service.json
 User=bnixon
-Restart=always
+Restart=on-failure
 RestartSec=5s
 Type=simple
 

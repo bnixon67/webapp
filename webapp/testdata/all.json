@@ -1,6 +1,8 @@
 {
-  "Name": "Test Name",
-  "AssetsDir": "directory",
+  "App": {
+    "Name": "Test Name",
+    "AssetsDir": "directory"
+  },
   "Log": {
     "FileName": "log.txt",
     "Type": "text",

@@ -59,7 +59,7 @@ func TestUserHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: userBody(weblogin.UserPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 			}),
 		},
 		{
@@ -71,7 +71,7 @@ func TestUserHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: userBody(weblogin.UserPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 			}),
 		},
 		{
@@ -83,7 +83,7 @@ func TestUserHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: userBody(weblogin.UserPageData{
-				Title: app.Cfg.Name, User: user,
+				Title: app.Cfg.App.Name, User: user,
 			}),
 		},
 		/*
@@ -97,7 +97,7 @@ func TestUserHandler(t *testing.T) {
 				}.Encode(),
 				WantStatus: http.StatusOK,
 				WantBody: forgotBody(weblogin.ForgotPageData{
-					Title:   app.Cfg.Name,
+					Title:   app.Cfg.App.Name,
 					Message: weblogin.MsgMissingEmail,
 				}),
 			},
@@ -111,7 +111,7 @@ func TestUserHandler(t *testing.T) {
 				}.Encode(),
 				WantStatus: http.StatusOK,
 				WantBody: forgotBody(weblogin.ForgotPageData{
-					Title:   app.Cfg.Name,
+					Title:   app.Cfg.App.Name,
 					Message: weblogin.MsgMissingAction,
 				}),
 			},
@@ -126,7 +126,7 @@ func TestUserHandler(t *testing.T) {
 				}.Encode(),
 				WantStatus: http.StatusOK,
 				WantBody: forgotBody(weblogin.ForgotPageData{
-					Title:   app.Cfg.Name,
+					Title:   app.Cfg.App.Name,
 					Message: weblogin.MsgInvalidAction,
 				}),
 			},
@@ -141,7 +141,7 @@ func TestUserHandler(t *testing.T) {
 				}.Encode(),
 				WantStatus: http.StatusOK,
 				WantBody: sentBody(weblogin.ForgotPageData{
-					Title:     app.Cfg.Name,
+					Title:     app.Cfg.App.Name,
 					EmailFrom: app.Cfg.SMTP.User,
 				}),
 			},
@@ -156,7 +156,7 @@ func TestUserHandler(t *testing.T) {
 				}.Encode(),
 				WantStatus: http.StatusOK,
 				WantBody: sentBody(weblogin.ForgotPageData{
-					Title:     app.Cfg.Name,
+					Title:     app.Cfg.App.Name,
 					EmailFrom: app.Cfg.SMTP.User,
 				}),
 			},
@@ -171,7 +171,7 @@ func TestUserHandler(t *testing.T) {
 				}.Encode(),
 				WantStatus: http.StatusOK,
 				WantBody: sentBody(weblogin.ForgotPageData{
-					Title:     app.Cfg.Name,
+					Title:     app.Cfg.App.Name,
 					EmailFrom: app.Cfg.SMTP.User,
 				}),
 			},

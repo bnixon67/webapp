@@ -46,7 +46,7 @@ func (app *LoginApp) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	// display page
 	err = webutil.RenderTemplate(app.Tmpl, w, "users.html",
 		UsersPageData{
-			Title:   app.Cfg.Name,
+			Title:   app.Cfg.App.Name,
 			Message: "",
 			User:    currentUser,
 			Users:   users,
