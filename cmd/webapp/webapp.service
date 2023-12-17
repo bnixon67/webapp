@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 WorkingDirectory=/home/bnixon/src/webapp/cmd/webapp
-ExecStart=/home/bnixon/src/webapp/cmd/webapp/webapp /home/bnixon/src/webapp/cmd/webapp/config.json
+ExecStart=/home/bnixon/src/webapp/cmd/webapp/webapp /home/bnixon/src/webapp/cmd/webapp/service.json
 User=bnixon
 Restart=always
 RestartSec=5s
