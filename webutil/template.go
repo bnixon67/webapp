@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"log/slog"
 	"net/http"
 )
 
@@ -26,6 +27,11 @@ func ParseTemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*templat
 	if err != nil {
 		return nil, fmt.Errorf("InitTemplates: %w", err)
 	}
+
+	slog.Debug("parsed templates with functions",
+		slog.String("pattern", pattern),
+		slog.String("funcMap", fmt.Sprintf("%+v", funcMap)),
+	)
 	return tmpls, nil
 }
 

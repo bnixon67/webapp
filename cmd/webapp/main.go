@@ -55,7 +55,9 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
-	// Define custom itemplate functions.
+	slog.Info("using config", "config", cfg)
+
+	// Define custom template functions.
 	funcMap := template.FuncMap{
 		"ToTimeZone": webutil.ToTimeZone,
 		"Join":       webutil.Join,
@@ -68,7 +70,8 @@ func main() {
 	assetsDir := cfg.AssetsDir
 
 	// Initialize templates
-	tmpl, err := webutil.ParseTemplatesWithFuncs(filepath.Join(assetsDir, "tmpl", "*.html"), funcMap)
+	pattern := filepath.Join(assetsDir, "tmpl", "*.html")
+	tmpl, err := webutil.ParseTemplatesWithFuncs(pattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)

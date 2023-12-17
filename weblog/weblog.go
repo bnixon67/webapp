@@ -158,8 +158,8 @@ func initLogger(writer io.Writer, config *Log) {
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
-	slog.Info("logger initialized",
-		slog.Group("log",
+	slog.Debug("initialized logger",
+		slog.Group("config",
 			slog.String("Filename", config.Filename),
 			slog.String("LogType", config.Type),
 			slog.String("Level", config.Level.String()),
