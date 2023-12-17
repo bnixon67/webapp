@@ -18,6 +18,7 @@ var (
 )
 
 // SliceOfStructsToCSV writes a slice of structs to a CSV writer.
+// It uses the struct field names as headers and their values as rows.
 func SliceOfStructsToCSV(w io.Writer, data interface{}) error {
 	sliceValue := reflect.ValueOf(data)
 	if sliceValue.Kind() != reflect.Slice {
@@ -27,35 +28,20 @@ func SliceOfStructsToCSV(w io.Writer, data interface{}) error {
 	cw := csv.NewWriter(w)
 	// Don't defer cw.Flush() given the buffered behavior of csv.Writer
 
-	// Write CSV header
-	if sliceValue.Len() > 0 {
-		firstElem := sliceValue.Index(0)
-		if firstElem.Kind() != reflect.Struct {
-			return ErrCSVNotSliceOfStructs
-		}
-
-		var header []string
-		t := firstElem.Type()
-		for i := 0; i < firstElem.NumField(); i++ {
-			header = append(header, t.Field(i).Name)
-		}
-
-		if err := cw.Write(header); err != nil {
-			return err
-		}
-	}
-
-	// Write CSV rows
+	// Write CSV header and rows
 	for i := 0; i < sliceValue.Len(); i++ {
 		structValue := sliceValue.Index(i)
-		var record []string
-
-		for j := 0; j < structValue.NumField(); j++ {
-			field := structValue.Field(j)
-			record = append(record, fmt.Sprintf("%v", field.Interface()))
+		if i == 0 { // first row
+			if structValue.Kind() != reflect.Struct {
+				return ErrCSVNotSliceOfStructs
+			}
+			if err := writeHeader(cw, structValue); err != nil {
+				return err
+			}
 		}
 
-		if err := cw.Write(record); err != nil {
+		err := writeRecord(cw, structValue)
+		if err != nil {
 			return err
 		}
 	}
@@ -68,4 +54,24 @@ func SliceOfStructsToCSV(w io.Writer, data interface{}) error {
 	}
 
 	return nil
+}
+
+// writeHeader writes the CSV header based on struct field names.
+func writeHeader(cw *csv.Writer, v reflect.Value) error {
+	var header []string
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		header = append(header, t.Field(i).Name)
+	}
+	return cw.Write(header)
+}
+
+// writeRecord writes a single CSV record from a struct.
+func writeRecord(cw *csv.Writer, v reflect.Value) error {
+	var record []string
+	for j := 0; j < v.NumField(); j++ {
+		field := v.Field(j)
+		record = append(record, fmt.Sprintf("%v", field.Interface()))
+	}
+	return cw.Write(record)
 }

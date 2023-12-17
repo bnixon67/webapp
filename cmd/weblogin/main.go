@@ -66,7 +66,7 @@ func main() {
 	}
 
 	// Initialize templates
-	tmpl, err := webutil.ParseTemplatesWithFuncs(cfg.ParseGlobPattern, funcMap)
+	tmpl, err := webutil.TemplatesWithFuncs(cfg.ParseGlobPattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)
@@ -81,7 +81,7 @@ func main() {
 
 	// Create the web login app.
 	app, err := weblogin.New(
-		webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl),
+		webapp.WithName(cfg.Name), webapp.WithTemplate(tmpl),
 		weblogin.WithConfig(cfg), weblogin.WithDB(db),
 	)
 	if err != nil {

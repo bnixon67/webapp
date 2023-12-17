@@ -34,7 +34,7 @@ func (app *WebApp) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
 	webutil.SetNoCacheHeaders(w)
 
 	// Write the "hello" message to the response with the application name.
-	fmt.Fprintln(w, "hello from", app.AppName)
+	fmt.Fprintln(w, "hello from", app.Name)
 }
 
 // HelloHTMLHandler responds with a simple "hello" message in HTML format.

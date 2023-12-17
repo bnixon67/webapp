@@ -55,6 +55,13 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
+	// Get directory for assets, using a default if not specified in config.
+	if cfg.AssetsDir == "" {
+		cfg.AssetsDir = assets.AssetPath()
+	}
+	assetsDir := cfg.AssetsDir
+
+	// Show config in log.
 	slog.Info("using config", "config", cfg)
 
 	// Define custom template functions.
@@ -63,22 +70,16 @@ func main() {
 		"Join":       webutil.Join,
 	}
 
-	// Get directory for assets, using a default if not specified in config.
-	if cfg.AssetsDir == "" {
-		cfg.AssetsDir = assets.AssetPath()
-	}
-	assetsDir := cfg.AssetsDir
-
-	// Initialize templates
+	// Parse templates.
 	pattern := filepath.Join(assetsDir, "tmpl", "*.html")
-	tmpl, err := webutil.ParseTemplatesWithFuncs(pattern, funcMap)
+	tmpl, err := webutil.TemplatesWithFuncs(pattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)
 	}
 
 	// Create the web app.
-	app, err := webapp.New(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl))
+	app, err := webapp.New(webapp.WithName(cfg.Name), webapp.WithTemplate(tmpl))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating new handler:", err)
 		os.Exit(ExitHandler)

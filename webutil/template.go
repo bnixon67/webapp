@@ -10,27 +10,36 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
-// InitTemplates parses the templates.
-func InitTemplates(pattern string) (*template.Template, error) {
-	tmpls, err := template.New("html").ParseGlob(pattern)
-	if err != nil {
-		return nil, fmt.Errorf("InitTemplates: %w", err)
+// funcMapToString returns a comma separated list of names for funcMap.
+func funcMapToString(funcMap template.FuncMap) string {
+	var names []string
+	for name := range funcMap {
+		names = append(names, name)
 	}
-	return tmpls, nil
+
+	return strings.Join(names, ", ")
 }
 
-// ParseTemplatesWithFuncs parses the templates with FuncMap.
-func ParseTemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*template.Template, error) {
-	tmpls, err := template.New("html").Funcs(funcMap).ParseGlob(pattern)
+// Templates parses the templates matching pattern.
+func Templates(pattern string) (*template.Template, error) {
+	return TemplatesWithFuncs(pattern, nil)
+}
+
+// TemplatesWithFuncs parses the templates with FuncMap.
+func TemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*template.Template, error) {
+	tmpls, err := template.New("tmpl").Funcs(funcMap).ParseGlob(pattern)
 	if err != nil {
 		return nil, fmt.Errorf("InitTemplates: %w", err)
 	}
 
+	tmplNames := strings.Join(TemplateNames(tmpls), ", ")
 	slog.Debug("parsed templates with functions",
 		slog.String("pattern", pattern),
-		slog.String("funcMap", fmt.Sprintf("%+v", funcMap)),
+		slog.String("templates", tmplNames),
+		slog.String("functions", funcMapToString(funcMap)),
 	)
 	return tmpls, nil
 }
@@ -67,4 +76,23 @@ func RenderTemplate(t *template.Template, w http.ResponseWriter, name string, da
 	}
 
 	return nil
+}
+
+// TemplateNames returns the names of all templates for t.
+func TemplateNames(t *template.Template) []string {
+	if t == nil {
+		return nil
+	}
+
+	tmpls := t.Templates()
+
+	// Pre-allocate slice with the required capacity for efficiency.
+	names := make([]string, 0, len(tmpls))
+
+	// Iterate over the associated templates and collect their names.
+	for _, tmpl := range tmpls {
+		names = append(names, tmpl.Name())
+	}
+
+	return names
 }

@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "With AppName",
 			opts: []interface{}{
-				webapp.WithAppName("TestApp"),
+				webapp.WithName("TestApp"),
 				weblogin.WithConfig(cfg),
 			},
 			wantName: "TestApp",
@@ -39,7 +39,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "With AppName and Foo",
 			opts: []interface{}{
-				webapp.WithAppName("TestApp"),
+				webapp.WithName("TestApp"),
 				weblogin.WithConfig(cfg),
 			},
 			wantName: "TestApp",
@@ -59,8 +59,8 @@ func TestNew(t *testing.T) {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && h.AppName != tt.wantName {
-				t.Errorf("New() AppName = %v, want %v", h.AppName, tt.wantName)
+			if !tt.wantErr && h.Name != tt.wantName {
+				t.Errorf("New() AppName = %v, want %v", h.Name, tt.wantName)
 			}
 		})
 	}
@@ -96,7 +96,7 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 		}
 
 		// Initialize templates
-		tmpl, err := webutil.ParseTemplatesWithFuncs(cfg.ParseGlobPattern, funcMap)
+		tmpl, err := webutil.TemplatesWithFuncs(cfg.ParseGlobPattern, funcMap)
 		if err != nil {
 			t.Fatalf("failed to init templates: %v", err)
 		}
@@ -108,7 +108,7 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 
 		app, err = weblogin.New(
 			webapp.WithTemplate(tmpl),
-			webapp.WithAppName(cfg.Name),
+			webapp.WithName(cfg.Name),
 			weblogin.WithConfig(cfg),
 			weblogin.WithDB(db),
 		)

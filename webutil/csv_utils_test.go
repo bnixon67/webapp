@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/webutil"
+	"github.com/google/go-cmp/cmp"
 )
 
 // Custom writer that fails on write
@@ -61,8 +62,9 @@ func TestSliceOfStructsToCSV(t *testing.T) {
 				t.Errorf("SliceOfStructsToCSV() error = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
-			if got := buf.String(); got != tc.want {
-				t.Errorf("SliceOfStructsToCSV() got = %v, want %v", got, tc.want)
+			got := buf.String()
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("(-want +got)\n%s", diff)
 			}
 		})
 	}

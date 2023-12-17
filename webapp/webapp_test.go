@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 	}{
 		{
 			name:     "With AppName",
-			opts:     []webapp.Option{webapp.WithAppName("TestApp")},
+			opts:     []webapp.Option{webapp.WithName("TestApp")},
 			wantName: "TestApp",
 			wantErr:  false,
 		},
@@ -37,8 +37,8 @@ func TestNew(t *testing.T) {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && h.AppName != tt.wantName {
-				t.Errorf("New() AppName = %v, want %v", h.AppName, tt.wantName)
+			if !tt.wantErr && h.Name != tt.wantName {
+				t.Errorf("New() AppName = %v, want %v", h.Name, tt.wantName)
 			}
 		})
 	}

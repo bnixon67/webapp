@@ -106,7 +106,7 @@ func TestGetHeaders(t *testing.T) {
 	}
 
 	// Create a web app instance for testing.
-	app, err := webapp.New(webapp.WithAppName("Test App"), webapp.WithTemplate(tmpls))
+	app, err := webapp.New(webapp.WithName("Test App"), webapp.WithTemplate(tmpls))
 	if err != nil {
 		t.Fatalf("could not create web handler: %v", err)
 	}
