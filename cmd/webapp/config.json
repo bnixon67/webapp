@@ -1,7 +1,7 @@
 {
   "Name": "Web App",
   "Log": {
-    "FileName": "",
+    "FileName": "webapp.log",
     "Type": "json",
     "Level": "debug",
     "WithSource": false

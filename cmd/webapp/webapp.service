@@ -4,10 +4,12 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-WorkingDirectory=/home/ec2-user/src/webapp/cmd/webapp
-ExecStart=/home/ec2-user/src/webapp/cmd/webapp/webapp -addr localhost:8080 -logfile webapp.log -logtype json
-User=ec2-user
+WorkingDirectory=/home/bnixon/src/webapp/cmd/webapp
+ExecStart=/home/bnixon/src/webapp/cmd/webapp/webapp /home/bnixon/src/webapp/cmd/webapp/config.json
+User=bnixon
 Restart=always
+RestartSec=5s
+Type=simple
 
 [Install]
 WantedBy=multi-user.target
