@@ -22,7 +22,7 @@ func TestInit(t *testing.T) {
 		{
 			name: "Invalid Log Type",
 			opts: []weblog.Option{
-				weblog.WithLogType("invalid"),
+				weblog.WithType("invalid"),
 			},
 			wantErr: weblog.ErrInvalidLogType,
 		},
@@ -31,19 +31,19 @@ func TestInit(t *testing.T) {
 			opts: []weblog.Option{
 				weblog.WithLevel("invalid"),
 			},
-			wantErr: weblog.ErrInvalidLogLevel,
+			wantErr: weblog.ErrInvalidLevel,
 		},
 		{
 			name: "Valid JSON Log Type",
 			opts: []weblog.Option{
-				weblog.WithLogType("json"),
+				weblog.WithType("json"),
 			},
 			wantErr: nil,
 		},
 		{
 			name: "Valid JSON Log Type with Filename",
 			opts: []weblog.Option{
-				weblog.WithLogType("json"),
+				weblog.WithType("json"),
 				weblog.WithFilename("test_json.log"),
 			},
 			wantErr: nil,
@@ -51,14 +51,14 @@ func TestInit(t *testing.T) {
 		{
 			name: "Valid Text Log Type",
 			opts: []weblog.Option{
-				weblog.WithLogType("text"),
+				weblog.WithType("text"),
 			},
 			wantErr: nil,
 		},
 		{
 			name: "Valid Text Log Type with Filename",
 			opts: []weblog.Option{
-				weblog.WithLogType("text"),
+				weblog.WithType("text"),
 				weblog.WithFilename("test_text.log"),
 			},
 			wantErr: nil,
@@ -130,7 +130,7 @@ func TestLevel(t *testing.T) {
 			name:    "Invalid Level",
 			input:   "INVALID",
 			want:    slog.LevelInfo,
-			wantErr: weblog.ErrInvalidLogLevel,
+			wantErr: weblog.ErrInvalidLevel,
 		},
 		{
 			name:    "Lowercase Level",
@@ -143,7 +143,7 @@ func TestLevel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := weblog.Level(tt.input)
+			got, err := weblog.ParseLevel(tt.input)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Level() got = %v, want %v", got, tt.want)

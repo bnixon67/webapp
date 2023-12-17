@@ -30,7 +30,7 @@ const (
 )
 
 func main() {
-	// Check for command line argument with config file.
+	// Check command line for config file.
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "Usage: %s [config file]\n", os.Args[0])
 		os.Exit(ExitUsage)
@@ -46,7 +46,7 @@ func main() {
 	// Initialize logging.
 	err = weblog.Init(
 		weblog.WithFilename(cfg.Log.Filename),
-		weblog.WithLogType(cfg.Log.Type),
+		weblog.WithType(cfg.Log.Type),
 		weblog.WithLevel(cfg.Log.Level),
 		weblog.WithSource(cfg.Log.WithSource),
 	)
@@ -55,17 +55,20 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
-	// Define the custom function
+	// Define custom itemplate functions.
 	funcMap := template.FuncMap{
 		"ToTimeZone": webutil.ToTimeZone,
 		"Join":       webutil.Join,
 	}
 
-	// Initialize templates
+	// Get directory for assets, using a default if not specified in config.
 	if cfg.AssetsDir == "" {
 		cfg.AssetsDir = assets.AssetPath()
 	}
-	tmpl, err := webutil.InitTemplatesWithFuncMap(filepath.Join(cfg.AssetsDir, "tmpl", "*.html"), funcMap)
+	assetsDir := cfg.AssetsDir
+
+	// Initialize templates
+	tmpl, err := webutil.ParseTemplatesWithFuncs(filepath.Join(assetsDir, "tmpl", "*.html"), funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)
@@ -78,9 +81,8 @@ func main() {
 		os.Exit(ExitHandler)
 	}
 
-	assetDir := assets.AssetPath()
-	cssFile := filepath.Join(assetDir, "css", "w3.css")
-	icoFile := filepath.Join(assetDir, "ico", "favicon.ico")
+	cssFile := filepath.Join(assetsDir, "css", "w3.css")
+	icoFile := filepath.Join(assetsDir, "ico", "favicon.ico")
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()

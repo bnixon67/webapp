@@ -50,7 +50,7 @@ func main() {
 	// Initialize logging.
 	err = weblog.Init(
 		weblog.WithFilename(cfg.Log.Filename),
-		weblog.WithLogType(cfg.Log.Type),
+		weblog.WithType(cfg.Log.Type),
 		weblog.WithLevel(cfg.Log.Level),
 		weblog.WithSource(cfg.Log.WithSource),
 	)
@@ -66,7 +66,7 @@ func main() {
 	}
 
 	// Initialize templates
-	tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
+	tmpl, err := webutil.ParseTemplatesWithFuncs(cfg.ParseGlobPattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)

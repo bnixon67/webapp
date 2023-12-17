@@ -96,7 +96,7 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 		}
 
 		// Initialize templates
-		tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
+		tmpl, err := webutil.ParseTemplatesWithFuncs(cfg.ParseGlobPattern, funcMap)
 		if err != nil {
 			t.Fatalf("failed to init templates: %v", err)
 		}
