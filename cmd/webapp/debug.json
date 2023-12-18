@@ -5,7 +5,7 @@
   "Log": {
     "FileName": "",
     "Type": "json",
-    "Level": "info",
+    "Level": "debug",
     "WithSource": false
   },
   "Server": {

@@ -5,7 +5,7 @@
   "Log": {
     "FileName": "webapp.log",
     "Type": "json",
-    "Level": "debug",
+    "Level": "info",
     "WithSource": false
   },
   "Server": {
