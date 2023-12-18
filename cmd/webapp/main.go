@@ -62,7 +62,7 @@ func main() {
 	assetsDir := cfg.App.AssetsDir
 
 	// Show config in log.
-	slog.Info("using config", "config", cfg)
+	slog.Info("using config", slog.Any("config", cfg))
 
 	// Define custom template functions.
 	funcMap := template.FuncMap{
@@ -125,8 +125,8 @@ func main() {
 	// Start the web server.
 	err = srv.Start(ctx)
 	if err != nil {
-		slog.Error("error running server", "err", err)
-		fmt.Fprintln(os.Stderr, "Error running server:", err)
+		slog.Error("error starting server", slog.Any("err", err))
+		fmt.Fprintln(os.Stderr, "Error starting server:", err)
 		os.Exit(ExitServer)
 	}
 }
