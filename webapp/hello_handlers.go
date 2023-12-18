@@ -47,9 +47,6 @@ func (app *WebApp) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log that the handler is executing.
-	logger.Debug("response")
-
 	// Set no-cache headers to prevent caching.
 	webutil.SetNoCacheHeaders(w)
 

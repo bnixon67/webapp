@@ -72,12 +72,12 @@ func (app *WebApp) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 		Headers: sortedHeaders,
 	}
 
-	logger.Debug("response", slog.Any("data", data))
-
 	// Render the template with the data.
 	err := webutil.RenderTemplate(app.Tmpl, w, HeadersPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return
 	}
+
+	logger.Info("success", slog.Any("data", data))
 }
