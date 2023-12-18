@@ -19,9 +19,11 @@ import (
 
 // WebServer represents an HTTP server.
 type WebServer struct {
-	HTTPServer http.Server
-	CertFile   string
-	KeyFile    string
+	HTTPServer       http.Server
+	CertFile         string
+	KeyFile          string
+	shutdownComplete chan struct{} // Channel to signal shutdown completion
+
 }
 
 // Option is a function type for configuring the HTTP server.
@@ -92,16 +94,22 @@ func (s *WebServer) Start(ctx context.Context) error {
 		return fmt.Errorf("%w: %v", ErrServerStart, err)
 	}
 
-	slog.Info("starting server", slog.String("addr", ln.Addr().String()))
-
+	// Initialize the channels
 	errCh := make(chan error, 1)
+	s.shutdownComplete = make(chan struct{})
 
 	// Start the server in a separate goroutine.
 	go func() {
 		var serverErr error
 		if s.CertFile != "" && s.KeyFile != "" {
+			slog.Info("starting https server",
+				slog.String("addr", ln.Addr().String()))
+
 			serverErr = s.HTTPServer.ServeTLS(ln, s.CertFile, s.KeyFile)
 		} else {
+			slog.Info("starting http server",
+				slog.String("addr", ln.Addr().String()))
+
 			serverErr = s.HTTPServer.Serve(ln)
 		}
 
@@ -120,11 +128,17 @@ func (s *WebServer) Start(ctx context.Context) error {
 		return ctx.Err()
 	case sig := <-sigChan:
 		// If a shutdown signal, gracefully shut down the server.
-		return s.shutdownServer(sig, ctx)
+		err := s.shutdownServer(sig, ctx)
+		if err != nil {
+			return err
+		}
 	case err := <-errCh:
 		// Handle the error that occurred during server startup.
 		return fmt.Errorf("%w: %v", ErrServerStart, err)
 	}
+
+	<-s.shutdownComplete // Wait for shutdown to complete
+	return nil
 }
 
 // shutdownServer attempts to gracefully shut down the server.
@@ -137,9 +151,13 @@ func (s *WebServer) shutdownServer(sig os.Signal, ctx context.Context) error {
 
 	err := s.HTTPServer.Shutdown(shutdownCtx)
 	if err != nil {
+		slog.Error("error shutting down server", slog.Any("err", err))
 		return err
 	}
 
+	close(s.shutdownComplete) // Signal that shutdown is complete.
+
 	slog.Info("server shutdown")
+
 	return nil
 }
