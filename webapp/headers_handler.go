@@ -43,14 +43,6 @@ func SortedHeaders(httpHeader http.Header) []HeaderPair {
 		headerList[i].Values = values
 		i++
 	}
-	/*
-		// Iterate over the map to fill the slice using the index 'i'.
-		i := 0
-		for key, values := range httpHeader {
-			headerList[i] = HeaderPair{Key: key, Value: values}
-			i++
-		}
-	*/
 
 	// Sort the slice of headers by key name.
 	sort.Slice(headerList, func(i, j int) bool {
@@ -62,8 +54,8 @@ func SortedHeaders(httpHeader http.Header) []HeaderPair {
 
 // HeadersHandler prints the headers of the request in sorted order.
 func (app *WebApp) HeadersHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

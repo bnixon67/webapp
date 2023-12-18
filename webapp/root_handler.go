@@ -21,8 +21,8 @@ type RootPageData struct {
 
 // RootHandler handles the root ("/") route.
 func (app *WebApp) RootHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -42,12 +42,12 @@ func (app *WebApp) RootHandler(w http.ResponseWriter, r *http.Request) {
 		Title: "Request Headers",
 	}
 
-	logger.Debug("response", slog.Any("data", data))
-
 	// Render the template with the data.
 	err := webutil.RenderTemplate(app.Tmpl, w, RootPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return
 	}
+
+	logger.Info("success", slog.Any("data", data))
 }

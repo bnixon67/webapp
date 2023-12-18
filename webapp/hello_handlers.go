@@ -5,7 +5,6 @@ package webapp
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/bnixon67/webapp/assets"
@@ -15,17 +14,14 @@ import (
 
 // HelloTextHandler responds with a simple "hello" message in plain text format.
 func (app *WebApp) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
-
-	// Log that the handler is executing.
-	logger.Debug("response")
 
 	// Set the content type to plain text.
 	webutil.SetTextContentType(w)
@@ -35,12 +31,15 @@ func (app *WebApp) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the "hello" message to the response with the application name.
 	fmt.Fprintln(w, "hello from", app.Name)
+
+	// Log sucecss of the handler.
+	logger.Info("success")
 }
 
 // HelloHTMLHandler responds with a simple "hello" message in HTML format.
 func (app *WebApp) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -56,4 +55,7 @@ func (app *WebApp) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the HTML content to the response from the assets package.
 	fmt.Fprint(w, assets.HelloHTML)
+
+	// Log sucecss of the handler.
+	logger.Info("success")
 }
