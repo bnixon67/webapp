@@ -87,15 +87,14 @@ func main() {
 	}
 
 	cssFile := filepath.Join(assetsDir, "css", "w3.css")
-	icoFile := filepath.Join(assetsDir, "ico", "favicon.ico")
+	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")
 
 	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
 
 	// Add middleware to mux.
 	// Functions are executed in reverse, so last added is called first.
-	h := webhandler.AddSecurityHeaders(mux)
-	h = webhandler.LogRequest(h)
+	h := webhandler.LogRequest(mux)
 	h = webhandler.AddLogger(h)
 	h = webhandler.AddRequestID(h)
 
