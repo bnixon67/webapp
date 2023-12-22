@@ -38,9 +38,7 @@ func (app *WebApp) RootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepare the data for rendering the template.
-	data := RootPageData{
-		Title: "Request Headers",
-	}
+	data := RootPageData{Title: app.Name}
 
 	// Render the template with the data.
 	err := webutil.RenderTemplate(app.Tmpl, w, RootPageName, data)
