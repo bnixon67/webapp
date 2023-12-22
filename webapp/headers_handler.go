@@ -27,8 +27,8 @@ type HeadersPageData struct {
 	Headers []HeaderPair // Sorted list of the request headers.
 }
 
-// SortedHeaders returns a slice of header pairs sorted by header keys.
-func SortedHeaders(httpHeader http.Header) []HeaderPair {
+// SortHeaders returns a slice of header pairs sorted by header keys.
+func SortHeaders(httpHeader http.Header) []HeaderPair {
 	if len(httpHeader) == 0 {
 		return nil
 	}
@@ -64,7 +64,7 @@ func (app *WebApp) HeadersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sort the headers from the request for consistent ordering.
-	sortedHeaders := SortedHeaders(r.Header)
+	sortedHeaders := SortHeaders(r.Header)
 
 	// Prepare the data for rendering the template.
 	data := HeadersPageData{

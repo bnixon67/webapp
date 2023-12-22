@@ -39,7 +39,7 @@ func headersBody(t *testing.T, headers http.Header, funcMap template.FuncMap) st
 	// Define the template data.
 	data := webapp.HeadersPageData{
 		Title:   "Request Headers",
-		Headers: webapp.SortedHeaders(headers),
+		Headers: webapp.SortHeaders(headers),
 	}
 
 	// Execute the template with the data and write the result to the buffer.

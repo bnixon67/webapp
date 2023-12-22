@@ -60,31 +60,35 @@ func New(opts ...Option) (*WebApp, error) {
 		return nil, fmt.Errorf("failed to get build date time: %v", err)
 	}
 
-	// Create webapp with build date time.
-	webapp := &WebApp{
-		BuildDateTime: dt,
-	}
+	// Create app with build date time.
+	app := &WebApp{BuildDateTime: dt}
 
 	// Apply configuration options.
 	for _, opt := range opts {
-		opt(webapp)
+		opt(app)
 	}
 
 	// Ensure AppName is set.
-	if webapp.Name == "" {
+	if app.Name == "" {
 		return nil, errors.New("missing Name")
 	}
 
-	tmplNames := strings.Join(webutil.TemplateNames(webapp.Tmpl), ", ")
-	slog.Debug("created webapp",
-		slog.Group("webapp",
-			slog.String("Name", webapp.Name),
-			slog.String("Templates", tmplNames),
-			slog.Time("BuildDateTime", webapp.BuildDateTime),
-		),
-	)
+	// Provide some debugging information.
+	if slog.Default().Enabled(nil, slog.LevelDebug) {
+		// Get names for all the templates.
+		tmplNames := strings.Join(
+			webutil.TemplateNames(app.Tmpl), ", ")
 
-	return webapp, nil
+		slog.Debug("created webapp",
+			slog.Group("webapp",
+				slog.String("Name", app.Name),
+				slog.String("Templates", tmplNames),
+				slog.Time("BuildDateTime", app.BuildDateTime),
+			),
+		)
+	}
+
+	return app, nil
 }
 
 // ExecutableModTime returns the modification time of the current executable.
