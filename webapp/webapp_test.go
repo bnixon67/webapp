@@ -4,10 +4,50 @@
 package webapp_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/google/go-cmp/cmp"
 )
+
+func TestWebAppString(t *testing.T) {
+	emptyWebApp := &webapp.WebApp{}
+	nameWebApp := &webapp.WebApp{Name: "name"}
+
+	tests := []struct {
+		name   string
+		webapp *webapp.WebApp
+		want   string
+	}{
+		{
+			name:   "nil webapp",
+			webapp: nil,
+			want:   fmt.Sprintf("%v", nil),
+		},
+		{
+			name:   "empty webapp",
+			webapp: emptyWebApp,
+			want:   fmt.Sprintf("%+v", emptyWebApp),
+		},
+		{
+			name:   "name webapp",
+			webapp: nameWebApp,
+			want:   fmt.Sprintf("%+v", nameWebApp),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.webapp.String()
+			diff := cmp.Diff(tc.want, got)
+			if diff != "" {
+				t.Errorf("mismatch for %q (-want +got):\n%s", tc.webapp, diff)
+
+			}
+		})
+	}
+}
 
 func TestNew(t *testing.T) {
 	tests := []struct {
