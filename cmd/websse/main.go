@@ -111,7 +111,7 @@ func main() {
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
 	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("/event", sseServer.EventStreamHandler)
-	mux.HandleFunc("/send", sseServer.SendHandler)
+	mux.HandleFunc("/send", sseServer.SendMessageHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
