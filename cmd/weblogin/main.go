@@ -133,7 +133,7 @@ func main() {
 	ctx := context.Background()
 
 	// Start the web server.
-	err = srv.Start(ctx)
+	err = srv.Run(ctx)
 	if err != nil {
 		slog.Error("error running server", "err", err)
 		fmt.Fprintln(os.Stderr, "Error running server:", err)

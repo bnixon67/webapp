@@ -125,16 +125,17 @@ func main() {
 		os.Exit(ExitServer)
 	}
 
-	sseServer.Start()
+	// Run the SSE server.
+	sseServer.Run()
 
 	// Create a new context.
 	ctx := context.Background()
 
-	// Start the web server.
-	err = srv.Start(ctx)
+	// Run the web server.
+	err = srv.Run(ctx)
 	if err != nil {
-		slog.Error("error starting server", slog.Any("err", err))
-		fmt.Fprintln(os.Stderr, "Error starting server:", err)
+		slog.Error("web server error", slog.Any("err", err))
+		fmt.Fprintln(os.Stderr, "Error running web server:", err)
 		os.Exit(ExitServer)
 	}
 }

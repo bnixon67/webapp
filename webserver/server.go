@@ -86,9 +86,9 @@ func New(opts ...Option) (*WebServer, error) {
 
 var ErrServerStart = errors.New("failed to start server")
 
-// Start starts the HTTP server and waits for a shutdown signal.
-// It returns an error if there's an issue starting the server.
-func (s *WebServer) Start(ctx context.Context) error {
+// Run starts the HTTP server and waits for a shutdown signal.
+// It returns an error if there's an issue starting or stopping the server.
+func (s *WebServer) Run(ctx context.Context) error {
 	ln, err := net.Listen("tcp", s.HTTPServer.Addr)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrServerStart, err)
@@ -128,7 +128,8 @@ func (s *WebServer) Start(ctx context.Context) error {
 		return ctx.Err()
 	case sig := <-sigChan:
 		// If a shutdown signal, gracefully shut down the server.
-		err := s.shutdownServer(sig, ctx)
+		slog.Info("shutting down server", "signal", sig)
+		err := s.shutdownServer(ctx)
 		if err != nil {
 			return err
 		}
@@ -142,11 +143,9 @@ func (s *WebServer) Start(ctx context.Context) error {
 }
 
 // shutdownServer attempts to gracefully shut down the server.
-func (s *WebServer) shutdownServer(sig os.Signal, ctx context.Context) error {
-	slog.Info("shutting down server", "signal", sig)
-
+func (s *WebServer) shutdownServer(ctx context.Context) error {
 	// Create a context with timeout to shut down within a reasonable time.
-	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	err := s.HTTPServer.Shutdown(shutdownCtx)

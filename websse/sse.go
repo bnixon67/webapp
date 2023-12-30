@@ -272,7 +272,7 @@ func NewServer() *Server {
 	return s
 }
 
-// Start runs the server in a goroutine.
-func (s *Server) Start() {
+// Run runs the server in a goroutine.
+func (s *Server) Run() {
 	go s.listenAndBroadcast()
 }

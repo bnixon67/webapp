@@ -81,7 +81,7 @@ func TestWebServer(t *testing.T) {
 			errChan := make(chan error)
 
 			go func() {
-				errChan <- server.Start(ctx)
+				errChan <- server.Run(ctx)
 			}()
 
 			select {
