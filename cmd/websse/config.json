@@ -1,0 +1,18 @@
+{
+  "App": {
+    "Name": "HTMX App",
+    "AssetsDir": "assets"
+  },
+  "Log": {
+    "FileName": "",
+    "Type": "text",
+    "Level": "info",
+    "WithSource": false
+  },
+  "Server": {
+    "Host": "localhost",
+    "Port": "8443",
+    "CertFile": "cert/localhost.pem",
+    "KeyFile": "cert/localhost-key.pem"
+  }
+}
