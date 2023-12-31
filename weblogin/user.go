@@ -20,6 +20,7 @@ type User struct {
 	FullName        string
 	Email           string
 	IsAdmin         bool
+	Confirmed       bool
 	Created         time.Time
 	LastLoginTime   time.Time
 	LastLoginResult string
@@ -45,6 +46,7 @@ var (
 	ErrUserNotFound              = errors.New("user not found")
 	ErrUserSessionExpired        = errors.New("user session expired")
 	ErrResetPasswordTokenExpired = errors.New("reset password token expired")
+	ErrConfirmTokenExpired       = errors.New("confirm token expired")
 	ErrUserGetLastLoginFailed    = errors.New("user failed to get last login")
 )
 
@@ -57,13 +59,13 @@ func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
 
 	hashedValue := hash(sessionToken)
 
-	qry := `SELECT users.userName, fullName, email, expires, admin, users.created FROM users INNER JOIN tokens ON users.userName=tokens.userName WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
+	qry := `SELECT users.userName, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.userName=tokens.userName WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
 	if db == nil {
 		return User{}, errors.New("invalid db")
 	}
 
 	result := db.QueryRow(qry, hashedValue)
-	err := result.Scan(&user.UserName, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Created)
+	err := result.Scan(&user.UserName, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
 	if err != nil {
 		// return custom error and empty user if session not found
 		if errors.Is(err, sql.ErrNoRows) {
@@ -155,6 +157,31 @@ func (db *LoginDB) GetUserNameForResetToken(tokenValue string) (string, error) {
 	if expires.Before(time.Now()) {
 		db.RemoveToken("reset", tokenValue)
 		return "", ErrResetPasswordTokenExpired
+	}
+
+	return userName, err
+}
+
+// GetUserNameForConfirmToken returns the userName for a given confirm token.
+func (db *LoginDB) GetUserNameForConfirmToken(tokenValue string) (string, error) {
+	var userName string
+	var expires time.Time
+	hashedValue := hash(tokenValue)
+
+	qry := `SELECT userName, expires FROM tokens WHERE kind="confirm" AND hashedValue=?`
+	row := db.QueryRow(qry, hashedValue)
+	err := row.Scan(&userName, &expires)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", ErrUserNotFound
+		}
+		return "", err
+	}
+
+	// check if token is expired
+	if expires.Before(time.Now()) {
+		db.RemoveToken("confirm", tokenValue)
+		return "", ErrConfirmTokenExpired
 	}
 
 	return userName, err

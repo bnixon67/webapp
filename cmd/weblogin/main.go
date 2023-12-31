@@ -114,6 +114,8 @@ func main() {
 	mux.HandleFunc("/users", app.UsersHandler)
 	mux.HandleFunc("/userscsv", app.UsersCSVHandler)
 	mux.HandleFunc("/forgot", app.ForgotHandler)
+	mux.HandleFunc("/confirm_request", app.ConfirmRequestHandler)
+	mux.HandleFunc("/confirm", app.ConfirmHandler)
 	mux.HandleFunc("/reset", app.ResetHandler)
 	mux.HandleFunc("/events", app.EventsHandler)
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)

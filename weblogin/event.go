@@ -16,6 +16,7 @@ const (
 	EventRegister            = "register"
 	EventSaveToken           = "save_token"
 	EventResetPass           = "reset_pass"
+	EventConfirmed           = "confirmed"
 	EventMaxName             = "1234567890" // Event defined as varchar(10).
 )
 

@@ -4,6 +4,7 @@ CREATE TABLE `users` (
   `email` varchar(256) NOT NULL,
   `hashedPassword` binary(60) NOT NULL,
   `admin` boolean NOT NULL DEFAULT false,
+  `confirmed` boolean NOT NULL DEFAULT false,
   `created` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`userName`),
   UNIQUE KEY `email` (`email`)
