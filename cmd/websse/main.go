@@ -7,10 +7,8 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"log"
 	"log/slog"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 
@@ -33,10 +31,6 @@ const (
 )
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	// Check command line for config file.
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "Usage: %s [config file]\n", os.Args[0])
