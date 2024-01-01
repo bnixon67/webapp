@@ -14,11 +14,6 @@ allowing for real-time broadcasting of messages to web clients via an
 event stream. This is facilitated via EventStreamHandler used by clients
 to listen to an event stream.
 
-The main components include:
-- Client: Represents an event stream client.
-- Message: Represents a message in the event stream.
-- Server: Manages broadcasting messages to clients.
-
 The general flow is:
 
 	s := websse.NewServer()
