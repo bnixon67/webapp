@@ -8,13 +8,19 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// EventStreamHandler handles event stream client connections.
+// EventStreamHandler handles client connections.
+//
+// The handler waits for messages and sends them to the client. Multiple
+// clients are supported.
+//
+// The endpoint that accepts an optional "event" query parameter.
+// If the "event" query paramater is not provided, a general message
+// event is assumed per the SSE standard.
 func (s *Server) EventStreamHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
@@ -28,7 +34,14 @@ func (s *Server) EventStreamHandler(w http.ResponseWriter, r *http.Request) {
 	// Get event from query parameters.
 	event := r.URL.Query().Get("event")
 
-	// Add to list of receivers for this event.
+	// Only listen for registered events.
+	if !s.EventExists(event) {
+		slog.Error("event does not exist", "event", event)
+		webutil.HttpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Add client to listeners for this event.
 	id := webhandler.RequestID(r.Context())
 	client := s.addClient(id, event)
 
@@ -36,7 +49,7 @@ func (s *Server) EventStreamHandler(w http.ResponseWriter, r *http.Request) {
 	writeHeaders(w)
 
 	// Process messages and handle client disconnects.
-	s.processMessages(event, client, w, r, logger)
+	s.process(event, client, w, r, logger)
 
 	logger.Info("client done", "client.id", client.id)
 }
@@ -49,8 +62,8 @@ func writeHeaders(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: optional
 }
 
-// processMessages waits for and sends messages and handles client disconnects.
-func (s *Server) processMessages(event string, client *Client, w http.ResponseWriter, r *http.Request, logger *slog.Logger) {
+// process waits for and sends messages and handles client disconnects.
+func (s *Server) process(event string, client *Client, w http.ResponseWriter, r *http.Request, logger *slog.Logger) {
 	for {
 		select {
 
@@ -84,8 +97,11 @@ func (s *Server) processMessages(event string, client *Client, w http.ResponseWr
 	}
 }
 
+var ErrStreamingNotSupported = errors.New("streaming not supported")
+
 // writeMessage writes a message to the event stream of the client.
 func (s *Server) writeMessage(w http.ResponseWriter, msg Message) error {
+	// ignore empty Events
 	if len(msg.Event) > 0 {
 		_, err := fmt.Fprintf(w, "event: %s\n", msg.Event)
 		if err != nil {
@@ -93,23 +109,28 @@ func (s *Server) writeMessage(w http.ResponseWriter, msg Message) error {
 		}
 	}
 
+	// ignore empty Data
 	if len(msg.Data) > 0 {
-		// TODO: remove timestamp
-		_, err := fmt.Fprintf(w, "data: %s %s\n",
-			time.Now().Format("15:04:05"), msg.Data)
+		_, err := fmt.Fprintf(w, "data: %s\n", msg.Data)
 		if err != nil {
 			return err
 		}
 	}
 
+	// ignore empty ID
 	if len(msg.ID) > 0 {
-		_, err := fmt.Fprintf(w, "id: %s\n", msg.Data)
+		_, err := fmt.Fprintf(w, "id: %s\n", msg.ID)
 		if err != nil {
 			return err
 		}
 	}
 
-	// TODO: add Retry
+	if msg.Retry != 0 {
+		_, err := fmt.Fprintf(w, "retry: %d\n", msg.Retry)
+		if err != nil {
+			return err
+		}
+	}
 
 	// Newline required per standard.
 	_, err := fmt.Fprint(w, "\n")
@@ -120,7 +141,7 @@ func (s *Server) writeMessage(w http.ResponseWriter, msg Message) error {
 	// Flush to avoid any buffering
 	f, ok := w.(http.Flusher)
 	if !ok {
-		return errors.New("streaming not supported")
+		return ErrStreamingNotSupported
 	}
 
 	f.Flush()
