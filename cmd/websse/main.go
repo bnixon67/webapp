@@ -106,6 +106,8 @@ func main() {
 	h = webhandler.AddRequestID(h)
 
 	sseServer := websse.NewServer()
+	sseServer.RegisterEvents("", "event1", "event2")
+	sseServer.Run()
 
 	mux.HandleFunc("/", app.RootHandler)
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
@@ -124,9 +126,6 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Error creating server:", err)
 		os.Exit(ExitServer)
 	}
-
-	// Run the SSE server.
-	sseServer.Run()
 
 	// Create a new context.
 	ctx := context.Background()
