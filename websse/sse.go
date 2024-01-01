@@ -18,10 +18,25 @@ The main components include:
 - Client: Represents an event stream client.
 - Message: Represents a message in the event stream.
 - Server: Manages broadcasting messages to clients.
+
+The general flow is:
+
+	s := websse.NewServer()
+	s.RegisterEvents("", "event1", "event2")
+	s.Run()
+	...
+	http.HandleFunc("/event", s.EventStreamHandler)
+	// client connects to /event?event=event1
+	...
+	s.Publish(websse.Message{Event:"event1", Data:"data"})
+
+See example in cmd/simple-websse.
 */
 package websse
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 	"sync"
 )
@@ -52,6 +67,63 @@ type Server struct {
 	broadcast chan Message
 }
 
+// RegisterEvent allows the server to accept and respond to event.
+func (s *Server) RegisterEvent(event string) {
+	// Ensure event doesn't already exist to avoid clearing eventClients.
+	if s.EventExists(event) {
+		return
+	}
+
+	// Register an event using a key in eventClients.
+	s.eventClients[event] = []*Client{}
+
+	return
+}
+
+// RegisterEvents allows the server to accept and respond to multiple events.
+func (s *Server) RegisterEvents(events ...string) {
+	for _, event := range events {
+		s.RegisterEvent(event)
+	}
+}
+
+// EventExists returns true if the event exists, otherwise false.
+func (s *Server) EventExists(event string) bool {
+	_, exists := s.eventClients[event]
+
+	return exists
+}
+
+var ErrEventNotRegistered = errors.New("event not registered")
+
+// Publish sends a message to the broadcast channel.
+func (s *Server) Publish(msg Message) error {
+	slog.Debug("publishing message", "msg", msg)
+
+	if !s.EventExists(msg.Event) {
+		return fmt.Errorf("%w: %s", ErrEventNotRegistered, msg.Event)
+	}
+
+	s.broadcast <- msg
+
+	return nil
+}
+
+// NewServer returns a new server to process server-side events.
+func NewServer() *Server {
+	s := &Server{
+		eventClients: make(map[string][]*Client),
+		broadcast:    make(chan Message),
+	}
+
+	return s
+}
+
+// Run runs the server in a goroutine.
+func (s *Server) Run() {
+	go s.listenAndBroadcast()
+}
+
 // addClient creates a new client and adds it to the event client list.
 func (s *Server) addClient(id, event string) *Client {
 	client := &Client{
@@ -64,7 +136,7 @@ func (s *Server) addClient(id, event string) *Client {
 
 	s.eventClients[event] = append(s.eventClients[event], client)
 
-	slog.Info("added client", "client.id", client.id, "event", event)
+	slog.Debug("added client", "client.id", client.id, "event", event)
 
 	return client
 }
@@ -87,7 +159,7 @@ func (s *Server) removeClient(event string, client *Client) {
 		}
 	}
 
-	slog.Info("removed client", "client.id", client.id, "event", event)
+	slog.Debug("removed client", "client.id", client.id, "event", event)
 }
 
 // listenAndBroadcast listens for messages to broadcast to clients.
@@ -106,32 +178,12 @@ func (s *Server) broadcastToClients(msg Message) {
 
 	clients := s.eventClients[msg.Event]
 
-	slog.Info("start broadcast", "event", msg, "clients", len(clients))
+	slog.Debug("start broadcast", "event", msg, "clients", len(clients))
 
 	for _, client := range clients {
-		slog.Info("sending", "client.id", client.id, "message", msg)
+		slog.Debug("sending", "client.id", client.id, "message", msg)
 		client.msgChan <- msg
 	}
 
-	slog.Info("end broadcast", "event", msg, "clients", len(clients))
-}
-
-// Publish sends a message to the broadcast channel.
-func (s *Server) Publish(msg Message) {
-	s.broadcast <- msg
-}
-
-// NewServer returns a new server to process server-side events.
-func NewServer() *Server {
-	s := &Server{
-		eventClients: make(map[string][]*Client),
-		broadcast:    make(chan Message),
-	}
-
-	return s
-}
-
-// Run runs the server in a goroutine.
-func (s *Server) Run() {
-	go s.listenAndBroadcast()
+	slog.Debug("end broadcast", "event", msg, "clients", len(clients))
 }
