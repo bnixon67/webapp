@@ -4,14 +4,20 @@
 package websse
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// SendMessageHandler will publish any message requests.
-func (app *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
+// SendMessageHandler publishes any messages posted to handler.
+//
+// Accepts query parameters "event", "data", "id", and "retry" to create
+// the message.
+func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
@@ -21,11 +27,40 @@ func (app *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := r.URL.Query().Get("event")
-	data := r.URL.Query().Get("data")
-	id := r.URL.Query().Get("id")
-	// TODO: retry := r.URL.Query().Get("retry")
+	var msg Message
 
-	// Publish the event.
-	app.Publish(Message{Event: event, Data: data, ID: id})
+	// Get query parameters.
+	msg.Event = r.URL.Query().Get("event")
+	msg.Data = r.URL.Query().Get("data")
+	msg.ID = r.URL.Query().Get("id")
+	retryStr := r.URL.Query().Get("retry")
+
+	// Convert retry string to int
+	if len(retryStr) > 0 {
+		retry, err := strconv.Atoi(retryStr)
+		if err != nil {
+			logger.Error("unable to convert string to int",
+				"retry", retryStr,
+				"error", err,
+			)
+			webutil.HttpError(w, http.StatusUnprocessableEntity)
+			return
+		}
+
+		msg.Retry = retry
+	}
+
+	// Publish the message with data prefixed with a timestamp.
+	msg.Data = fmt.Sprintf("%s %s", time.Now().Format("15:04:05"), msg.Data)
+	err := s.Publish(msg)
+	if err != nil {
+		logger.Error("unable to publish message",
+			"err", err,
+			"message", msg,
+		)
+		webutil.HttpError(w, http.StatusUnprocessableEntity)
+		return
+	}
+
+	return
 }
