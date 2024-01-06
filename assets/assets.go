@@ -11,7 +11,7 @@ import (
 )
 
 //go:embed html/hello.html
-var HelloHTML string
+var HelloHTML string // simple Hello HTML page
 
 // AssetPath returns the directory path of the file that calls this function.
 // If the file's path cannot be determined, it returns an empty string.
