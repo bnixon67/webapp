@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	MsgMissingRequired    = "Please provide all the required values"
+	MsgMissingRequired    = "Please provide required values"
 	MsgUserNameExists     = "User Name already exists."
 	MsgEmailExists        = "Email Address already registered."
 	MsgPasswordsDifferent = "Password values do not match."
+	MsgRegisterFailed     = "Unable to register user."
 )
 
 // RegisterPageData contains data passed to the HTML template.
@@ -25,10 +26,21 @@ type RegisterPageData struct {
 	Message string
 }
 
-// RegisterHandler handles /register requests.
+// renderRegisterPage renders the page.
+func (app *LoginApp) renderRegisterPage(w http.ResponseWriter, logger *slog.Logger, message string) {
+	data := RegisterPageData{Title: app.Cfg.App.Name, Message: message}
+
+	err := webutil.RenderTemplate(app.Tmpl, w, "register.html", data)
+	if err != nil {
+		logger.Error("unable to render template", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+	}
+}
+
+// RegisterHandler handles requests to register a user.
 func (app *LoginApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -38,130 +50,89 @@ func (app *LoginApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{Title: app.Cfg.App.Name})
-		if err != nil {
-			logger.Error("unable to parse template", "err", err)
-			return
-		}
-		logger.Info("RegisterHandler")
+		app.renderRegisterPage(w, logger, "")
+		logger.Info("success")
 
 	case http.MethodPost:
 		app.registerPost(w, r)
 	}
 }
 
-// registerPost is called for the POST method of the RegisterHandler.
+// registerPost handles POST of the registration form.
 func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
-	// get form values
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Get form values and remove leading and trailing white space.
 	userName := strings.TrimSpace(r.PostFormValue("userName"))
 	fullName := strings.TrimSpace(r.PostFormValue("fullName"))
 	email := strings.TrimSpace(r.PostFormValue("email"))
 	password1 := strings.TrimSpace(r.PostFormValue("password1"))
 	password2 := strings.TrimSpace(r.PostFormValue("password2"))
 
-	logger := slog.With(
+	logger = slog.With(
 		slog.Group("form",
 			"userName", userName,
 			"fullName", fullName,
 			"email", email,
+			// Don't log password values.
 			"password1 empty", password1 == "",
 			"password2 empty", password2 == "",
 		),
 	)
 
-	// check for missing values
+	// Check for missing values.
 	if IsEmpty(userName, fullName, email, password1, password2) {
-		msg := MsgMissingRequired
 		logger.Warn("missing values")
-		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{
-				Title: app.Cfg.App.Name, Message: msg,
-			})
-		if err != nil {
-			logger.Error("unable to execute template", "err", err)
-			return
-		}
+		app.renderRegisterPage(w, logger, MsgMissingRequired)
 		return
 	}
 
-	// check that password fields match
+	// Check that password match.
 	if password1 != password2 {
-		msg := MsgPasswordsDifferent
 		logger.Warn("passwords do not match")
-		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{
-				Title: app.Cfg.App.Name, Message: msg,
-			})
-		if err != nil {
-			logger.Error("unable to execute template", "err", err)
-			return
-		}
+		app.renderRegisterPage(w, logger, MsgPasswordsDifferent)
 		return
 	}
 
-	// check that userName doesn't already exist
+	// Check that userName doesn't already exist.
 	userExists, err := app.DB.UserExists(userName)
 	if err != nil {
 		logger.Error("UserExists failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
 	if userExists {
 		logger.Warn("user name already exists")
 		app.DB.WriteEvent(EventRegister, false, userName, "user name already exists")
-		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{
-				Title:   app.Cfg.App.Name,
-				Message: MsgUserNameExists,
-			})
-		if err != nil {
-			logger.Error("unable to execute template", "err", err)
-			return
-		}
+		app.renderRegisterPage(w, logger, MsgUserNameExists)
 		return
 	}
 
-	// check that email doesn't already exist
+	// Check that email doesn't already exist.
 	emailExists, err := app.DB.EmailExists(email)
 	if err != nil {
 		logger.Error("EmailExists failed")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
 	if emailExists {
 		logger.Warn("email already exists")
 		app.DB.WriteEvent(EventRegister, false, userName, "email already exists: "+email)
-		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{
-				Title:   app.Cfg.App.Name,
-				Message: MsgEmailExists,
-			})
-		if err != nil {
-			logger.Error("unable to execute template", "err", err)
-			return
-		}
+		app.renderRegisterPage(w, logger, MsgEmailExists)
 		return
 	}
 
-	// Register User
+	// Register user.
 	err = app.DB.RegisterUser(userName, fullName, email, password1)
 	if err != nil {
 		logger.Error("RegisterUser failed", "err", err)
 		app.DB.WriteEvent(EventRegister, false, userName, err.Error())
-		err := webutil.RenderTemplate(app.Tmpl, w, "register.html",
-			RegisterPageData{
-				Title:   app.Cfg.App.Name,
-				Message: "Unable to Register User",
-			})
-		if err != nil {
-			logger.Error("unable to execute template", "err", err)
-			return
-		}
+		app.renderRegisterPage(w, logger, MsgRegisterFailed)
 		return
 	}
 
-	// registration successful
+	// Registration successful
 	logger.Info("registered user")
 	app.DB.WriteEvent(EventRegister, true, userName, "registered user")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
