@@ -20,7 +20,7 @@ func (fw *failWriter) Write(p []byte) (n int, err error) {
 func TestSliceOfStructsToCSV(t *testing.T) {
 	type User struct {
 		ID    int
-		Name  string
+		Name  string `csv:"Full Name"`
 		Email string
 	}
 
@@ -36,7 +36,7 @@ func TestSliceOfStructsToCSV(t *testing.T) {
 				{1, "Alice", "alice@example.com"},
 				{2, "Bob", "bob@example.com"},
 			},
-			want:    "ID,Name,Email\n1,Alice,alice@example.com\n2,Bob,bob@example.com\n",
+			want:    "ID,Full Name,Email\n1,Alice,alice@example.com\n2,Bob,bob@example.com\n",
 			wantErr: nil,
 		},
 		{

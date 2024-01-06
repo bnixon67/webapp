@@ -61,7 +61,12 @@ func writeHeader(cw *csv.Writer, v reflect.Value) error {
 	var header []string
 	t := v.Type()
 	for i := 0; i < v.NumField(); i++ {
-		header = append(header, t.Field(i).Name)
+		fieldName := t.Field(i).Name
+		tag := t.Field(i).Tag.Get("csv")
+		if tag != "" {
+			fieldName = tag
+		}
+		header = append(header, fieldName)
 	}
 	return cw.Write(header)
 }
