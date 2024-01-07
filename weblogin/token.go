@@ -6,6 +6,7 @@ package weblogin
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"log/slog"
 	"time"
 )
@@ -52,11 +53,25 @@ func (db *LoginDB) SaveNewToken(kind, userName string, size int, duration string
 	return token, err
 }
 
+var ErrTokenNotFound = errors.New("token not found")
+
 // RemoveToken removes the given sessionToken.
 func (db *LoginDB) RemoveToken(kind, value string) error {
 	hashedValue := hash(value)
 
-	qry := `DELETE FROM tokens WHERE kind = ? AND hashedValue = ?`
-	_, err := db.Exec(qry, kind, hashedValue)
-	return err
+	const qry = "DELETE FROM tokens WHERE kind = ? AND hashedValue = ?"
+	result, err := db.Exec(qry, kind, hashedValue)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows != 1 {
+		return ErrTokenNotFound
+	}
+
+	return nil
 }
