@@ -1,9 +1,10 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package weblogin
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -26,6 +27,19 @@ type ConfirmRequestPageData struct {
 	Title     string // The application's title.
 	Message   string // An message to display to the user.
 	EmailFrom string // The email address that sends the confirm message.
+}
+
+// renderConfirmRequestPage renders the page.
+func (app *LoginApp) renderConfirmRequestPage(w http.ResponseWriter, logger *slog.Logger, data ConfirmRequestPageData) {
+	if data.Title == "" {
+		data.Title = app.Cfg.App.Name
+	}
+
+	err := webutil.RenderTemplate(app.Tmpl, w, "confirm_request.html", data)
+	if err != nil {
+		logger.Error("unable to render template", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+	}
 }
 
 // ConfirmRequestHandler handles HTTP request to request a email confirmation.
@@ -53,17 +67,14 @@ func (app *LoginApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
-	err := webutil.RenderTemplate(app.Tmpl, w, ConfirmRequestTmpl,
-		ConfirmRequestPageData{Title: app.Cfg.App.Name})
-	if err != nil {
-		logger.Error("unable to render confirm template", "err", err)
-		return
-	}
+	data := ConfirmRequestPageData{}
+	app.renderConfirmRequestPage(w, logger, data)
 
-	logger.Info("success")
+	logger.Info("done")
 }
 
 // validateConfirmRequestForm ensures all required fields are present and valid.
+// It returns an empty string if validate or a message if not.
 func validateConfirmRequestForm(email, action string) string {
 	if action == "" {
 		return MsgMissingAction
@@ -91,40 +102,41 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 		slog.String("email", email), slog.String("action", action))
 
 	// Validate form values.
-	errMessage := validateConfirmRequestForm(email, action)
-	if errMessage != "" {
-		logger.Warn("invalid form data", "errMessage", errMessage)
-		err := webutil.RenderTemplate(app.Tmpl, w, "confirm.html",
-			ConfirmRequestPageData{
-				Title:   app.Cfg.App.Name,
-				Message: errMessage,
-			})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
+	msg := validateConfirmRequestForm(email, action)
+	if msg != "" {
+		logger.Warn("invalid form data", "errMessage", msg)
+		data := ConfirmRequestPageData{Message: msg}
+		app.renderConfirmRequestPage(w, logger, data)
 		return
 	}
 
 	// Get username for email provided on the form.
 	username, err := app.DB.GetUserNameForEmail(email)
-	if err != nil || username == "" {
-		// Don't use logger since log entry doesn't need to contain the request info.
-		slog.Warn("failed to get username from email", "err", err, "email", email)
+	if err != nil && !errors.Is(err, ErrUserNotFound) {
+		logger.Error("failed to get username for email",
+			"err", err, "email", email)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+	if username == "" {
+		logger.Warn("did not find username for email",
+			"err", err, "email", email)
+		// continue to allow email not registered message
 	}
 
-	// create and save a confirm email token
+	// Create and save a confirm email token.
 	token, err := app.DB.createConfirmEmailToken(username)
 	if err != nil {
-		slog.Error("failed to create confirm email token", "err", err, "username", username)
+		slog.Error("failed to create confirm email token",
+			"err", err, "username", username)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
 	}
 
 	err = sendEmailToConfirm(action, username, email, token, app.Cfg)
 	if err != nil {
 		logger.Error("unable to send email", "err", err)
-		http.Error(w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
+		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -138,12 +150,12 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	logger.Info("success")
+	logger.Info("done")
 }
 
 // Template for the emails sent during confirm email process.
 const confirmRequestEmailTmpl = `
-To confirm your email for {{.Title}}, please visit {{.BaseURL}}/confirm?rtoken={{.Token.Value}} by {{.Token.Expires.Format "January 2, 2006 3:04 PM MST"}}.
+To confirm your email for {{.Title}}, please visit {{.BaseURL}}/confirm?ctoken={{.Token.Value}} by {{.Token.Expires.Format "January 2, 2006 3:04 PM MST"}}.
 
 You can ignore this message if you did not request to confirm an email for {{.Title}}.
 `
