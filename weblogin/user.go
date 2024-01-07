@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User represents a user stored in the database.
+// User represents in the application.
 type User struct {
 	UserName        string
 	FullName        string
@@ -23,17 +23,17 @@ type User struct {
 	Confirmed       bool
 	Created         time.Time
 	LastLoginTime   time.Time
-	LastLoginResult string
+	LastLoginResult string // TODO: implement as bool?
 }
 
-// LogValue implements slog.LogValuer.
-// It returns a group containing the fields of User so they appear together in the log output.
+// LogValue implements slog.LogValuer to group User fields in log output.
 func (u User) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.String("UserName", u.UserName),
 		slog.String("Fullname", u.FullName),
 		slog.String("Email", u.Email),
-		slog.String("IsAdmin", fmt.Sprintf("%t", u.IsAdmin)),
+		slog.Bool("IsAdmin", u.IsAdmin),
+		slog.Bool("Confirmed", u.Confirmed),
 		slog.Time("Created", u.Created),
 		slog.Time("LastLoginTime", u.LastLoginTime),
 		slog.String("LastLoginResult", u.LastLoginResult),
@@ -42,13 +42,16 @@ func (u User) LogValue() slog.Value {
 
 // Define command error values.
 var (
+	ErrInvalidDB                 = errors.New("invalid db")
 	ErrUserSessionNotFound       = errors.New("user session not found")
 	ErrUserNotFound              = errors.New("user not found")
 	ErrUserSessionExpired        = errors.New("user session expired")
 	ErrResetPasswordTokenExpired = errors.New("reset password token expired")
 	ErrConfirmTokenExpired       = errors.New("confirm token expired")
-	ErrUserGetLastLoginFailed    = errors.New("user failed to get last login")
+	ErrUserGetLastLoginFailed    = errors.New("failed to get user last login")
 )
+
+var EmptyUser User // EmptyUser is a empty User used when returning a error.
 
 // GetUserForSessionToken returns a user for the given sessionToken.
 func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
@@ -59,11 +62,11 @@ func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
 
 	hashedValue := hash(sessionToken)
 
-	qry := `SELECT users.userName, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.userName=tokens.userName WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
 	if db == nil {
-		return User{}, errors.New("invalid db")
+		return EmptyUser, ErrInvalidDB
 	}
 
+	qry := `SELECT users.userName, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.userName=tokens.userName WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
 	result := db.QueryRow(qry, hashedValue)
 	err := result.Scan(&user.UserName, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
 	if err != nil {
@@ -72,9 +75,9 @@ func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
 			slog.Warn("unexpected",
 				"err", ErrUserSessionNotFound,
 				"sessionToken", sessionToken)
-			return User{}, ErrUserSessionNotFound
+			return EmptyUser, ErrUserSessionNotFound
 		}
-		return User{}, err
+		return EmptyUser, err
 	}
 
 	// return empty user if session is expired
@@ -83,7 +86,7 @@ func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
 			"err", ErrUserSessionExpired,
 			"expires", expires,
 			"user", user)
-		return User{}, ErrUserSessionExpired
+		return EmptyUser, ErrUserSessionExpired
 	}
 
 	user.LastLoginTime, user.LastLoginResult, err = db.LastLoginForUser(user.UserName)
@@ -103,9 +106,9 @@ func (db *LoginDB) GetUserForName(userName string) (User, error) {
 	err := result.Scan(&user.UserName, &user.FullName, &user.Email, &user.IsAdmin)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, ErrUserNotFound
+			return EmptyUser, ErrUserNotFound
 		}
-		return User{}, err
+		return EmptyUser, err
 	}
 
 	return user, err
@@ -121,12 +124,16 @@ func (db *LoginDB) EmailExists(email string) (bool, error) {
 	return db.RowExists("SELECT 1 FROM users WHERE email=? LIMIT 1", email)
 }
 
-// GetUserNameForEmail returns the userName for a given email.
+// GetUserNameForEmail looks up a username based on their email address.
+//
+// If not found, ErrUserNotFound is returned.
+//
+// If a SQL error occurs, other than ErrNoRows, it is returned.
 func (db *LoginDB) GetUserNameForEmail(email string) (string, error) {
-	var userName string
+	var username string
 
 	row := db.QueryRow("SELECT username FROM users WHERE email=?", email)
-	err := row.Scan(&userName)
+	err := row.Scan(&username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrUserNotFound
@@ -134,7 +141,7 @@ func (db *LoginDB) GetUserNameForEmail(email string) (string, error) {
 		return "", err
 	}
 
-	return userName, err
+	return username, err
 }
 
 // GetUserNameForResetToken returns the userName for a given reset token.
@@ -163,12 +170,18 @@ func (db *LoginDB) GetUserNameForResetToken(tokenValue string) (string, error) {
 }
 
 // GetUserNameForConfirmToken returns the userName for a given confirm token.
+//
+// If token is not found, ErrUserNotFound is returned.
+//
+// If token is expired, ErrConfirmTokenExpired is returned and token is removed.
+//
+// If a SQL error occurs, it will be returned, except ErrNoRows.
 func (db *LoginDB) GetUserNameForConfirmToken(tokenValue string) (string, error) {
 	var userName string
 	var expires time.Time
 	hashedValue := hash(tokenValue)
 
-	qry := `SELECT userName, expires FROM tokens WHERE kind="confirm" AND hashedValue=?`
+	qry := `SELECT userName, expires FROM tokens WHERE kind="confirm" AND hashedValue=? LIMIT 1`
 	row := db.QueryRow(qry, hashedValue)
 	err := row.Scan(&userName, &expires)
 	if err != nil {
@@ -178,7 +191,7 @@ func (db *LoginDB) GetUserNameForConfirmToken(tokenValue string) (string, error)
 		return "", err
 	}
 
-	// check if token is expired
+	// Check if token is expired.
 	if expires.Before(time.Now()) {
 		db.RemoveToken("confirm", tokenValue)
 		return "", ErrConfirmTokenExpired
@@ -292,4 +305,27 @@ func (db *LoginDB) GetUserFromRequest(w http.ResponseWriter, r *http.Request) (U
 	}
 
 	return user, err
+}
+
+// ConfirmUser updates database to indicate user confirmed their email.
+//
+// If a SQL error occurs, it will be returned.
+//
+// If username is not found, ErrUserNotFound is returned.
+func (db *LoginDB) ConfirmUser(username string) error {
+	const qry = "UPDATE users SET confirmed = ? WHERE username = ?"
+	result, err := db.Exec(qry, true, username)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows != 1 {
+		return ErrUserNotFound
+	}
+
+	return nil
 }
