@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package weblogin
@@ -19,10 +19,23 @@ type ConfirmPageData struct {
 	ConfirmToken string
 }
 
-// ConfirmHandler handles /reset requests.
+// renderConfirmPage renders the page.
+func (app *LoginApp) renderConfirmPage(w http.ResponseWriter, logger *slog.Logger, data ConfirmPageData) {
+	if data.Title == "" {
+		data.Title = app.Cfg.App.Name
+	}
+
+	err := webutil.RenderTemplate(app.Tmpl, w, "confirm.html", data)
+	if err != nil {
+		logger.Error("unable to render template", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+	}
+}
+
+// ConfirmHandler handles request to confirm a user.
 func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -32,87 +45,73 @@ func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		err := webutil.RenderTemplate(app.Tmpl, w, "confirm.html",
+		app.renderConfirmPage(w, logger,
 			ConfirmPageData{
-				Title:        app.Cfg.App.Name,
-				ConfirmToken: r.URL.Query().Get("rtoken"),
+				ConfirmToken: r.URL.Query().Get("ctoken"),
 			})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
-		logger.Info("ConfirmHandler")
+		logger.Info("done")
+		return
 
 	case http.MethodPost:
-		app.confirmPost(w, r, "confirm.html")
+		app.confirmPost(w, r)
+		return
 	}
 }
 
+const (
+	MsgMissingConfirmToken = "Please provide a confirmation token."
+	MsgInvalidConfirmToken = "Please provide a valid confirmation token."
+	MsgExpiredConfirmToken = "The confirmation token has expired. Please request a new one."
+)
+
 // confirmPost is called for the POST method of the RegisterHandler.
-func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request, tmplFileName string) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
-	// get form values
-	token := strings.TrimSpace(r.PostFormValue("ctoken"))
+	// Get confirm token.
+	ctoken := strings.TrimSpace(r.PostFormValue("ctoken"))
 
-	// check for missing values
-	// redundant given client side required fields, but good practice
-	if token == "" {
-		msg := MsgMissingRequired
-		logger.Warn("missing field(s)",
-			slog.Group("form",
-				"rtoken empty", token == "",
-			),
-		)
-		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
-			ResetPageData{
-				Title:      app.Cfg.App.Name,
-				Message:    msg,
-				ResetToken: r.URL.Query().Get("rtoken"),
-			})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
+	// Check for missing values.
+	if ctoken == "" {
+		logger.Warn("missing ctoken")
+		data := ConfirmPageData{Message: MsgMissingConfirmToken}
+		app.renderConfirmPage(w, logger, data)
 		return
 	}
 
-	userName, err := app.DB.GetUserNameForConfirmToken(token)
+	userName, err := app.DB.GetUserNameForConfirmToken(ctoken)
 	if err != nil {
-		logger.Error("failed GetUserNameForConfirmToken",
-			"token", token,
+		logger.Error("failed to get username for confirm token",
+			"ctoken", ctoken,
 			"err", err)
-		msg := "Please provide a valid token"
+
+		msg := MsgInvalidConfirmToken
 		if err == ErrConfirmTokenExpired {
-			msg = "Confirm token request expired. Please request again."
+			msg = MsgExpiredConfirmToken
 		}
-		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
-			ResetPageData{
-				Title:      app.Cfg.App.Name,
-				Message:    msg,
-				ResetToken: r.URL.Query().Get("rtoken"),
-			})
-		if err != nil {
-			logger.Error("failed to RenderTemplate", "err", err)
-			return
-		}
-		return
+
+		data := ConfirmPageData{Message: msg, ConfirmToken: ctoken}
+		app.renderConfirmPage(w, logger, data)
 	}
 
-	// store the user and hashed password
-	_, err = app.DB.Exec("UPDATE users SET confirmed = ? WHERE username = ?", true, userName)
+	err = app.DB.ConfirmUser(userName)
 	if err != nil {
-		logger.Error("update confirmed failed",
+		logger.Error("failed to confirm user",
 			"userName", userName, "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: don't allow reuse of the reset token if successful
+	// Remove token to prevent reuse.
+	err = app.DB.RemoveToken("confirm", ctoken)
+	if err != nil {
+		logger.Error("failed to remove token",
+			"ctoken", ctoken, "err", err)
+	}
 
 	// register successful
-	logger.Info("email confirmed", "userName", userName)
+	logger.Info("user confirmed", "userName", userName)
 	app.DB.WriteEvent(EventConfirmed, true, userName, "success")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
