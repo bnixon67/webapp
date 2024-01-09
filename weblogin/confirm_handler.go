@@ -4,6 +4,7 @@
 package weblogin
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -12,15 +13,19 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// ConfirmPageData contains data passed to the HTML template.
+// ConfirmPageData contains data to render the confirm template.
 type ConfirmPageData struct {
 	Title        string
 	Message      string
 	ConfirmToken string
 }
 
-// renderConfirmPage renders the page.
+// renderConfirmPage renders the confirm page.
+//
+// If the page cannot be rendered, http.StatusInternalServerError is
+// set and the caller should ensure no further writes are done to w.
 func (app *LoginApp) renderConfirmPage(w http.ResponseWriter, logger *slog.Logger, data ConfirmPageData) {
+	// Ensure title is set.
 	if data.Title == "" {
 		data.Title = app.Cfg.App.Name
 	}
@@ -45,10 +50,12 @@ func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		app.renderConfirmPage(w, logger,
-			ConfirmPageData{
-				ConfirmToken: r.URL.Query().Get("ctoken"),
-			})
+		// Get confirm token.
+		ctoken := r.URL.Query().Get("ctoken")
+
+		data := ConfirmPageData{ConfirmToken: ctoken}
+		app.renderConfirmPage(w, logger, data)
+
 		logger.Info("done")
 		return
 
@@ -59,9 +66,10 @@ func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	MsgMissingConfirmToken = "Please provide a confirmation token."
-	MsgInvalidConfirmToken = "Please provide a valid confirmation token."
-	MsgExpiredConfirmToken = "The confirmation token has expired. Please request a new one."
+	MsgMissingConfirmToken  = "Please provide a confirmation token."
+	MsgInvalidConfirmToken  = "Please provide a valid confirmation token."
+	MsgExpiredConfirmToken  = "The confirmation token has expired. Please request a new one."
+	MsgUserAlreadyConfirmed = "The user has already been confirmed." // TODO: is there a security risk in providing this information?
 )
 
 // confirmPost is called for the POST method of the RegisterHandler.
@@ -80,6 +88,7 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get username for the confirm token.
 	userName, err := app.DB.GetUserNameForConfirmToken(ctoken)
 	if err != nil {
 		logger.Error("failed to get username for confirm token",
@@ -93,12 +102,24 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 
 		data := ConfirmPageData{Message: msg, ConfirmToken: ctoken}
 		app.renderConfirmPage(w, logger, data)
+		return
 	}
 
+	// Confirm the user.
 	err = app.DB.ConfirmUser(userName)
 	if err != nil {
 		logger.Error("failed to confirm user",
 			"userName", userName, "err", err)
+
+		// Special case if user already confirmed.
+		if errors.Is(err, ErrUserAlreadyConfirmed) {
+			data := ConfirmPageData{
+				Message: MsgUserAlreadyConfirmed,
+			}
+			app.renderConfirmPage(w, logger, data)
+			return
+		}
+
 		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
@@ -110,8 +131,11 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 			"ctoken", ctoken, "err", err)
 	}
 
-	// register successful
+	// Confirmation was successful.
 	logger.Info("user confirmed", "userName", userName)
 	app.DB.WriteEvent(EventConfirmed, true, userName, "success")
+
+	// Redirect to login page.
+	// TODO: allow a path for redirect instead of just login.
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

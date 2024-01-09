@@ -16,21 +16,24 @@ import (
 
 // Constants for error and informational messages displayed to the user.
 const (
-	ConfirmRequestTmpl     = "confirm_request.html"
-	ConfirmSentRequestTmpl = "confirm_request_sent.html"
-	ConfirmTokenSize       = 12   // Size of the confirm token; TODO: move to config
-	ConfirmTokenExpires    = "5m" // Token expiry time; TODO: move to config
+	ConfirmTokenSize    = 12   // Size of the confirm token
+	ConfirmTokenExpires = "5m" // Token expiry time
+	// TODO: move ConfirmTokenSize and ConfirmTokenExpires to config
 )
 
-// ConfirmRequestPageData contains data to render the confirm request templates.
+// ConfirmRequestPageData contains data to render the confirm request template.
 type ConfirmRequestPageData struct {
 	Title     string // The application's title.
 	Message   string // An message to display to the user.
 	EmailFrom string // The email address that sends the confirm message.
 }
 
-// renderConfirmRequestPage renders the page.
+// renderConfirmRequestPage renders the confirm request page.
+//
+// If the page cannot be rendered, http.StatusInternalServerError is
+// set and the caller should ensure no further writes are done to w.
 func (app *LoginApp) renderConfirmRequestPage(w http.ResponseWriter, logger *slog.Logger, data ConfirmRequestPageData) {
+	// Ensure title is set.
 	if data.Title == "" {
 		data.Title = app.Cfg.App.Name
 	}
@@ -42,7 +45,7 @@ func (app *LoginApp) renderConfirmRequestPage(w http.ResponseWriter, logger *slo
 	}
 }
 
-// ConfirmRequestHandler handles HTTP request to request a email confirmation.
+// ConfirmRequestHandler handles a request to request a email confirmation.
 func (app *LoginApp) ConfirmRequestHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
@@ -74,7 +77,8 @@ func (app *LoginApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
 }
 
 // validateConfirmRequestForm ensures all required fields are present and valid.
-// It returns an empty string if validate or a message if not.
+// If all fields are present and valid, an empty string is returned,
+// otherwise a message is returned related to the missing or invalid field.
 func validateConfirmRequestForm(email, action string) string {
 	if action == "" {
 		return MsgMissingAction
@@ -98,8 +102,11 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 	action := strings.TrimSpace(r.PostFormValue("action"))
 
 	// Get logger with request info and function name and add form values.
-	logger := webhandler.GetRequestLoggerWithFunc(r).With(
-		slog.String("email", email), slog.String("action", action))
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger = logger.With(
+		slog.String("email", email),
+		slog.String("action", action),
+	)
 
 	// Validate form values.
 	msg := validateConfirmRequestForm(email, action)
@@ -121,11 +128,12 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 	if username == "" {
 		logger.Warn("did not find username for email",
 			"err", err, "email", email)
-		// continue to allow email not registered message
+		// Don't return to allow sending an email indicating
+		// that the provided email address is not registered.
 	}
 
 	// Create and save a confirm email token.
-	token, err := app.DB.createConfirmEmailToken(username)
+	token, err := app.DB.CreateConfirmEmailToken(username)
 	if err != nil {
 		slog.Error("failed to create confirm email token",
 			"err", err, "username", username)
@@ -140,7 +148,7 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = webutil.RenderTemplate(app.Tmpl, w, ConfirmSentRequestTmpl,
+	err = webutil.RenderTemplate(app.Tmpl, w, "confirm_request_sent.html",
 		ConfirmRequestPageData{
 			Title:     app.Cfg.App.Name,
 			EmailFrom: app.Cfg.SMTP.User,
@@ -204,8 +212,8 @@ func sendEmailToConfirm(action, username, email string, token Token, cfg Config)
 	return err
 }
 
-// createConfirmEmailToken generates a new token to confirm a user's email.
-func (db *LoginDB) createConfirmEmailToken(username string) (Token, error) {
+// CreateConfirmEmailToken generates a new token to confirm a user's email.
+func (db *LoginDB) CreateConfirmEmailToken(username string) (Token, error) {
 	// special case for empty username
 	if username == "" {
 		return Token{}, nil

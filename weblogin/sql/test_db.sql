@@ -7,6 +7,12 @@ VALUES ('test', 'Test User', 'test@email', '$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd
 INSERT INTO users(userName, fullName, email, hashedPassword, admin)
 VALUES ('admin', 'Admin User', 'admin@email', '$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd9IoAPMbXRNNuJ8Sv9ItgV29O', 1);
 
+INSERT INTO users(userName, fullName, email, hashedPassword, admin, confirmed)
+VALUES ('unconfirmed', 'Unconfirmed User', 'unconfirmed@email', '$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd9IoAPMbXRNNuJ8Sv9ItgV29O', 1, 0);
+
+INSERT INTO users(userName, fullName, email, hashedPassword, admin, confirmed)
+VALUES ('confirmed', 'Unconfirmed User', 'confirmed@email', '$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd9IoAPMbXRNNuJ8Sv9ItgV29O', 1, 1);
+
 DROP TABLE IF EXISTS tokens;
 source tokens.sql;
 

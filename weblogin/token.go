@@ -48,8 +48,22 @@ func (db *LoginDB) SaveNewToken(kind, userName string, size int, duration string
 	// hash the token to avoid reuse if database is compromised
 	hashedValue := hash(token.Value)
 
-	qry := `INSERT INTO tokens(hashedValue, expires, kind, userName) VALUES(?, ?, ?, ?)`
-	_, err = db.Exec(qry, hashedValue, token.Expires, kind, userName)
+	// Insert token into database but ensure username exists.
+	qry := `INSERT INTO tokens (hashedValue, expires, kind, userName) SELECT ?, ?, ?, ? FROM users WHERE EXISTS (SELECT 1 FROM users WHERE username = ?) LIMIT 1`
+	result, err := db.Exec(qry, hashedValue, token.Expires, kind, userName, userName)
+	if err != nil {
+		return Token{}, err
+	}
+
+	// Confirm one row was inserted.
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return Token{}, err
+	}
+	if rows != 1 {
+		return Token{}, ErrUserNotFound
+	}
+
 	return token, err
 }
 

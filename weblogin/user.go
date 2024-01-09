@@ -46,6 +46,7 @@ var (
 	ErrUserSessionNotFound       = errors.New("user session not found")
 	ErrUserNotFound              = errors.New("user not found")
 	ErrUserSessionExpired        = errors.New("user session expired")
+	ErrUserAlreadyConfirmed      = errors.New("user already confirmed")
 	ErrResetPasswordTokenExpired = errors.New("reset password token expired")
 	ErrConfirmTokenExpired       = errors.New("confirm token expired")
 	ErrUserGetLastLoginFailed    = errors.New("failed to get user last login")
@@ -181,7 +182,7 @@ func (db *LoginDB) GetUserNameForConfirmToken(tokenValue string) (string, error)
 	var expires time.Time
 	hashedValue := hash(tokenValue)
 
-	qry := `SELECT userName, expires FROM tokens WHERE kind="confirm" AND hashedValue=? LIMIT 1`
+	qry := `SELECT tokens.userName, tokens.expires FROM tokens JOIN users ON tokens.userName = users.userName WHERE kind="confirm" AND hashedValue=? LIMIT 1`
 	row := db.QueryRow(qry, hashedValue)
 	err := row.Scan(&userName, &expires)
 	if err != nil {
@@ -313,6 +314,15 @@ func (db *LoginDB) GetUserFromRequest(w http.ResponseWriter, r *http.Request) (U
 //
 // If username is not found, ErrUserNotFound is returned.
 func (db *LoginDB) ConfirmUser(username string) error {
+	// Check if user is already confirmed.
+	alreadyConfirmed, err := db.RowExists("SELECT 1 FROM users WHERE confirmed = ? AND username = ?", true, username)
+	if err != nil {
+		return err
+	}
+	if alreadyConfirmed {
+		return ErrUserAlreadyConfirmed
+	}
+
 	const qry = "UPDATE users SET confirmed = ? WHERE username = ?"
 	result, err := db.Exec(qry, true, username)
 	if err != nil {
