@@ -120,7 +120,7 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get username for email provided on the form.
-	username, err := app.DB.GetUserNameForEmail(email)
+	username, err := app.DB.UsernameForEmail(email)
 	if err != nil || username == "" {
 		// Don't use logger since log entry doesn't need to contain the request info.
 		slog.Warn("failed to get username from email", "err", err, "email", email)

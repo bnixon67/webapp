@@ -27,7 +27,7 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.DB.GetUserFromRequest(w, r)
+	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -41,7 +41,7 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		})
 
 	// Get sessionToken to remove.
-	sessionTokenValue, err := GetCookieValue(r, SessionTokenCookieName)
+	sessionTokenValue, err := CookieValue(r, SessionTokenCookieName)
 	if err != nil {
 		logger.Error("failed to GetCookieValue", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

@@ -17,7 +17,7 @@ type UserPageData struct {
 	User    User
 }
 
-// UserHandler show any user information if logged in.
+// UserHandler shows user information.
 func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
@@ -29,7 +29,7 @@ func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Attempt to get the user from the request.
-	user, err := app.DB.GetUserFromRequest(w, r)
+	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user from request", "err", err)
 		http.Error(w,
@@ -46,5 +46,5 @@ func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("success", "user", user)
+	logger.Info("done", "user", user)
 }

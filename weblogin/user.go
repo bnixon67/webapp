@@ -54,8 +54,8 @@ var (
 
 var EmptyUser User // EmptyUser is a empty User used when returning a error.
 
-// GetUserForSessionToken returns a user for the given sessionToken.
-func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
+// UserForSessionToken returns a user for the given sessionToken.
+func (db *LoginDB) UserForSessionToken(sessionToken string) (User, error) {
 	var (
 		expires time.Time
 		user    User
@@ -98,8 +98,8 @@ func (db *LoginDB) GetUserForSessionToken(sessionToken string) (User, error) {
 	return user, err
 }
 
-// GetUserForName returns a user for the given userName.
-func (db *LoginDB) GetUserForName(userName string) (User, error) {
+// UserForName returns a user for the given userName.
+func (db *LoginDB) UserForName(userName string) (User, error) {
 	var user User
 
 	qry := `SELECT userName, fullName, email, admin FROM users WHERE userName=? LIMIT 1`
@@ -125,12 +125,12 @@ func (db *LoginDB) EmailExists(email string) (bool, error) {
 	return db.RowExists("SELECT 1 FROM users WHERE email=? LIMIT 1", email)
 }
 
-// GetUserNameForEmail looks up a username based on their email address.
+// UsernameForEmail looks up a username based on their email address.
 //
 // If not found, ErrUserNotFound is returned.
 //
 // If a SQL error occurs, other than ErrNoRows, it is returned.
-func (db *LoginDB) GetUserNameForEmail(email string) (string, error) {
+func (db *LoginDB) UsernameForEmail(email string) (string, error) {
 	var username string
 
 	row := db.QueryRow("SELECT username FROM users WHERE email=?", email)
@@ -145,8 +145,8 @@ func (db *LoginDB) GetUserNameForEmail(email string) (string, error) {
 	return username, err
 }
 
-// GetUserNameForResetToken returns the userName for a given reset token.
-func (db *LoginDB) GetUserNameForResetToken(tokenValue string) (string, error) {
+// UsernameForResetToken returns the userName for a given reset token.
+func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
 	var userName string
 	var expires time.Time
 	hashedValue := hash(tokenValue)
@@ -170,14 +170,14 @@ func (db *LoginDB) GetUserNameForResetToken(tokenValue string) (string, error) {
 	return userName, err
 }
 
-// GetUserNameForConfirmToken returns the userName for a given confirm token.
+// UsernameForConfirmToken returns the userName for a given confirm token.
 //
 // If token is not found, ErrUserNotFound is returned.
 //
 // If token is expired, ErrConfirmTokenExpired is returned and token is removed.
 //
 // If a SQL error occurs, it will be returned, except ErrNoRows.
-func (db *LoginDB) GetUserNameForConfirmToken(tokenValue string) (string, error) {
+func (db *LoginDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 	var userName string
 	var expires time.Time
 	hashedValue := hash(tokenValue)
@@ -277,32 +277,36 @@ func (db *LoginDB) LastLoginForUser(userName string) (time.Time, string, error) 
 
 const SessionTokenCookieName = "session"
 
-// GetUserFromRequest returns the current User or empty User if the session is not found.
-func (db *LoginDB) GetUserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
-	var user User
-
-	// get sessionToken from cookie, if it exists
-	sessionToken, err := GetCookieValue(r, SessionTokenCookieName)
+// UserFromRequest returns the user for the session token cookie in the request.
+// If the session token is invalid or expired, the cookie is removed and an empty user returned.
+func (db *LoginDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
+	// Get value of the session token cookie from the request.
+	sessionToken, err := CookieValue(r, SessionTokenCookieName)
 	if err != nil {
-		return user, err
+		return User{}, err
 	}
 
-	// get user if there is a sessionToken
-	if sessionToken != "" {
-		user, err = db.GetUserForSessionToken(sessionToken)
-		if err != nil {
-			// delete invalid token to prevent session fixation
-			http.SetCookie(w,
-				&http.Cookie{
-					Name:   SessionTokenCookieName,
-					Value:  "",
-					MaxAge: -1,
-				})
-		}
-		// ignore session not found or expired errors
+	// Return an empty User struct if the session token is empty.
+	if sessionToken == "" {
+		return User{}, err
+	}
+
+	// Get user associated with the session token.
+	user, err := db.UserForSessionToken(sessionToken)
+	if err != nil {
+		// Clear cookie if session is invalid or expired token.
+		http.SetCookie(w, &http.Cookie{
+			Name:   SessionTokenCookieName,
+			Value:  "",
+			MaxAge: -1,
+		})
+
+		// Ignore session not found or expired errors.
 		if errors.Is(err, ErrUserSessionNotFound) || errors.Is(err, ErrUserSessionExpired) {
-			err = nil
+			return User{}, nil
 		}
+
+		return User{}, err
 	}
 
 	return user, err

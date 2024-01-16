@@ -81,7 +81,7 @@ func TestGetCookieValue(t *testing.T) {
 			r.AddCookie(tc.cookie)
 		}
 
-		got, err := GetCookieValue(r, tc.name)
+		got, err := CookieValue(r, tc.name)
 		if !errors.Is(err, tc.err) {
 			t.Errorf("GetCookieValue(%v, %q)\ngot err '%v' want '%v'", r, tc.name, err, tc.err)
 		}

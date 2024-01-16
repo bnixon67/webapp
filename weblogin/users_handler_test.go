@@ -52,7 +52,7 @@ func TestUsersHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not login user to get session token")
 	}
-	user, err := app.DB.GetUserForSessionToken(userToken.Value)
+	user, err := app.DB.UserForSessionToken(userToken.Value)
 	if err != nil {
 		t.Fatalf("could not get user")
 	}
@@ -60,7 +60,7 @@ func TestUsersHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not login user to get session token")
 	}
-	admin, err := app.DB.GetUserForSessionToken(adminToken.Value)
+	admin, err := app.DB.UserForSessionToken(adminToken.Value)
 	if err != nil {
 		t.Fatalf("could not get user")
 	}

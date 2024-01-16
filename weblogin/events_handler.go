@@ -31,7 +31,7 @@ func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := app.DB.GetUserFromRequest(w, r)
+	currentUser, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -68,7 +68,7 @@ func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.DB.GetUserFromRequest(w, r)
+	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed GetUser", "err", err)
 		webutil.HttpError(w, http.StatusInternalServerError)

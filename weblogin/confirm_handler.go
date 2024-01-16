@@ -89,7 +89,7 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get username for the confirm token.
-	userName, err := app.DB.GetUserNameForConfirmToken(ctoken)
+	userName, err := app.DB.UsernameForConfirmToken(ctoken)
 	if err != nil {
 		logger.Error("failed to get username for confirm token",
 			"ctoken", ctoken,

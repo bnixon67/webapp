@@ -40,7 +40,7 @@ func TestUserHandler(t *testing.T) {
 	if err != nil {
 		t.Errorf("could not login user to get session token")
 	}
-	user, err := app.DB.GetUserForSessionToken(token.Value)
+	user, err := app.DB.UserForSessionToken(token.Value)
 	if err != nil {
 		t.Errorf("could not get user")
 	}

@@ -118,7 +118,7 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Get username for email provided on the form.
-	username, err := app.DB.GetUserNameForEmail(email)
+	username, err := app.DB.UsernameForEmail(email)
 	if err != nil && !errors.Is(err, ErrUserNotFound) {
 		logger.Error("failed to get username for email",
 			"err", err, "email", email)

@@ -33,24 +33,21 @@ func GenerateRandomString(n int) (string, error) {
 
 var ErrRequestNil = errors.New("request is nil")
 
-// GetCookieValue returns the Value for the named cookie or an empty string if not found or an error occurs.
-func GetCookieValue(r *http.Request, name string) (string, error) {
-	var value string
+// CookieValue returns the named cookie value provided in the request or an empty string if not found.
+func CookieValue(r *http.Request, name string) (string, error) {
 	if r == nil {
-		return value, ErrRequestNil
+		return "", ErrRequestNil
 	}
 
 	cookie, err := r.Cookie(name)
 	if err != nil {
-		// ignore ErrNoCookie
-		if !errors.Is(err, http.ErrNoCookie) {
-			return value, err
+		if errors.Is(err, http.ErrNoCookie) {
+			return "", nil // Ignore ErrNoCookie.
 		}
-	} else {
-		value = cookie.Value
+		return "", err // Return other errors.
 	}
 
-	return value, nil
+	return cookie.Value, nil
 }
 
 // IsEmpty returns true if any of the strings are empty, otherwise false.

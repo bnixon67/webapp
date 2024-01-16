@@ -1,12 +1,19 @@
 package weblogin
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 )
 
+var ErrAppNil = errors.New("app is nil")
+
 // LoginUser returns a session Token if userName and password is correct.
 func (app *LoginApp) LoginUser(userName, password string) (Token, error) {
+	if app == nil {
+		return Token{}, ErrAppNil
+	}
+
 	err := app.DB.CompareUserPassword(userName, password)
 	if err != nil {
 		app.DB.WriteEvent(EventLogin, false, userName, err.Error())
