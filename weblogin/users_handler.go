@@ -110,7 +110,7 @@ func GetUsers(db *LoginDB) ([]User, error) {
 		return users, errors.New("invalid db")
 	}
 
-	qry := `SELECT userName, fullName, email, admin, created FROM users`
+	qry := `SELECT username, fullName, email, admin, created FROM users`
 
 	rows, err := db.Query(qry)
 	if err != nil {

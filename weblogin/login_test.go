@@ -10,20 +10,20 @@ import (
 func TestLoginUser(t *testing.T) {
 	testCases := []struct {
 		name      string
-		userName  string
+		username  string
 		password  string
 		wantToken weblogin.Token
 		wantErr   error
 	}{
 		{
 			name:     "Successful login",
-			userName: "test",
+			username: "test",
 			password: "password",
 			wantErr:  nil,
 		},
 		{
 			name:     "Incorrect password",
-			userName: "test",
+			username: "test",
 			password: "invalid",
 			wantErr:  weblogin.ErrIncorrectPassword,
 		},
@@ -34,8 +34,8 @@ func TestLoginUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			app := AppForTest(t)
 
-			// gotToken, err := app.LoginUser(tc.userName, tc.password)
-			_, err := app.LoginUser(tc.userName, tc.password)
+			// gotToken, err := app.LoginUser(tc.username, tc.password)
+			_, err := app.LoginUser(tc.username, tc.password)
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("LoginUser() error = %v, wantErr %v", err, tc.wantErr)

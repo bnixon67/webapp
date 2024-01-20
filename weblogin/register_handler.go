@@ -64,7 +64,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Get form values and remove leading and trailing white space.
-	userName := strings.TrimSpace(r.PostFormValue("userName"))
+	username := strings.TrimSpace(r.PostFormValue("username"))
 	fullName := strings.TrimSpace(r.PostFormValue("fullName"))
 	email := strings.TrimSpace(r.PostFormValue("email"))
 	password1 := strings.TrimSpace(r.PostFormValue("password1"))
@@ -72,7 +72,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 
 	logger = slog.With(
 		slog.Group("form",
-			"userName", userName,
+			"username", username,
 			"fullName", fullName,
 			"email", email,
 			// Don't log password values.
@@ -82,7 +82,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	)
 
 	// Check for missing values.
-	if IsEmpty(userName, fullName, email, password1, password2) {
+	if IsEmpty(username, fullName, email, password1, password2) {
 		logger.Warn("missing values")
 		app.renderRegisterPage(w, logger, MsgMissingRequired)
 		return
@@ -95,8 +95,8 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check that userName doesn't already exist.
-	userExists, err := app.DB.UserExists(userName)
+	// Check that username doesn't already exist.
+	userExists, err := app.DB.UserExists(username)
 	if err != nil {
 		logger.Error("UserExists failed", "err", err)
 		webutil.HttpError(w, http.StatusInternalServerError)
@@ -104,7 +104,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if userExists {
 		logger.Warn("user name already exists")
-		app.DB.WriteEvent(EventRegister, false, userName, "user name already exists")
+		app.DB.WriteEvent(EventRegister, false, username, "user name already exists")
 		app.renderRegisterPage(w, logger, MsgUsernameExists)
 		return
 	}
@@ -118,22 +118,22 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if emailExists {
 		logger.Warn("email already exists")
-		app.DB.WriteEvent(EventRegister, false, userName, "email already exists: "+email)
+		app.DB.WriteEvent(EventRegister, false, username, "email already exists: "+email)
 		app.renderRegisterPage(w, logger, MsgEmailExists)
 		return
 	}
 
 	// Register user.
-	err = app.DB.RegisterUser(userName, fullName, email, password1)
+	err = app.DB.RegisterUser(username, fullName, email, password1)
 	if err != nil {
 		logger.Error("RegisterUser failed", "err", err)
-		app.DB.WriteEvent(EventRegister, false, userName, err.Error())
+		app.DB.WriteEvent(EventRegister, false, username, err.Error())
 		app.renderRegisterPage(w, logger, MsgRegisterFailed)
 		return
 	}
 
 	// Registration successful
 	logger.Info("registered user")
-	app.DB.WriteEvent(EventRegister, true, userName, "registered user")
+	app.DB.WriteEvent(EventRegister, true, username, "registered user")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

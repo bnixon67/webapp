@@ -27,7 +27,7 @@ func hash(s string) string {
 }
 
 // SaveNewToken creates and saves a token for user of size that expires in duration.
-func (db *LoginDB) SaveNewToken(kind, userName string, size int, duration string) (Token, error) {
+func (db *LoginDB) SaveNewToken(kind, username string, size int, duration string) (Token, error) {
 	var err error
 
 	token := Token{Kind: kind}
@@ -49,8 +49,8 @@ func (db *LoginDB) SaveNewToken(kind, userName string, size int, duration string
 	hashedValue := hash(token.Value)
 
 	// Insert token into database but ensure username exists.
-	qry := `INSERT INTO tokens (hashedValue, expires, kind, userName) SELECT ?, ?, ?, ? FROM users WHERE EXISTS (SELECT 1 FROM users WHERE username = ?) LIMIT 1`
-	result, err := db.Exec(qry, hashedValue, token.Expires, kind, userName, userName)
+	qry := `INSERT INTO tokens (hashedValue, expires, kind, username) SELECT ?, ?, ?, ? FROM users WHERE EXISTS (SELECT 1 FROM users WHERE username = ?) LIMIT 1`
+	result, err := db.Exec(qry, hashedValue, token.Expires, kind, username, username)
 	if err != nil {
 		return Token{}, err
 	}

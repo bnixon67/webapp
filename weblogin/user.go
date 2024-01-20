@@ -67,7 +67,7 @@ func (db *LoginDB) UserForSessionToken(sessionToken string) (User, error) {
 		return EmptyUser, ErrInvalidDB
 	}
 
-	qry := `SELECT users.userName, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.userName=tokens.userName WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
+	qry := `SELECT users.username, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.username=tokens.username WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
 	result := db.QueryRow(qry, hashedValue)
 	err := result.Scan(&user.Username, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
 	if err != nil {
@@ -98,12 +98,12 @@ func (db *LoginDB) UserForSessionToken(sessionToken string) (User, error) {
 	return user, err
 }
 
-// UserForName returns a user for the given userName.
-func (db *LoginDB) UserForName(userName string) (User, error) {
+// UserForName returns a user for the given username.
+func (db *LoginDB) UserForName(username string) (User, error) {
 	var user User
 
-	qry := `SELECT userName, fullName, email, admin FROM users WHERE userName=? LIMIT 1`
-	result := db.QueryRow(qry, userName)
+	qry := `SELECT username, fullName, email, admin FROM users WHERE username=? LIMIT 1`
+	result := db.QueryRow(qry, username)
 	err := result.Scan(&user.Username, &user.FullName, &user.Email, &user.IsAdmin)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -115,9 +115,9 @@ func (db *LoginDB) UserForName(userName string) (User, error) {
 	return user, err
 }
 
-// UserExists returns true if the given userName already exists in db.
-func (db *LoginDB) UserExists(userName string) (bool, error) {
-	return db.RowExists("SELECT 1 FROM users WHERE userName=? LIMIT 1", userName)
+// UserExists returns true if the given username already exists in db.
+func (db *LoginDB) UserExists(username string) (bool, error) {
+	return db.RowExists("SELECT 1 FROM users WHERE username=? LIMIT 1", username)
 }
 
 // EmailExists returns true if the given email already exists.
@@ -145,15 +145,15 @@ func (db *LoginDB) UsernameForEmail(email string) (string, error) {
 	return username, err
 }
 
-// UsernameForResetToken returns the userName for a given reset token.
+// UsernameForResetToken returns the username for a given reset token.
 func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
-	var userName string
+	var username string
 	var expires time.Time
 	hashedValue := hash(tokenValue)
 
-	qry := `SELECT userName, expires FROM tokens WHERE kind="reset" AND hashedValue=?`
+	qry := `SELECT username, expires FROM tokens WHERE kind="reset" AND hashedValue=?`
 	row := db.QueryRow(qry, hashedValue)
-	err := row.Scan(&userName, &expires)
+	err := row.Scan(&username, &expires)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrUserNotFound
@@ -167,10 +167,10 @@ func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
 		return "", ErrResetPasswordTokenExpired
 	}
 
-	return userName, err
+	return username, err
 }
 
-// UsernameForConfirmToken returns the userName for a given confirm token.
+// UsernameForConfirmToken returns the username for a given confirm token.
 //
 // If token is not found, ErrUserNotFound is returned.
 //
@@ -178,13 +178,13 @@ func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
 //
 // If a SQL error occurs, it will be returned, except ErrNoRows.
 func (db *LoginDB) UsernameForConfirmToken(tokenValue string) (string, error) {
-	var userName string
+	var username string
 	var expires time.Time
 	hashedValue := hash(tokenValue)
 
-	qry := `SELECT tokens.userName, tokens.expires FROM tokens JOIN users ON tokens.userName = users.userName WHERE kind="confirm" AND hashedValue=? LIMIT 1`
+	qry := `SELECT tokens.username, tokens.expires FROM tokens JOIN users ON tokens.username = users.username WHERE kind="confirm" AND hashedValue=? LIMIT 1`
 	row := db.QueryRow(qry, hashedValue)
-	err := row.Scan(&userName, &expires)
+	err := row.Scan(&username, &expires)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrUserNotFound
@@ -198,21 +198,21 @@ func (db *LoginDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 		return "", ErrConfirmTokenExpired
 	}
 
-	return userName, err
+	return username, err
 }
 
 var ErrIncorrectPassword = errors.New("incorrect password")
 
 // CompareUserPassword compares the password and hashed password for the user.
 // Returns nil on success or an error on failure.
-func (db *LoginDB) CompareUserPassword(userName, password string) error {
+func (db *LoginDB) CompareUserPassword(username, password string) error {
 	if db == nil {
 		return errors.New("invalid db")
 	}
 
 	// get hashed password for the given user
 	qry := `SELECT hashedPassword FROM users WHERE username=? LIMIT 1`
-	result := db.QueryRow(qry, userName)
+	result := db.QueryRow(qry, username)
 
 	var hashedPassword string
 	err := result.Scan(&hashedPassword)
@@ -234,7 +234,7 @@ func (db *LoginDB) CompareUserPassword(userName, password string) error {
 
 // RegisterUser registers a user with the given values.
 // Returns nil on success or an error on failure.
-func (db *LoginDB) RegisterUser(userName, fullName, email, password string) error {
+func (db *LoginDB) RegisterUser(username, fullName, email, password string) error {
 	// hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -243,7 +243,7 @@ func (db *LoginDB) RegisterUser(userName, fullName, email, password string) erro
 
 	// store the user and hashed password
 	_, err = db.Exec("INSERT INTO users(username, hashedPassword, fullName, email) VALUES (?, ?, ?, ?)",
-		userName, hashedPassword, fullName, email)
+		username, hashedPassword, fullName, email)
 	if err != nil {
 		return err
 	}
@@ -251,8 +251,8 @@ func (db *LoginDB) RegisterUser(userName, fullName, email, password string) erro
 	return nil
 }
 
-// LastLoginForUser retrieves the last login time and result for a given userName.  It returns zero values in case of no previous login.
-func (db *LoginDB) LastLoginForUser(userName string) (time.Time, string, error) {
+// LastLoginForUser retrieves the last login time and result for a given username.  It returns zero values in case of no previous login.
+func (db *LoginDB) LastLoginForUser(username string) (time.Time, string, error) {
 	var lastLogin time.Time
 	var success string
 
@@ -261,8 +261,8 @@ func (db *LoginDB) LastLoginForUser(userName string) (time.Time, string, error) 
 	}
 
 	// get the second row, if it exists, since first row is current login
-	qry := `SELECT created, success FROM events WHERE userName = ? AND name = ? ORDER BY created DESC LIMIT 1 OFFSET 1`
-	row := db.QueryRow(qry, userName, EventLogin)
+	qry := `SELECT created, success FROM events WHERE username = ? AND name = ? ORDER BY created DESC LIMIT 1 OFFSET 1`
+	row := db.QueryRow(qry, username, EventLogin)
 	err := row.Scan(&lastLogin, &success)
 	if err != nil {
 		// ignore ErrNoRows since there may not be a last login

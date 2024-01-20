@@ -17,7 +17,7 @@ func TestLastLoginForUser(t *testing.T) {
 	dt := time.Date(2023, time.January, 15, 1, 0, 0, 0, time.UTC)
 
 	cases := []struct {
-		userName string
+		username string
 		want     time.Time
 		err      error
 	}{
@@ -31,12 +31,12 @@ func TestLastLoginForUser(t *testing.T) {
 	app := AppForTest(t)
 
 	for _, tc := range cases {
-		got, _, err := app.DB.LastLoginForUser(tc.userName)
+		got, _, err := app.DB.LastLoginForUser(tc.username)
 		if !errors.Is(err, tc.err) {
-			t.Errorf("LastLoginForUser(db, %q)\ngot err '%v' want '%v'", tc.userName, err, tc.err)
+			t.Errorf("LastLoginForUser(db, %q)\ngot err '%v' want '%v'", tc.username, err, tc.err)
 		}
 		if got != tc.want {
-			t.Errorf("LastLoginForUser(db, %q)\n got '%v'\nwant '%v'", tc.userName, got, tc.want)
+			t.Errorf("LastLoginForUser(db, %q)\n got '%v'\nwant '%v'", tc.username, got, tc.want)
 		}
 	}
 }

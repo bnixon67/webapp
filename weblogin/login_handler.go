@@ -57,15 +57,15 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// get form values
-	userName := strings.TrimSpace(r.PostFormValue("username"))
+	username := strings.TrimSpace(r.PostFormValue("username"))
 	password := strings.TrimSpace(r.PostFormValue("password"))
 
 	// check for missing values
 	var msg string
 	switch {
-	case userName == "" && password == "":
+	case username == "" && password == "":
 		msg = MsgMissingUsernameAndPassword
-	case userName == "":
+	case username == "":
 		msg = MsgMissingUsername
 	case password == "":
 		msg = MsgMissingPassword
@@ -82,8 +82,8 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// attempt to login the given userName with the given password
-	token, err := app.LoginUser(userName, password)
+	// attempt to login the given username with the given password
+	token, err := app.LoginUser(username, password)
 	if err != nil {
 		logger.Error("failed to LoginUser", "err", err)
 

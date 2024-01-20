@@ -58,7 +58,7 @@ func (db *LoginDB) WriteEvent(name EventName, success bool, username, message st
 		return ErrWriteEventNilDB
 	}
 
-	const qry = `INSERT INTO events(name, success, userName, message) VALUES(?, ?, ?, ?)`
+	const qry = `INSERT INTO events(name, success, username, message) VALUES(?, ?, ?, ?)`
 	result, err := db.Exec(qry, e.Name, e.Success, e.Username, e.Message)
 	if err != nil {
 		logger.Error("failed to write event", "err", err)

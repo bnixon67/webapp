@@ -101,7 +101,7 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 		return
 	}
 
-	userName, err := app.DB.UsernameForResetToken(resetToken)
+	username, err := app.DB.UsernameForResetToken(resetToken)
 	if err != nil {
 		logger.Error("failed UsernameForResetToken",
 			"resetToken", resetToken,
@@ -128,7 +128,7 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 	if err != nil {
 		msg := "Cannot hash password"
 		logger.Error("failed bcrypt.GenerateFromPassword",
-			"userName", userName, "err", err)
+			"username", username, "err", err)
 		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
 			ResetPageData{Title: app.Cfg.App.Name, Message: msg})
 		if err != nil {
@@ -139,10 +139,10 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 	}
 
 	// store the user and hashed password
-	_, err = app.DB.Exec("UPDATE users SET hashedPassword = ? WHERE username = ?", string(hashedPassword), userName)
+	_, err = app.DB.Exec("UPDATE users SET hashedPassword = ? WHERE username = ?", string(hashedPassword), username)
 	if err != nil {
 		logger.Error("update password failed",
-			"userName", userName, "err", err)
+			"username", username, "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -150,7 +150,7 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 	// TODO: don't allow reuse of the reset token if successful
 
 	// register successful
-	logger.Info("successful password reset", "userName", userName)
-	app.DB.WriteEvent(EventResetPass, true, userName, "success")
+	logger.Info("successful password reset", "username", username)
+	app.DB.WriteEvent(EventResetPass, true, username, "success")
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

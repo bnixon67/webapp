@@ -79,7 +79,7 @@ func TestRegisterHandlerPostMissingValues(t *testing.T) {
 
 func TestRegisterHandlerPostExistingUser(t *testing.T) {
 	data := url.Values{
-		"userName":  {"test"},
+		"username":  {"test"},
 		"fullName":  {"full name"},
 		"email":     {"email"},
 		"password1": {"password one"},
@@ -117,7 +117,7 @@ func TestRegisterHandlerPostExistingEmail(t *testing.T) {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUsername},
+		"username":  {randomUsername},
 		"fullName":  {"full name"},
 		"email":     {"test@email"},
 		"password1": {"password one"},
@@ -155,7 +155,7 @@ func TestRegisterHandlerPostMismatchedPassword(t *testing.T) {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUsername},
+		"username":  {randomUsername},
 		"fullName":  {"full name"},
 		"email":     {randomUsername + "@email"},
 		"password1": {"password one"},
@@ -193,7 +193,7 @@ func TestRegisterHandlerPostMissingPassword1(t *testing.T) {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUsername},
+		"username":  {randomUsername},
 		"fullName":  {"full name"},
 		"email":     {randomUsername + "@email"},
 		"password1": {""},
@@ -231,7 +231,7 @@ func TestRegisterHandlerPostValid(t *testing.T) {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUsername},
+		"username":  {randomUsername},
 		"fullName":  {"full name"},
 		"email":     {randomUsername + "@email"},
 		"password1": {"password"},

@@ -89,7 +89,7 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get username for the confirm token.
-	userName, err := app.DB.UsernameForConfirmToken(ctoken)
+	username, err := app.DB.UsernameForConfirmToken(ctoken)
 	if err != nil {
 		logger.Error("failed to get username for confirm token",
 			"ctoken", ctoken,
@@ -106,10 +106,10 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Confirm the user.
-	err = app.DB.ConfirmUser(userName)
+	err = app.DB.ConfirmUser(username)
 	if err != nil {
 		logger.Error("failed to confirm user",
-			"userName", userName, "err", err)
+			"username", username, "err", err)
 
 		// Special case if user already confirmed.
 		if errors.Is(err, ErrUserAlreadyConfirmed) {
@@ -132,8 +132,8 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Confirmation was successful.
-	logger.Info("user confirmed", "userName", userName)
-	app.DB.WriteEvent(EventConfirmed, true, userName, "success")
+	logger.Info("user confirmed", "username", username)
+	app.DB.WriteEvent(EventConfirmed, true, username, "success")
 
 	// Redirect to login page.
 	// TODO: allow a path for redirect instead of just login.

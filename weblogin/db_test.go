@@ -80,21 +80,21 @@ func TestRowExists(t *testing.T) {
 	}{
 		{
 			name:    "RowExists",
-			query:   "SELECT 1 FROM users WHERE userName = ?",
+			query:   "SELECT 1 FROM users WHERE username = ?",
 			args:    []interface{}{"test"},
 			want:    true,
 			wantErr: false,
 		},
 		{
 			name:    "RowDoesNotExist",
-			query:   "SELECT 1 FROM users WHERE userName = ?",
+			query:   "SELECT 1 FROM users WHERE username = ?",
 			args:    []interface{}{"nosuchuser"},
 			want:    false,
 			wantErr: false,
 		},
 		{
 			name:    "BadQuery",
-			query:   "SELECT 1 FROM nosuchtable WHERE userName = ?",
+			query:   "SELECT 1 FROM nosuchtable WHERE username = ?",
 			args:    []interface{}{"nosuchuser"},
 			want:    false,
 			wantErr: true,

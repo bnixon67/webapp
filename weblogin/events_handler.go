@@ -110,7 +110,7 @@ func GetEvents(db *LoginDB) ([]Event, error) {
 		return events, errors.New("invalid db")
 	}
 
-	qry := `SELECT name, success, userName, message, created FROM events`
+	qry := `SELECT name, success, username, message, created FROM events`
 
 	rows, err := db.Query(qry)
 	if err != nil {
