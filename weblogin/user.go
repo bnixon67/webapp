@@ -16,7 +16,7 @@ import (
 
 // User represents in the application.
 type User struct {
-	UserName        string
+	Username        string
 	FullName        string
 	Email           string
 	IsAdmin         bool
@@ -29,7 +29,7 @@ type User struct {
 // LogValue implements slog.LogValuer to group User fields in log output.
 func (u User) LogValue() slog.Value {
 	return slog.GroupValue(
-		slog.String("UserName", u.UserName),
+		slog.String("Username", u.Username),
 		slog.String("Fullname", u.FullName),
 		slog.String("Email", u.Email),
 		slog.Bool("IsAdmin", u.IsAdmin),
@@ -69,7 +69,7 @@ func (db *LoginDB) UserForSessionToken(sessionToken string) (User, error) {
 
 	qry := `SELECT users.userName, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.userName=tokens.userName WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
 	result := db.QueryRow(qry, hashedValue)
-	err := result.Scan(&user.UserName, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
+	err := result.Scan(&user.Username, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
 	if err != nil {
 		// return custom error and empty user if session not found
 		if errors.Is(err, sql.ErrNoRows) {
@@ -90,7 +90,7 @@ func (db *LoginDB) UserForSessionToken(sessionToken string) (User, error) {
 		return EmptyUser, ErrUserSessionExpired
 	}
 
-	user.LastLoginTime, user.LastLoginResult, err = db.LastLoginForUser(user.UserName)
+	user.LastLoginTime, user.LastLoginResult, err = db.LastLoginForUser(user.Username)
 	if err != nil {
 		return user, fmt.Errorf("%w: %v", ErrUserGetLastLoginFailed, err)
 	}
@@ -104,7 +104,7 @@ func (db *LoginDB) UserForName(userName string) (User, error) {
 
 	qry := `SELECT userName, fullName, email, admin FROM users WHERE userName=? LIMIT 1`
 	result := db.QueryRow(qry, userName)
-	err := result.Scan(&user.UserName, &user.FullName, &user.Email, &user.IsAdmin)
+	err := result.Scan(&user.Username, &user.FullName, &user.Email, &user.IsAdmin)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return EmptyUser, ErrUserNotFound

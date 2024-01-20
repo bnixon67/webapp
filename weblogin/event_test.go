@@ -27,7 +27,7 @@ func TestWriteEvent(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "UserName too long",
+			name: "Username too long",
 			db:   app.DB,
 			event: weblogin.Event{
 				Name:     weblogin.EventLogin,

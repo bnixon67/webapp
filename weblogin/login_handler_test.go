@@ -43,7 +43,7 @@ func TestLoginHandlerGet(t *testing.T) {
 	}
 }
 
-func TestLoginHandlerPostMissingUserNameAndPassword(t *testing.T) {
+func TestLoginHanlderPostMissingUsernameAndPassword(t *testing.T) {
 	app := AppForTest(t)
 
 	w := httptest.NewRecorder()
@@ -56,7 +56,7 @@ func TestLoginHandlerPostMissingUserNameAndPassword(t *testing.T) {
 		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
 	}
 
-	expectedInBody := weblogin.MsgMissingUserNameAndPassword
+	expectedInBody := weblogin.MsgMissingUsernameAndPassword
 	if !strings.Contains(w.Body.String(), expectedInBody) {
 		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
 	}
@@ -86,7 +86,7 @@ func TestLoginHandlerPostMissingPassword(t *testing.T) {
 	}
 }
 
-func TestLoginHandlerPostMissingUserName(t *testing.T) {
+func TestLoginHandlerPostMissingUsername(t *testing.T) {
 	data := url.Values{
 		"password": {"foo"},
 	}
@@ -104,13 +104,13 @@ func TestLoginHandlerPostMissingUserName(t *testing.T) {
 		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
 	}
 
-	expectedInBody := weblogin.MsgMissingUserName
+	expectedInBody := weblogin.MsgMissingUsername
 	if !strings.Contains(w.Body.String(), expectedInBody) {
 		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
 	}
 }
 
-func TestLoginHandlerPostInvalidUserNameAndPassword(t *testing.T) {
+func TestLoginHanlderPostInvalidUsernameAndPassword(t *testing.T) {
 	data := url.Values{
 		"username": {"foo"},
 		"password": {"bar"},
@@ -135,7 +135,7 @@ func TestLoginHandlerPostInvalidUserNameAndPassword(t *testing.T) {
 	}
 }
 
-func TestLoginHandlerPostValidUserNameAndPassword(t *testing.T) {
+func TestLoginHandlerPostValidUsernameAndPassword(t *testing.T) {
 	data := url.Values{
 		"username": {"test"},
 		"password": {"password"},
@@ -160,7 +160,7 @@ func TestLoginHandlerPostValidUserNameAndPassword(t *testing.T) {
 	}
 }
 
-func TestLoginHandlerPostValidUserNameAndInvalidPassword(t *testing.T) {
+func TestLoginHandlerPostValidUsernameAndInvalidPassword(t *testing.T) {
 	data := url.Values{
 		"username": {"test"},
 		"password": {"invalid"},

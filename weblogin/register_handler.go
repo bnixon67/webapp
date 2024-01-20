@@ -14,7 +14,7 @@ import (
 
 const (
 	MsgMissingRequired    = "Please provide required values"
-	MsgUserNameExists     = "User Name already exists."
+	MsgUsernameExists     = "Username already exists."
 	MsgEmailExists        = "Email Address already registered."
 	MsgPasswordsDifferent = "Password values do not match."
 	MsgRegisterFailed     = "Unable to register user."
@@ -105,7 +105,7 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	if userExists {
 		logger.Warn("user name already exists")
 		app.DB.WriteEvent(EventRegister, false, userName, "user name already exists")
-		app.renderRegisterPage(w, logger, MsgUserNameExists)
+		app.renderRegisterPage(w, logger, MsgUsernameExists)
 		return
 	}
 

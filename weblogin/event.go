@@ -37,7 +37,7 @@ func (e Event) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.String("Name", string(e.Name)),
 		slog.Bool("Success", e.Success),
-		slog.String("UserName", e.Username),
+		slog.String("Username", e.Username),
 		slog.String("Message", e.Message),
 		slog.Time("Created", e.Created),
 	)

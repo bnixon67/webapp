@@ -103,7 +103,7 @@ func (app *LoginApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileN
 
 	userName, err := app.DB.UsernameForResetToken(resetToken)
 	if err != nil {
-		logger.Error("failed GetUserNameForResetToken",
+		logger.Error("failed UsernameForResetToken",
 			"resetToken", resetToken,
 			"err", err)
 		msg := "Please provide a valid Reset Token"

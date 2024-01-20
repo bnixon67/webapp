@@ -99,7 +99,7 @@ func TestRegisterHandlerPostExistingUser(t *testing.T) {
 		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
 	}
 
-	expectedInBody := weblogin.MsgUserNameExists
+	expectedInBody := weblogin.MsgUsernameExists
 	if !strings.Contains(w.Body.String(), expectedInBody) {
 		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
 	}
@@ -112,12 +112,12 @@ func TestRegisterHandlerPostExistingUser(t *testing.T) {
 }
 
 func TestRegisterHandlerPostExistingEmail(t *testing.T) {
-	randomUserName, err := weblogin.GenerateRandomString(8)
+	randomUsername, err := weblogin.GenerateRandomString(8)
 	if err != nil {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUserName},
+		"userName":  {randomUsername},
 		"fullName":  {"full name"},
 		"email":     {"test@email"},
 		"password1": {"password one"},
@@ -150,14 +150,14 @@ func TestRegisterHandlerPostExistingEmail(t *testing.T) {
 }
 
 func TestRegisterHandlerPostMismatchedPassword(t *testing.T) {
-	randomUserName, err := weblogin.GenerateRandomString(8)
+	randomUsername, err := weblogin.GenerateRandomString(8)
 	if err != nil {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUserName},
+		"userName":  {randomUsername},
 		"fullName":  {"full name"},
-		"email":     {randomUserName + "@email"},
+		"email":     {randomUsername + "@email"},
 		"password1": {"password one"},
 		"password2": {"password two"},
 	}
@@ -188,14 +188,14 @@ func TestRegisterHandlerPostMismatchedPassword(t *testing.T) {
 }
 
 func TestRegisterHandlerPostMissingPassword1(t *testing.T) {
-	randomUserName, err := weblogin.GenerateRandomString(8)
+	randomUsername, err := weblogin.GenerateRandomString(8)
 	if err != nil {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUserName},
+		"userName":  {randomUsername},
 		"fullName":  {"full name"},
-		"email":     {randomUserName + "@email"},
+		"email":     {randomUsername + "@email"},
 		"password1": {""},
 		"password2": {"password two"},
 	}
@@ -226,14 +226,14 @@ func TestRegisterHandlerPostMissingPassword1(t *testing.T) {
 }
 
 func TestRegisterHandlerPostValid(t *testing.T) {
-	randomUserName, err := weblogin.GenerateRandomString(8)
+	randomUsername, err := weblogin.GenerateRandomString(8)
 	if err != nil {
 		t.Errorf("could not GenerateRandomString")
 	}
 	data := url.Values{
-		"userName":  {randomUserName},
+		"userName":  {randomUsername},
 		"fullName":  {"full name"},
-		"email":     {randomUserName + "@email"},
+		"email":     {randomUsername + "@email"},
 		"password1": {"password"},
 		"password2": {"password"},
 	}

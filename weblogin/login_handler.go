@@ -45,8 +45,8 @@ func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	MsgMissingUserNameAndPassword = "Missing username and password"
-	MsgMissingUserName            = "Missing username"
+	MsgMissingUsernameAndPassword = "Missing username and password"
+	MsgMissingUsername            = "Missing username"
 	MsgMissingPassword            = "Missing password"
 	MsgLoginFailed                = "Login Failed"
 )
@@ -64,9 +64,9 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 	var msg string
 	switch {
 	case userName == "" && password == "":
-		msg = MsgMissingUserNameAndPassword
+		msg = MsgMissingUsernameAndPassword
 	case userName == "":
-		msg = MsgMissingUserName
+		msg = MsgMissingUsername
 	case password == "":
 		msg = MsgMissingPassword
 	}

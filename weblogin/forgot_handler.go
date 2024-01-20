@@ -160,7 +160,7 @@ type emailData struct {
 	Title    string
 	BaseURL  string
 	Token    Token
-	UserName string
+	Username string
 }
 
 // Templates for the emails sent during the 'forgot password' or 'forgot username' processes.
@@ -176,7 +176,7 @@ To reset your password for {{.Title}}, please visit {{.BaseURL}}/reset?rtoken={{
 You can ignore this message if you did not request a reset password for {{.Title}}.
 `
 	emailForgotUserTemplate = `
-Your user name for {{.Title}} is {{.UserName}}.
+Your user name for {{.Title}} is {{.Username}}.
 `
 )
 
@@ -229,7 +229,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 			"user",
 			emailForgotUserTemplate,
 			emailData{
-				UserName: username,
+				Username: username,
 				Title:    cfg.App.Name,
 				BaseURL:  cfg.BaseURL,
 			})

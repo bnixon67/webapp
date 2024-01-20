@@ -10,7 +10,7 @@
       <b>User</b>
     </div>
 
-    {{ if .User.UserName }}
+    {{ if .User.Username }}
     <div class="w3-bar w3-mobile w3-light-grey">
       <div class="w3-bar-item w3-mobile">
         <a href="/users">Users</a>
@@ -21,14 +21,14 @@
       </div>
       {{ end -}}
       <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout {{.User.UserName}}</a>
+        <a href="/logout">Logout {{.User.Username}}</a>
       </div>
     </div>
     {{ end }}
 
-    {{ if .User.UserName }}
+    {{ if .User.Username }}
     <table class="w3-container w3-mobile w3-table w3-responsive">
-      <tr> <th>User Name</th> <td>{{ .User.UserName }}</td> </tr>
+      <tr> <th>User Name</th> <td>{{ .User.Username }}</td> </tr>
       <tr> <th>Full Name</th> <td>{{ .User.FullName }}</td> </tr>
       <tr> <th>Email</th> <td>{{ .User.Email }}</td> </tr>
       <tr> <th>IsAdmin</th> <td>{{ .User.IsAdmin }}</td> </tr>

@@ -123,7 +123,7 @@ func GetUsers(db *LoginDB) ([]User, error) {
 	for rows.Next() {
 		var user User
 
-		err = rows.Scan(&user.UserName, &user.FullName, &user.Email, &user.IsAdmin, &user.Created)
+		err = rows.Scan(&user.Username, &user.FullName, &user.Email, &user.IsAdmin, &user.Created)
 		if err != nil {
 			slog.Error("failed rows.Scan", "err", err)
 		}
