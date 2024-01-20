@@ -1,3 +1,6 @@
+// Copyright 2024 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package weblogin
 
 import (
@@ -24,7 +27,7 @@ const (
 type Event struct {
 	Name     EventName // Name of the event.
 	Success  bool      // Indicates if the event was successful or not.
-	UserName string    // Username associated with the event.
+	Username string    // Username associated with the event.
 	Message  string    // Message or details about the event.
 	Created  time.Time // Timestamp of event, set by db when inserted.
 }
@@ -33,39 +36,47 @@ type Event struct {
 func (e Event) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.String("Name", string(e.Name)),
-		slog.String("Success", fmt.Sprintf("%t", e.Success)),
-		slog.String("UserName", e.UserName),
+		slog.Bool("Success", e.Success),
+		slog.String("UserName", e.Username),
 		slog.String("Message", e.Message),
 		slog.Time("Created", e.Created),
 	)
 }
 
 var (
-	ErrWriteEventInvalidDB = errors.New("invalid db connection")
-	ErrWriteEventFailed    = errors.New("failed to write event")
+	ErrWriteEventNilDB  = errors.New("nil db handle")
+	ErrWriteEventFailed = errors.New("failed to write event to db")
 )
 
-// WriteEvent records an event to the database.
-func (db *LoginDB) WriteEvent(name EventName, success bool, userName, message string) error {
+// WriteEvent saves an event to database.
+func (db *LoginDB) WriteEvent(name EventName, success bool, username, message string) error {
+	e := Event{Name: name, Success: success, Username: username, Message: message}
+	logger := slog.With("event", e, "func", "WriteEvent")
+
 	if db == nil {
-		slog.Error("db is nil", "func", "WriteEvent")
-		return ErrWriteEventInvalidDB
+		logger.Error("nil db")
+		return ErrWriteEventNilDB
 	}
 
-	logger := slog.With(slog.Group("event",
-		slog.String("Name", string(name)),
-		slog.String("Success", fmt.Sprintf("%t", success)),
-		slog.String("UserName", userName),
-		slog.String("Message", message)))
-
 	const qry = `INSERT INTO events(name, success, userName, message) VALUES(?, ?, ?, ?)`
-	_, err := db.Exec(qry, name, success, userName, message)
+	result, err := db.Exec(qry, e.Name, e.Success, e.Username, e.Message)
 	if err != nil {
 		logger.Error("failed to write event", "err", err)
-
 		return fmt.Errorf("%w: %v", ErrWriteEventFailed, err)
 	}
 
-	logger.Debug("successfully wrote event to database")
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		logger.Error("failed to get rows affected", "err", err)
+		return fmt.Errorf("%w: %v", ErrWriteEventFailed, err)
+	}
+
+	if rowsAffected != 1 {
+		logger.Error("number of rows affected is not one",
+			"rows", rowsAffected)
+		return fmt.Errorf("%w: %v", ErrWriteEventFailed, err)
+	}
+
+	logger.Debug("wrote event to database")
 	return nil
 }

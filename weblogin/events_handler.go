@@ -123,7 +123,7 @@ func GetEvents(db *LoginDB) ([]Event, error) {
 	for rows.Next() {
 		var event Event
 
-		err = rows.Scan(&event.Name, &event.Success, &event.UserName, &event.Message, &event.Created)
+		err = rows.Scan(&event.Name, &event.Success, &event.Username, &event.Message, &event.Created)
 		if err != nil {
 			slog.Error("failed rows.Scan", "err", err)
 		}
