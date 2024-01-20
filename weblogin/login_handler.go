@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package weblogin
@@ -18,6 +18,26 @@ type LoginPageData struct {
 	Message string
 }
 
+// renderLoginPage renders the confirm page.
+//
+// If the page cannot be rendered, http.StatusInternalServerError is
+// set and the caller should ensure no further writes are done to w.
+func (app *LoginApp) renderLoginPage(w http.ResponseWriter, logger *slog.Logger, data LoginPageData) {
+	// Ensure title is set.
+	if data.Title == "" {
+		data.Title = app.Cfg.App.Name
+	}
+
+	err := webutil.RenderTemplate(app.Tmpl, w, "login.html", data)
+	if err != nil {
+		logger.Error("unable to render template", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	return
+}
+
 // LoginHandler handles /login requests.
 func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
@@ -31,17 +51,19 @@ func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
-			LoginPageData{Title: app.Cfg.App.Name})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
-		logger.Info("success")
-
+		app.LoginGetHandler(w, r)
 	case http.MethodPost:
-		app.loginPost(w, r)
+		app.LoginPostHandler(w, r)
 	}
+}
+
+func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	app.renderLoginPage(w, logger, LoginPageData{})
+
+	logger.Info("done")
 }
 
 const (
@@ -51,16 +73,16 @@ const (
 	MsgLoginFailed                = "Login Failed"
 )
 
-// loginPost is called for the POST method of the LoginHandler.
-func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
+// LoginPostHandler is called for the POST method of the LoginHandler.
+func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 
-	// get form values
+	// Get form values.
 	username := strings.TrimSpace(r.PostFormValue("username"))
 	password := strings.TrimSpace(r.PostFormValue("password"))
 
-	// check for missing values
+	// Check for missing values.
 	var msg string
 	switch {
 	case username == "" && password == "":
@@ -73,33 +95,22 @@ func (app *LoginApp) loginPost(w http.ResponseWriter, r *http.Request) {
 	if msg != "" {
 		logger.Error("missing form values", slog.String("display", msg))
 
-		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
-			LoginPageData{Title: app.Cfg.App.Name, Message: msg})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
+		app.renderLoginPage(w, logger, LoginPageData{Message: msg})
 		return
 	}
 
-	// attempt to login the given username with the given password
+	// Attempt to login the user.
 	token, err := app.LoginUser(username, password)
 	if err != nil {
-		logger.Error("failed to LoginUser", "err", err)
+		logger.Error("failed to login user", "err", err)
+		app.DB.WriteEvent(EventLogin, false, username, err.Error())
 
-		err := webutil.RenderTemplate(app.Tmpl, w, "login.html",
-			LoginPageData{
-				Title:   app.Cfg.App.Name,
-				Message: MsgLoginFailed,
-			})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
+		app.renderLoginPage(w, logger, LoginPageData{Message: MsgLoginFailed})
 		return
 	}
 
 	// login successful, so create a cookie for the session Token
+	app.DB.WriteEvent(EventLogin, true, username, "user logged in")
 	http.SetCookie(w, &http.Cookie{
 		Name:     SessionTokenCookieName,
 		Value:    token.Value,

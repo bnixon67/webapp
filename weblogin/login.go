@@ -1,35 +1,42 @@
+// Copyright 2024 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package weblogin
 
 import (
 	"errors"
-	"fmt"
-	"log/slog"
 )
 
 var ErrAppNil = errors.New("app is nil")
 
-// LoginUser returns a session Token if username and password is correct.
+const SessionTokenSize = 32
+const SessionTokenKind = "session"
+
+// CreateSessionToken creates a session token for username.
+func (app *LoginApp) CreateSessionToken(username string) (Token, error) {
+	token, err := app.DB.CreateToken(SessionTokenKind, username, SessionTokenSize, app.Cfg.SessionExpires)
+	if err != nil {
+		return Token{}, err
+	}
+
+	return token, nil
+}
+
+// LoginUser returns a session token if the username and password are correct.
 func (app *LoginApp) LoginUser(username, password string) (Token, error) {
 	if app == nil {
 		return Token{}, ErrAppNil
 	}
 
-	err := app.DB.CompareUserPassword(username, password)
+	err := app.DB.AuthenticateUser(username, password)
 	if err != nil {
-		app.DB.WriteEvent(EventLogin, false, username, err.Error())
-
 		return Token{}, err
 	}
 
-	// create and save a new session token
-	token, err := app.DB.SaveNewToken("session", username, 32, app.Cfg.SessionExpires)
+	token, err := app.CreateSessionToken(username)
 	if err != nil {
-		app.DB.WriteEvent(EventSaveToken, false, username, err.Error())
-		slog.Error("unable to SaveNewToken", "err", err, "username", username)
-		return Token{}, fmt.Errorf("unable to save token: %w", err)
+		return Token{}, err
 	}
-
-	app.DB.WriteEvent(EventLogin, true, username, "user login")
 
 	return token, nil
 }

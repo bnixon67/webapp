@@ -203,9 +203,9 @@ func (db *LoginDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 
 var ErrIncorrectPassword = errors.New("incorrect password")
 
-// CompareUserPassword compares the password and hashed password for the user.
+// AuthenticateUser compares the password and hashed password for the user.
 // Returns nil on success or an error on failure.
-func (db *LoginDB) CompareUserPassword(username, password string) error {
+func (db *LoginDB) AuthenticateUser(username, password string) error {
 	if db == nil {
 		return errors.New("invalid db")
 	}

@@ -26,8 +26,8 @@ func hash(s string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// SaveNewToken creates and saves a token for user of size that expires in duration.
-func (db *LoginDB) SaveNewToken(kind, username string, size int, duration string) (Token, error) {
+// CreateToken creates and saves a token for user of size that expires in duration.
+func (db *LoginDB) CreateToken(kind, username string, size int, duration string) (Token, error) {
 	var err error
 
 	token := Token{Kind: kind}

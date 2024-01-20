@@ -258,5 +258,5 @@ func (db *LoginDB) createPasswordResetToken(username string) (Token, error) {
 		return Token{}, nil
 	}
 
-	return db.SaveNewToken("reset", username, ResetTokenSize, ResetTokenExpires)
+	return db.CreateToken("reset", username, ResetTokenSize, ResetTokenExpires)
 }

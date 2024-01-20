@@ -219,5 +219,5 @@ func (db *LoginDB) CreateConfirmEmailToken(username string) (Token, error) {
 		return Token{}, nil
 	}
 
-	return db.SaveNewToken("confirm", username, ConfirmTokenSize, ConfirmTokenExpires)
+	return db.CreateToken("confirm", username, ConfirmTokenSize, ConfirmTokenExpires)
 }
