@@ -40,13 +40,13 @@ func TestInitDB(t *testing.T) {
 			name:           "invalid driver",
 			driverName:     "invalid_driver",
 			dataSourceName: "valid_source",
-			wantErr:        weblogin.ErrDBOpen,
+			wantErr:        weblogin.ErrInitDBOpen,
 		},
 		{
 			name:           "invalid source",
 			driverName:     "mock_driver",
 			dataSourceName: "invalid_source",
-			wantErr:        weblogin.ErrDBPing,
+			wantErr:        weblogin.ErrInitDBPing,
 		},
 	}
 

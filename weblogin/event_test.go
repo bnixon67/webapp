@@ -20,9 +20,9 @@ func TestWriteEvent(t *testing.T) {
 			name: "Success",
 			db:   app.DB,
 			event: weblogin.Event{
-				Name:     weblogin.EventLogin,
-				Success:  true,
-				Username: "writevent",
+				Name:      weblogin.EventLogin,
+				Succeeded: true,
+				Username:  "writevent",
 			},
 			wantErr: nil,
 		},
@@ -30,9 +30,9 @@ func TestWriteEvent(t *testing.T) {
 			name: "Username too long",
 			db:   app.DB,
 			event: weblogin.Event{
-				Name:     weblogin.EventLogin,
-				Success:  true,
-				Username: "1234567890123456789012345678901",
+				Name:      weblogin.EventLogin,
+				Succeeded: true,
+				Username:  "1234567890123456789012345678901",
 			},
 			wantErr: weblogin.ErrWriteEventFailed,
 		},
@@ -46,7 +46,7 @@ func TestWriteEvent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.db.WriteEvent(tc.event.Name, tc.event.Success, tc.event.Username, tc.event.Message)
+			err := tc.db.WriteEvent(tc.event.Name, tc.event.Succeeded, tc.event.Username, tc.event.Message)
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("got err %v, want %v", err, tc.wantErr)

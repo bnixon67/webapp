@@ -65,7 +65,7 @@ func TestEventsHandler(t *testing.T) {
 		t.Fatalf("could not get user")
 	}
 
-	events, err := weblogin.GetEvents(app.DB)
+	events, err := app.DB.GetEvents()
 	if err != nil {
 		t.Fatalf("failed GetEvents: %v", err)
 	}
@@ -142,7 +142,7 @@ func TestEventsCSVHandler(t *testing.T) {
 		t.Fatalf("could not login user to get session token")
 	}
 
-	events, err := weblogin.GetEvents(app.DB)
+	events, err := app.DB.GetEvents()
 	if err != nil {
 		t.Fatalf("failed GetEvents: %v", err)
 	}

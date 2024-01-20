@@ -4,7 +4,6 @@
 package weblogin
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -14,53 +13,31 @@ import (
 
 // EventsPageData contains data passed to the HTML template.
 type EventsPageData struct {
-	Title   string
-	Message string
-	User    User
-	Events  []Event
+	Title  string
+	User   User
+	Events []Event
+}
+
+// renderEventsPage renders the events page.  If the page cannot be
+// rendered, http.StatusInternalServerError is set and the caller should
+// ensure no further writes are done to w.
+func (app *LoginApp) renderEventsPage(w http.ResponseWriter, logger *slog.Logger, data EventsPageData) {
+	// Ensure title is set.
+	if data.Title == "" {
+		data.Title = app.Cfg.App.Name
+	}
+
+	err := webutil.RenderTemplate(app.Tmpl, w, "events.html", data)
+	if err != nil {
+		logger.Error("unable to render template", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+	}
 }
 
 // EventsHandler displays a list of events.
 func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
-
-	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
-		logger.Error("invalid method")
-		return
-	}
-
-	currentUser, err := app.DB.UserFromRequest(w, r)
-	if err != nil {
-		logger.Error("failed GetUser", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	events, err := GetEvents(app.DB)
-	if err != nil {
-		logger.Error("failed GetEvents", "err", err)
-	}
-
-	// display page
-	err = webutil.RenderTemplate(app.Tmpl, w, "events.html",
-		EventsPageData{
-			Title:   app.Cfg.App.Name,
-			Message: "",
-			User:    currentUser,
-			Events:  events,
-		})
-	if err != nil {
-		logger.Error("failed to RenderTemplate", "err", err)
-		return
-	}
-}
-
-// EventsCSVHandler provides list of events as a CSV file.
-func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -70,7 +47,42 @@ func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
-		logger.Error("failed GetUser", "err", err)
+		logger.Error("failed to get user", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	events, err := app.DB.GetEvents()
+	if err != nil {
+		logger.Error("failed to get events", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	app.renderEventsPage(w, logger,
+		EventsPageData{
+			Title:  app.Cfg.App.Name,
+			User:   user,
+			Events: events,
+		})
+
+	logger.Info("done")
+}
+
+// EventsCSVHandler provides list of events as a CSV file.
+func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
+	if !webutil.ValidMethod(w, r, http.MethodGet) {
+		logger.Error("invalid method")
+		return
+	}
+
+	user, err := app.DB.UserFromRequest(w, r)
+	if err != nil {
+		logger.Error("failed to get user", "err", err)
 		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
@@ -81,9 +93,9 @@ func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	events, err := GetEvents(app.DB)
+	events, err := app.DB.GetEvents()
 	if err != nil {
-		logger.Error("failed GetEvents", "err", err)
+		logger.Error("failed to get events", "err", err)
 		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
@@ -98,42 +110,4 @@ func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
-}
-
-// GetEvents returns a list of all events.
-func GetEvents(db *LoginDB) ([]Event, error) {
-	var events []Event
-	var err error
-
-	if db == nil {
-		slog.Error("db is nil")
-		return events, errors.New("invalid db")
-	}
-
-	qry := `SELECT name, success, username, message, created FROM events`
-
-	rows, err := db.Query(qry)
-	if err != nil {
-		slog.Error("query for events failed", "err", err)
-		return events, err
-
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var event Event
-
-		err = rows.Scan(&event.Name, &event.Success, &event.Username, &event.Message, &event.Created)
-		if err != nil {
-			slog.Error("failed rows.Scan", "err", err)
-		}
-
-		events = append(events, event)
-	}
-	err = rows.Err()
-	if err != nil {
-		slog.Error("failed rows.Err", "err", err)
-	}
-
-	return events, err
 }

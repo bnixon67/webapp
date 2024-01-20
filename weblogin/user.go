@@ -261,7 +261,7 @@ func (db *LoginDB) LastLoginForUser(username string) (time.Time, string, error) 
 	}
 
 	// get the second row, if it exists, since first row is current login
-	qry := `SELECT created, success FROM events WHERE username = ? AND name = ? ORDER BY created DESC LIMIT 1 OFFSET 1`
+	qry := `SELECT created, succeeded FROM events WHERE username = ? AND name = ? ORDER BY created DESC LIMIT 1 OFFSET 1`
 	row := db.QueryRow(qry, username, EventLogin)
 	err := row.Scan(&lastLogin, &success)
 	if err != nil {
