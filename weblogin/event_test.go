@@ -40,7 +40,7 @@ func TestWriteEvent(t *testing.T) {
 			name:    "InvalidDB",
 			db:      nil,
 			event:   weblogin.Event{},
-			wantErr: weblogin.ErrWriteEventNilDB,
+			wantErr: weblogin.ErrWriteEventDBNil,
 		},
 	}
 

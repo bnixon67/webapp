@@ -44,7 +44,7 @@ func (e Event) LogValue() slog.Value {
 }
 
 var (
-	ErrWriteEventNilDB  = errors.New("nil db handle")
+	ErrWriteEventDBNil  = errors.New("db is nil")
 	ErrWriteEventFailed = errors.New("failed to write event to db")
 )
 
@@ -55,7 +55,7 @@ func (db *LoginDB) WriteEvent(name EventName, success bool, username, message st
 
 	if db == nil {
 		logger.Error("nil db")
-		return ErrWriteEventNilDB
+		return ErrWriteEventDBNil
 	}
 
 	const qry = `INSERT INTO events(name, success, username, message) VALUES(?, ?, ?, ?)`
