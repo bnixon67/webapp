@@ -69,7 +69,7 @@ func (db *LoginDB) CreateToken(kind, username string, size int, duration string)
 
 var ErrTokenNotFound = errors.New("token not found")
 
-// RemoveToken removes the given sessionToken.
+// RemoveToken removes the token with kind and value.
 func (db *LoginDB) RemoveToken(kind, value string) error {
 	hashedValue := hash(value)
 

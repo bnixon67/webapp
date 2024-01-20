@@ -37,7 +37,7 @@ type Config struct {
 
 	BaseURL          string     // Base URL of the application (e.g., https://example.com).
 	ParseGlobPattern string     // Glob pattern for parsing template files.
-	SessionExpires   string     // Duration string for session expiry. See time#ParseDuration.
+	LoginExpires     string     // Duration string for login expiry. See time#ParseDuration.
 	SQL              ConfigSQL  // SQL Database configuration.
 	SMTP             ConfigSMTP // SMTP server configuration.
 }
@@ -79,7 +79,7 @@ func (c *Config) IsValid() (bool, []string) {
 	// Append errors for each missing mandatory field to help identify which are missing.
 	missing = appendIfEmpty(missing, c.BaseURL, "missing BaseURL")
 	missing = appendIfEmpty(missing, c.ParseGlobPattern, "missing ParseGlobPattern")
-	missing = appendIfEmpty(missing, c.SessionExpires, "missing SessionExpires")
+	missing = appendIfEmpty(missing, c.LoginExpires, "missing LoginExpires")
 	missing = appendIfEmpty(missing, c.Server.Host, "missing Server.Host")
 	missing = appendIfEmpty(missing, c.Server.Port, "missing Server.Port")
 	missing = appendIfEmpty(missing, c.SQL.DriverName, "missing SQL.DriverName")

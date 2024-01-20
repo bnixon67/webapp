@@ -43,9 +43,9 @@ func (u User) LogValue() slog.Value {
 // Define command error values.
 var (
 	ErrInvalidDB                 = errors.New("invalid db")
-	ErrUserSessionNotFound       = errors.New("user session not found")
+	ErrUserLoginTokenNotFound    = errors.New("user login token not found")
 	ErrUserNotFound              = errors.New("user not found")
-	ErrUserSessionExpired        = errors.New("user session expired")
+	ErrUserLoginTokenExpired     = errors.New("user login expired")
 	ErrUserAlreadyConfirmed      = errors.New("user already confirmed")
 	ErrResetPasswordTokenExpired = errors.New("reset password token expired")
 	ErrConfirmTokenExpired       = errors.New("confirm token expired")
@@ -54,40 +54,40 @@ var (
 
 var EmptyUser User // EmptyUser is a empty User used when returning a error.
 
-// UserForSessionToken returns a user for the given sessionToken.
-func (db *LoginDB) UserForSessionToken(sessionToken string) (User, error) {
+// UserForLoginToken returns a user for the given loginToken.
+func (db *LoginDB) UserForLoginToken(loginToken string) (User, error) {
 	var (
 		expires time.Time
 		user    User
 	)
 
-	hashedValue := hash(sessionToken)
+	hashedValue := hash(loginToken)
 
 	if db == nil {
 		return EmptyUser, ErrInvalidDB
 	}
 
-	qry := `SELECT users.username, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.username=tokens.username WHERE tokens.kind = "session" AND hashedValue=? LIMIT 1`
-	result := db.QueryRow(qry, hashedValue)
+	qry := `SELECT users.username, fullName, email, expires, admin, confirmed, users.created FROM users INNER JOIN tokens ON users.username=tokens.username WHERE tokens.kind = ? AND hashedValue=? LIMIT 1`
+	result := db.QueryRow(qry, LoginTokenKind, hashedValue)
 	err := result.Scan(&user.Username, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
 	if err != nil {
-		// return custom error and empty user if session not found
+		// return custom error and empty user if login not found
 		if errors.Is(err, sql.ErrNoRows) {
 			slog.Warn("unexpected",
-				"err", ErrUserSessionNotFound,
-				"sessionToken", sessionToken)
-			return EmptyUser, ErrUserSessionNotFound
+				"err", ErrUserLoginTokenNotFound,
+				"loginToken", loginToken)
+			return EmptyUser, ErrUserLoginTokenNotFound
 		}
 		return EmptyUser, err
 	}
 
-	// return empty user if session is expired
+	// return empty user if login is expired
 	if expires.Before(time.Now()) {
 		slog.Warn("unexpected",
-			"err", ErrUserSessionExpired,
+			"err", ErrUserLoginTokenExpired,
 			"expires", expires,
 			"user", user)
-		return EmptyUser, ErrUserSessionExpired
+		return EmptyUser, ErrUserLoginTokenExpired
 	}
 
 	user.LastLoginTime, user.LastLoginResult, err = db.LastLoginForUser(user.Username)
@@ -275,34 +275,34 @@ func (db *LoginDB) LastLoginForUser(username string) (time.Time, string, error) 
 	return lastLogin, success, nil
 }
 
-const SessionTokenCookieName = "session"
+const LoginTokenCookieName = "login"
 
-// UserFromRequest returns the user for the session token cookie in the request.
-// If the session token is invalid or expired, the cookie is removed and an empty user returned.
+// UserFromRequest returns the user for the login token cookie in the request.
+// If the login token is invalid or expired, the cookie is removed and an empty user returned.
 func (db *LoginDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
-	// Get value of the session token cookie from the request.
-	sessionToken, err := CookieValue(r, SessionTokenCookieName)
+	// Get value of the login token cookie from the request.
+	loginToken, err := CookieValue(r, LoginTokenCookieName)
 	if err != nil {
 		return User{}, err
 	}
 
-	// Return an empty User struct if the session token is empty.
-	if sessionToken == "" {
+	// Return an empty User struct if the login token is empty.
+	if loginToken == "" {
 		return User{}, err
 	}
 
-	// Get user associated with the session token.
-	user, err := db.UserForSessionToken(sessionToken)
+	// Get user associated with the login token.
+	user, err := db.UserForLoginToken(loginToken)
 	if err != nil {
-		// Clear cookie if session is invalid or expired token.
+		// Clear cookie if login is invalid or expired token.
 		http.SetCookie(w, &http.Cookie{
-			Name:   SessionTokenCookieName,
+			Name:   LoginTokenCookieName,
 			Value:  "",
 			MaxAge: -1,
 		})
 
-		// Ignore session not found or expired errors.
-		if errors.Is(err, ErrUserSessionNotFound) || errors.Is(err, ErrUserSessionExpired) {
+		// Ignore login not found or expired errors.
+		if errors.Is(err, ErrUserLoginTokenNotFound) || errors.Is(err, ErrUserLoginTokenExpired) {
 			return User{}, nil
 		}
 

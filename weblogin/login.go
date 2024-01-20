@@ -9,12 +9,12 @@ import (
 
 var ErrAppNil = errors.New("app is nil")
 
-const SessionTokenSize = 32
-const SessionTokenKind = "session"
+const LoginTokenSize = 32
+const LoginTokenKind = "login"
 
-// CreateSessionToken creates a session token for username.
-func (app *LoginApp) CreateSessionToken(username string) (Token, error) {
-	token, err := app.DB.CreateToken(SessionTokenKind, username, SessionTokenSize, app.Cfg.SessionExpires)
+// CreateLoginToken creates a login token for username.
+func (app *LoginApp) CreateLoginToken(username string) (Token, error) {
+	token, err := app.DB.CreateToken(LoginTokenKind, username, LoginTokenSize, app.Cfg.LoginExpires)
 	if err != nil {
 		return Token{}, err
 	}
@@ -22,7 +22,7 @@ func (app *LoginApp) CreateSessionToken(username string) (Token, error) {
 	return token, nil
 }
 
-// LoginUser returns a session token if the username and password are correct.
+// LoginUser returns a login token if the username and password are correct.
 func (app *LoginApp) LoginUser(username, password string) (Token, error) {
 	if app == nil {
 		return Token{}, ErrAppNil
@@ -33,7 +33,7 @@ func (app *LoginApp) LoginUser(username, password string) (Token, error) {
 		return Token{}, err
 	}
 
-	token, err := app.CreateSessionToken(username)
+	token, err := app.CreateLoginToken(username)
 	if err != nil {
 		return Token{}, err
 	}

@@ -46,7 +46,7 @@ func TestNewConfigFromFile(t *testing.T) {
 			wantConfig: weblogin.Config{
 				BaseURL:          "test URL",
 				ParseGlobPattern: "testParseGlobPattern",
-				SessionExpires:   "42h",
+				LoginExpires:     "42h",
 				SQL: weblogin.ConfigSQL{
 					DriverName:     "testSQLDriverName",
 					DataSourceName: "testSQLDataSourceName",
@@ -101,7 +101,7 @@ func TestConfigIsValid(t *testing.T) {
 	required := []string{
 		"BaseURL",
 		"ParseGlobPattern",
-		"SessionExpires",
+		"LoginExpires",
 		"SQL.DriverName",
 		"SQL.DataSourceName",
 		"SMTP.Host",
@@ -165,7 +165,7 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
-	want := `{"App":{"Name":"","AssetsDir":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","WithSource":false},"BaseURL":"","ParseGlobPattern":"","SessionExpires":"","SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
+	want := `{"App":{"Name":"","AssetsDir":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","WithSource":false},"BaseURL":"","ParseGlobPattern":"","LoginExpires":"","SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
 
 	testCases := []struct {
 		name  string
@@ -209,7 +209,7 @@ func TestConfigString(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{Config:{App:{Name: AssetsDir:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: WithSource:false}} BaseURL: ParseGlobPattern: SessionExpires: SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
+			want: `{Config:{App:{Name: AssetsDir:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: WithSource:false}} BaseURL: ParseGlobPattern: LoginExpires: SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
 		},
 	}
 

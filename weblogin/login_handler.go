@@ -109,10 +109,10 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// login successful, so create a cookie for the session Token
+	// login successful, so create a cookie for the login Token
 	app.DB.WriteEvent(EventLogin, true, username, "user logged in")
 	http.SetCookie(w, &http.Cookie{
-		Name:     SessionTokenCookieName,
+		Name:     LoginTokenCookieName,
 		Value:    token.Value,
 		Expires:  token.Expires,
 		Secure:   true,

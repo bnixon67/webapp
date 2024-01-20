@@ -46,45 +46,45 @@ func TestUserFromRequest(t *testing.T) {
 
 	token, err := app.LoginUser("test", "password")
 	if err != nil {
-		t.Fatalf("could not login user to get session token")
+		t.Fatalf("could not login user to get login token")
 	}
 
-	user, err := app.DB.UserForSessionToken(token.Value)
+	user, err := app.DB.UserForLoginToken(token.Value)
 	if err != nil {
 		t.Fatalf("could not get user")
 	}
 
 	tests := []struct {
-		name         string
-		sessionToken string
-		wantUser     weblogin.User
-		wantError    bool
+		name       string
+		loginToken string
+		wantUser   weblogin.User
+		wantError  bool
 	}{
 		{
-			name:         "Empty session",
-			sessionToken: "",
-			wantUser:     weblogin.User{},
-			wantError:    false,
+			name:       "Empty login token",
+			loginToken: "",
+			wantUser:   weblogin.User{},
+			wantError:  false,
 		},
 		{
-			name:         "Valid session",
-			sessionToken: token.Value,
-			wantUser:     user,
-			wantError:    false,
+			name:       "Valid login token",
+			loginToken: token.Value,
+			wantUser:   user,
+			wantError:  false,
 		},
 		{
-			name:         "Invalid session",
-			sessionToken: "invalid",
-			wantUser:     weblogin.User{},
-			wantError:    false,
+			name:       "Invalid login token",
+			loginToken: "invalid",
+			wantUser:   weblogin.User{},
+			wantError:  false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest("GET", "/", nil)
-			if tt.sessionToken != "" {
-				req.AddCookie(&http.Cookie{Name: weblogin.SessionTokenCookieName, Value: tt.sessionToken})
+			if tt.loginToken != "" {
+				req.AddCookie(&http.Cookie{Name: weblogin.LoginTokenCookieName, Value: tt.loginToken})
 			}
 
 			w := httptest.NewRecorder()

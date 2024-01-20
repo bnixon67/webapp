@@ -50,17 +50,17 @@ func TestUsersHandler(t *testing.T) {
 	// TODO: better way to define a test user
 	userToken, err := app.LoginUser("test", "password")
 	if err != nil {
-		t.Fatalf("could not login user to get session token")
+		t.Fatalf("could not login user to get login token")
 	}
-	user, err := app.DB.UserForSessionToken(userToken.Value)
+	user, err := app.DB.UserForLoginToken(userToken.Value)
 	if err != nil {
 		t.Fatalf("could not get user")
 	}
 	adminToken, err := app.LoginUser("admin", "password")
 	if err != nil {
-		t.Fatalf("could not login user to get session token")
+		t.Fatalf("could not login user to get login token")
 	}
-	admin, err := app.DB.UserForSessionToken(adminToken.Value)
+	admin, err := app.DB.UserForLoginToken(adminToken.Value)
 	if err != nil {
 		t.Fatalf("could not get user")
 	}
@@ -88,11 +88,11 @@ func TestUsersHandler(t *testing.T) {
 			}),
 		},
 		{
-			Name:          "Valid GET Request with Bad Session Token",
+			Name:          "Valid GET Request with Bad Login Token",
 			Target:        "/users",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: "foo"},
+				{Name: weblogin.LoginTokenCookieName, Value: "foo"},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
@@ -100,11 +100,11 @@ func TestUsersHandler(t *testing.T) {
 			}),
 		},
 		{
-			Name:          "Valid GET Request with Good Session Token - Non Admin",
+			Name:          "Valid GET Request with Good Login Token - Non Admin",
 			Target:        "/users",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: userToken.Value},
+				{Name: weblogin.LoginTokenCookieName, Value: userToken.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
@@ -112,11 +112,11 @@ func TestUsersHandler(t *testing.T) {
 			}),
 		},
 		{
-			Name:          "Valid GET Request with Good Session Token - Admin",
+			Name:          "Valid GET Request with Good Login Token - Admin",
 			Target:        "/users",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: adminToken.Value},
+				{Name: weblogin.LoginTokenCookieName, Value: adminToken.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: usersBody(t, weblogin.UsersPageData{
@@ -135,11 +135,11 @@ func TestUsersCSVHandler(t *testing.T) {
 	// TODO: better way to define a test user
 	userToken, err := app.LoginUser("test", "password")
 	if err != nil {
-		t.Fatalf("could not login user to get session token")
+		t.Fatalf("could not login user to get login token")
 	}
 	adminToken, err := app.LoginUser("admin", "password")
 	if err != nil {
-		t.Fatalf("could not login user to get session token")
+		t.Fatalf("could not login user to get login token")
 	}
 
 	events, err := weblogin.GetUsers(app.DB)
@@ -168,31 +168,31 @@ func TestUsersCSVHandler(t *testing.T) {
 			WantBody:      "Error: Unauthorized\n",
 		},
 		{
-			Name:          "Valid GET Request with Bad Session Token",
+			Name:          "Valid GET Request with Bad Login Token",
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: "foo"},
+				{Name: weblogin.LoginTokenCookieName, Value: "foo"},
 			},
 			WantStatus: http.StatusUnauthorized,
 			WantBody:   "Error: Unauthorized\n",
 		},
 		{
-			Name:          "Valid GET Request with Good Session Token - Non Admin",
+			Name:          "Valid GET Request with Good Login Token - Non Admin",
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: userToken.Value},
+				{Name: weblogin.LoginTokenCookieName, Value: userToken.Value},
 			},
 			WantStatus: http.StatusUnauthorized,
 			WantBody:   "Error: Unauthorized\n",
 		},
 		{
-			Name:          "Valid GET Request with Good Session Token - Admin",
+			Name:          "Valid GET Request with Good Login Token - Admin",
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: adminToken.Value},
+				{Name: weblogin.LoginTokenCookieName, Value: adminToken.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody:   eventsBody.String(),

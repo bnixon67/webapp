@@ -36,7 +36,7 @@ func getCookie(name string, cookies []*http.Cookie) (*http.Cookie, error) {
 	return nil, http.ErrNoCookie
 }
 
-func TestLogoutHandlerGetNoSessionToken(t *testing.T) {
+func TestLogoutHandlerGetNoLoginToken(t *testing.T) {
 	app := AppForTest(t)
 
 	w := httptest.NewRecorder()
@@ -56,31 +56,31 @@ func TestLogoutHandlerGetNoSessionToken(t *testing.T) {
 			w.Body, expectedInBody)
 	}
 
-	c, err := getCookie(weblogin.SessionTokenCookieName, w.Result().Cookies())
+	c, err := getCookie(weblogin.LoginTokenCookieName, w.Result().Cookies())
 	if err != nil {
-		t.Errorf("sessionToken cookie missing")
+		t.Errorf("loginToken cookie missing")
 	}
 	if c.Value != "" {
-		t.Errorf("sessionToken not empty")
+		t.Errorf("loginToken not empty")
 	}
 	if c.MaxAge != -1 {
-		t.Errorf("sessionToken.MaxAge not -1")
+		t.Errorf("loginToken.MaxAge not -1")
 	}
 }
 
-func TestLogoutHandlerGetWithGoodSessionToken(t *testing.T) {
+func TestLogoutHandlerGetWithGoodLoginToken(t *testing.T) {
 	app := AppForTest(t)
 
 	// TODO: better way to define a test user
 	token, err := app.LoginUser("test", "password")
 	if err != nil {
-		t.Errorf("could not login user to get session token")
+		t.Errorf("could not login user to get login token")
 	}
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/logout", nil)
 	r.AddCookie(&http.Cookie{
-		Name: weblogin.SessionTokenCookieName, Value: token.Value,
+		Name: weblogin.LoginTokenCookieName, Value: token.Value,
 	})
 
 	app.LogoutHandler(w, r)
@@ -97,14 +97,14 @@ func TestLogoutHandlerGetWithGoodSessionToken(t *testing.T) {
 			w.Body, expectedInBody)
 	}
 
-	c, err := getCookie(weblogin.SessionTokenCookieName, w.Result().Cookies())
+	c, err := getCookie(weblogin.LoginTokenCookieName, w.Result().Cookies())
 	if err != nil {
-		t.Errorf("sessionToken cookie missing")
+		t.Errorf("loginToken cookie missing")
 	}
 	if c.Value != "" {
-		t.Errorf("sessionToken not empty")
+		t.Errorf("loginToken not empty")
 	}
 	if c.MaxAge != -1 {
-		t.Errorf("sessionToken.MaxAge not -1")
+		t.Errorf("loginToken.MaxAge not -1")
 	}
 }

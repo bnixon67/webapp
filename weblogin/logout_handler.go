@@ -34,27 +34,27 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create an empty sessionToken cookie with negative MaxAge to delete.
+	// Create an empty loginToken cookie with negative MaxAge to delete.
 	http.SetCookie(w,
 		&http.Cookie{
-			Name: SessionTokenCookieName, Value: "", MaxAge: -1,
+			Name: LoginTokenCookieName, Value: "", MaxAge: -1,
 		})
 
-	// Get sessionToken to remove.
-	sessionTokenValue, err := CookieValue(r, SessionTokenCookieName)
+	// Get loginToken to remove.
+	loginTokenValue, err := CookieValue(r, LoginTokenCookieName)
 	if err != nil {
 		logger.Error("failed to GetCookieValue", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	// Remove session from database.
-	// TODO: consider removing all sessions for user
-	if sessionTokenValue != "" {
-		err := app.DB.RemoveToken("session", sessionTokenValue)
+	// Remove login token from database.
+	// TODO: consider removing all logins for user
+	if loginTokenValue != "" {
+		err := app.DB.RemoveToken(LoginTokenKind, loginTokenValue)
 		if err != nil {
-			logger.Error("filed to RemoveToken",
-				"sessionTokenValue", sessionTokenValue,
+			logger.Error("failed to RemoveToken",
+				"loginTokenValue", loginTokenValue,
 				"err", err)
 			// TODO: display error or just continue?
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

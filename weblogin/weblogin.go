@@ -86,7 +86,7 @@ func New(options ...interface{}) (*LoginApp, error) {
 			ErrAppInvalidConfig, strings.Join(missing, ", "))
 	}
 
-	_, err = time.ParseDuration(loginApp.Cfg.SessionExpires)
+	_, err = time.ParseDuration(loginApp.Cfg.LoginExpires)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s",
 			ErrAppInvalidConfig, err)
