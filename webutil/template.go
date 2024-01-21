@@ -44,7 +44,7 @@ func TemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*template.Tem
 	return tmpls, nil
 }
 
-const MsgTemplateError = "The server was unable to display this page."
+const MsgTemplateError = "The server is unable to display this page."
 
 // RenderTemplate executes the named template with the given data and writes
 // the result to the provided HTTP response writer.

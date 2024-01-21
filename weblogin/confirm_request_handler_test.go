@@ -76,52 +76,19 @@ func TestConfirmRequestHandler(t *testing.T) {
 			Target:         "/confirm_request",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
-			RequestBody: url.Values{
-				"action": {"user"},
-			}.Encode(),
-			WantStatus: http.StatusOK,
+			WantStatus:     http.StatusOK,
 			WantBody: confirmRequestBody(weblogin.ConfirmRequestPageData{
 				Title:   app.Cfg.App.Name,
 				Message: weblogin.MsgMissingEmail,
 			}),
 		},
 		{
-			Name:           "Missing Action",
+			Name:           "Unknown Email",
 			Target:         "/confirm_request",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
 			RequestBody: url.Values{
-				"email": {"test@email"},
-			}.Encode(),
-			WantStatus: http.StatusOK,
-			WantBody: confirmRequestBody(weblogin.ConfirmRequestPageData{
-				Title:   app.Cfg.App.Name,
-				Message: weblogin.MsgMissingAction,
-			}),
-		},
-		{
-			Name:           "Invalid Action",
-			Target:         "/confirm_request",
-			RequestMethod:  http.MethodPost,
-			RequestHeaders: header,
-			RequestBody: url.Values{
-				"email":  {"test@email"},
-				"action": {"invalid"},
-			}.Encode(),
-			WantStatus: http.StatusOK,
-			WantBody: confirmRequestBody(weblogin.ConfirmRequestPageData{
-				Title:   app.Cfg.App.Name,
-				Message: weblogin.MsgInvalidAction,
-			}),
-		},
-		{
-			Name:           "Valid Action",
-			Target:         "/confirm_request",
-			RequestMethod:  http.MethodPost,
-			RequestHeaders: header,
-			RequestBody: url.Values{
-				"action": {"confirm_request"},
-				"email":  {"test@email"},
+				"email": {"unknown@email"},
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentConfirmRequestBody(weblogin.ConfirmRequestPageData{
@@ -135,8 +102,7 @@ func TestConfirmRequestHandler(t *testing.T) {
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
 			RequestBody: url.Values{
-				"action": {"confirm_request"},
-				"email":  {"unknown@email"},
+				"email": {"test@email"},
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentConfirmRequestBody(weblogin.ConfirmRequestPageData{

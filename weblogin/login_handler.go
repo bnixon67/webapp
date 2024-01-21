@@ -31,7 +31,6 @@ func (app *LoginApp) renderLoginPage(w http.ResponseWriter, logger *slog.Logger,
 	err := webutil.RenderTemplate(app.Tmpl, w, "login.html", data)
 	if err != nil {
 		logger.Error("unable to render template", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -67,10 +66,10 @@ func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	MsgMissingUsernameAndPassword = "Missing username and password"
-	MsgMissingUsername            = "Missing username"
-	MsgMissingPassword            = "Missing password"
-	MsgLoginFailed                = "Login Failed"
+	MsgMissingUsernameAndPassword = "Username and Password required."
+	MsgMissingUsername            = "Username required."
+	MsgMissingPassword            = "Password required."
+	MsgLoginFailed                = "Login failed. Please try again."
 )
 
 // LoginPostHandler is called for the POST method of the LoginHandler.

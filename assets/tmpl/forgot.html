@@ -5,35 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/w3.css">
   </head>
+
   <body>
 
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>Forgot User Name or Password</b>
-    </div>
+    <header class="w3-container w3-mobile w3-indigo w3-large w3-padding">
+      <b>{{.Title}}</b>
+    </header>
 
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <a class="w3-bar-item w3-mobile" href="/login">Login</a>
-      <a class="w3-bar-item w3-mobile" href="/register">Register</a>
-    </div>
+    <div class="w3-container w3-margin-top">
+      <div class="w3-container w3-card w3-mobile w3-cell">
+        <form method="post">
+          <p>Please provide your email to receive further information.</p>
 
-    <div class="w3-container w3-mobile w3-padding">
-      Please provide your email address that will receive a message with further information.
-    </div>
+          <p>
+            <label for="email"><b>Email (required)</b></label>
+            <input class="w3-input w3-mobile" type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required autofocus>
+          </p>
 
-    <form method="post" class="w3-container w3-mobile">
-      <p>
-      <label for="email"><b>Email (required):</b></label>
-      <input class="w3-input w3-mobile" type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required="" autofocus>
-      </p>
+          {{ if .Message }}
+          <p><span class="w3-badge w3-red">!</span> {{ .Message }}</p>
+          {{ end }}
 
-      <div class="w3-bar w3-mobile">
-	<button type="submit" class="w3-button w3-mobile w3-indigo" name="action" value="user">Forgot User Name</button>
-	<button type="submit" class="w3-button w3-mobile w3-indigo" name="action" value="password">Forgot Password</button>
+          <div class="w3-bar w3-mobile">
+            <button type="submit" class="w3-button w3-mobile w3-indigo" name="action" value="user">Forgot Username</button>
+            <button type="submit" class="w3-button w3-mobile w3-indigo" name="action" value="password">Forgot Password</button>
+          </div>
+        </form>
+
+        <p class="w3-border-top w3-border-bottom"></p>
+
+        <div class="w3-center">
+          <div class="w3-bar">
+            <div class="w3-bar-item"><a href="/login">Login</a></div>
+            <div class="w3-bar-item"><a href="/register">Register</a></div>
+            <div class="w3-bar-item"><a href="/">Cancel</a></div>
+          </div>
+        </div>
       </div>
-    </form>
-
-    {{ if .Message }}
-    <div class="w3-panel w3-mobile w3-padding w3-pale-red">{{ .Message }}</div>
-    {{ end }}
+    </div>
   </body>
 </html>

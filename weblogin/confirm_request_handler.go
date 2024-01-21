@@ -76,43 +76,21 @@ func (app *LoginApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
 	logger.Info("done")
 }
 
-// validateConfirmRequestForm ensures all required fields are present and valid.
-// If all fields are present and valid, an empty string is returned,
-// otherwise a message is returned related to the missing or invalid field.
-func validateConfirmRequestForm(email, action string) string {
-	if action == "" {
-		return MsgMissingAction
-	}
-
-	if email == "" {
-		return MsgMissingEmail
-	}
-
-	if action != "confirm_request" {
-		return MsgInvalidAction
-	}
-
-	return ""
-}
-
 // confirmRequestPost processes a confirm email request.
 func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 	// Extract form values.
 	email := strings.TrimSpace(r.PostFormValue("email"))
-	action := strings.TrimSpace(r.PostFormValue("action"))
 
 	// Get logger with request info and function name and add form values.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
 	logger = logger.With(
 		slog.String("email", email),
-		slog.String("action", action),
 	)
 
 	// Validate form values.
-	msg := validateConfirmRequestForm(email, action)
-	if msg != "" {
-		logger.Warn("invalid form data", "errMessage", msg)
-		data := ConfirmRequestPageData{Message: msg}
+	if email == "" {
+		logger.Warn("email is empty")
+		data := ConfirmRequestPageData{Message: MsgMissingEmail}
 		app.renderConfirmRequestPage(w, logger, data)
 		return
 	}
@@ -141,7 +119,7 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = sendEmailToConfirm(action, username, email, token, app.Cfg)
+	err = sendEmailToConfirm(username, email, token, app.Cfg)
 	if err != nil {
 		logger.Error("unable to send email", "err", err)
 		webutil.HttpError(w, http.StatusInternalServerError)
@@ -169,7 +147,7 @@ You can ignore this message if you did not request to confirm an email for {{.Ti
 `
 
 // sendEmailToConfirm sends an email to allow user to confirm their email.
-func sendEmailToConfirm(action, username, email string, token Token, cfg Config) error {
+func sendEmailToConfirm(username, email string, token Token, cfg Config) error {
 	subj := fmt.Sprintf("%s confirm email", cfg.App.Name)
 
 	var body string
@@ -185,7 +163,7 @@ func sendEmailToConfirm(action, username, email string, token Token, cfg Config)
 				Title:   cfg.App.Name,
 				BaseURL: cfg.BaseURL,
 			})
-	case action == "confirm_request":
+	default:
 		body, err = emailBody(
 			"password",
 			confirmRequestEmailTmpl,
