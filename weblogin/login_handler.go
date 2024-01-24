@@ -66,10 +66,10 @@ func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	MsgMissingUsernameAndPassword = "Username and Password required."
-	MsgMissingUsername            = "Username required."
-	MsgMissingPassword            = "Password required."
-	MsgLoginFailed                = "Login failed. Please try again."
+	MsgMissingUsernameAndPassword = "Missing username & password."
+	MsgMissingUsername            = "Missing username."
+	MsgMissingPassword            = "Missing password."
+	MsgLoginFailed                = "Login failed."
 )
 
 // LoginPostHandler is called for the POST method of the LoginHandler.

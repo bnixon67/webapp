@@ -18,8 +18,7 @@ import (
 
 // Constants for error and informational messages displayed to the user.
 const (
-	MsgMissingEmail    = "Please provide an email."
-	MsgNoSuchUser      = "There is no user for the email provided."
+	MsgMissingEmail    = "Please provide your email."
 	MsgMissingAction   = "Please provide an action."
 	MsgInvalidAction   = "Please provide a valid action."
 	TemplateForgot     = "forgot.html"

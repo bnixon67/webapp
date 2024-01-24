@@ -15,8 +15,8 @@ import (
 const (
 	MsgMissingRequired    = "Please provide required values"
 	MsgUsernameExists     = "Username already exists."
-	MsgEmailExists        = "Email Address already registered."
-	MsgPasswordsDifferent = "Password values do not match."
+	MsgEmailExists        = "Email already registered."
+	MsgPasswordsDifferent = "Passwords do not match."
 	MsgRegisterFailed     = "Unable to register user."
 )
 

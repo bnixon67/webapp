@@ -4,38 +4,43 @@
     <title>{{ .Title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/w3.css">
+    <style>input:required:invalid{background-color:#ffdddd;}</style>
   </head>
 
   <body>
-    <header class="w3-container w3-mobile w3-indigo w3-large w3-padding">
+    <header class="w3-container w3-indigo w3-large w3-padding">
       <b>{{.Title}}</b>
     </header>
 
-    <div class="w3-container w3-margin-top">
-      <div class="w3-container w3-card w3-mobile w3-cell">
-        <form method="post">
-          <p>Enter the token from the email to confirm your account.</p>
+    <div class="w3-content" style="width:320px;">
+      <div class="w3-container w3-margin-top">
+        <div class="w3-container w3-card">
+          <form method="post">
+            <p>Enter the token sent to your email to confirm your account.</p>
+  
+            <p>
+              <label for="ctoken"><b>Confirm Token (required):</b></label>
+              <input class="w3-input" type="text" placeholder="Enter the Confirm Token" id="ctoken" name="ctoken" maxlength="44" required autofocus value="{{.ConfirmToken}}">
+            </p>
+  
+            {{ if .Message }}
+            <p class="w3-text-red">
+              <b><span class="w3-badge w3-red">!</span> {{ .Message }}</b>
+            </p>
+            {{ end }}
 
-          <p>
-            <label for="ctoken"><b>Confirm Token (required)</b></label>
-            <input class="w3-input w3-mobile" type="text" placeholder="Enter the Confirm Token" id="ctoken" name="ctoken" maxlength="44" required autofocus value="{{.ConfirmToken}}">
-          </p>
-
-          {{ if .Message }}
-          <p><span class="w3-badge w3-red">!</span> {{ .Message }}</p>
-          {{ end }}
-
-          <button type="submit" class="w3-button w3-block w3-mobile w3-indigo">
-            Confirm
-          </button>
-        </form>
-
-        <p class="w3-border-top w3-border-bottom"></p>
-
-        <div class="w3-center">
-          <div class="w3-bar">
-            <div class="w3-bar-item"><a href="/confirm_request">Request</a></div>
-            <div class="w3-bar-item"><a href="/">Cancel</a></div>
+            <button type="submit" class="w3-button w3-block w3-indigo">
+              Confirm
+            </button>
+          </form>
+  
+          <p class="w3-border-top w3-border-bottom"></p>
+  
+          <div class="w3-center">
+            <div class="w3-bar">
+              <div class="w3-bar-item"><a href="/confirm_request">Request</a></div>
+              <div class="w3-bar-item"><a href="/">Cancel</a></div>
+            </div>
           </div>
         </div>
       </div>
