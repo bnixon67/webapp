@@ -66,7 +66,7 @@ func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	MsgMissingUsernameAndPassword = "Missing username & password."
+	MsgMissingUsernameAndPassword = "Missing username and password."
 	MsgMissingUsername            = "Missing username."
 	MsgMissingPassword            = "Missing password."
 	MsgLoginFailed                = "Login failed."
