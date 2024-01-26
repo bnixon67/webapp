@@ -18,7 +18,7 @@ const BuildDateTimeFormat = "2006-01-02 15:04:05"
 // BuildHandler responds with the executable modification date and time.
 func (app *WebApp) BuildHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

@@ -40,7 +40,7 @@ func (app *LoginApp) renderConfirmPage(w http.ResponseWriter, logger *slog.Logge
 // ConfirmHandler handles request to confirm a user.
 func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -75,7 +75,7 @@ const (
 // confirmPost is called for the POST method of the RegisterHandler.
 func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Get confirm token.
 	ctoken := strings.TrimSpace(r.PostFormValue("ctoken"))

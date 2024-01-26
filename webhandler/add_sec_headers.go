@@ -27,7 +27,7 @@ func AddSecurityHeaders(next http.Handler) http.Handler {
 		// X-XSS-Protection: This header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected Cross-Site Scripting (XSS) attacks. The setting 1; mode=block enables the XSS filter built into most recent web browsers and tells it to block responses that contain detected attacks.
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
 
-		logger := GetRequestLogger(r)
+		logger := RequestLogger(r)
 		logger.Debug("executed",
 			slog.String("func", "AddSecurityHeaders"))
 

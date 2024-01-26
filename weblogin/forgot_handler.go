@@ -37,7 +37,7 @@ type ForgotPageData struct {
 // ForgotHandler handles HTTP requests for forgot user or password.
 func (app *LoginApp) ForgotHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -57,7 +57,7 @@ func (app *LoginApp) ForgotHandler(w http.ResponseWriter, r *http.Request) {
 // forgotGet serves the page to initiate a password reset request.
 func (app *LoginApp) forgotGet(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	err := webutil.RenderTemplate(app.Tmpl, w, TemplateForgot,
 		ForgotPageData{Title: app.Cfg.App.Name})
@@ -99,7 +99,7 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 	action := strings.TrimSpace(r.PostFormValue("action"))
 
 	// Get logger with request info and function name and add form values.
-	logger := webhandler.GetRequestLoggerWithFunc(r).With(
+	logger := webhandler.RequestLoggerWithFunc(r).With(
 		slog.String("email", email), slog.String("action", action))
 
 	// Validate form values.

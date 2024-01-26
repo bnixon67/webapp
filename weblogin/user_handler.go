@@ -20,7 +20,7 @@ type UserPageData struct {
 // UserHandler shows user information.
 func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {

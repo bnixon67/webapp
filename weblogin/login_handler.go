@@ -18,7 +18,7 @@ type LoginPageData struct {
 	Message string
 }
 
-// renderLoginPage renders the confirm page.
+// renderLoginPage renders the login page.
 //
 // If the page cannot be rendered, http.StatusInternalServerError is
 // set and the caller should ensure no further writes are done to w.
@@ -37,10 +37,10 @@ func (app *LoginApp) renderLoginPage(w http.ResponseWriter, logger *slog.Logger,
 	return
 }
 
-// LoginHandler handles /login requests.
+// LoginHandler handles login requests.
 func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -56,9 +56,10 @@ func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// LoginGetHandler handles login GET requests.
 func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	app.renderLoginPage(w, logger, LoginPageData{})
 
@@ -72,10 +73,10 @@ const (
 	MsgLoginFailed                = "Login failed."
 )
 
-// LoginPostHandler is called for the POST method of the LoginHandler.
+// LoginPostHandler handles login POST requests.
 func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Get form values.
 	username := strings.TrimSpace(r.PostFormValue("username"))
@@ -92,7 +93,7 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		msg = MsgMissingPassword
 	}
 	if msg != "" {
-		logger.Error("missing form values", slog.String("display", msg))
+		logger.Error("missing form values", slog.String("message", msg))
 
 		app.renderLoginPage(w, logger, LoginPageData{Message: msg})
 		return
@@ -108,7 +109,7 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// login successful, so create a cookie for the login Token
+	// Login successful, so create a cookie for the login token.
 	app.DB.WriteEvent(EventLogin, true, username, "user logged in")
 	http.SetCookie(w, &http.Cookie{
 		Name:     LoginTokenCookieName,
@@ -119,12 +120,11 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 	})
 
+	// Redirect to the specified "r" query parameter or default to root.
 	redirect := r.URL.Query().Get("r")
 	if redirect == "" {
 		redirect = "/"
 	}
-
-	// redirect from login page
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
 
 	logger.Info("login successful")

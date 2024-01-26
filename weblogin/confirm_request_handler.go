@@ -48,7 +48,7 @@ func (app *LoginApp) renderConfirmRequestPage(w http.ResponseWriter, logger *slo
 // ConfirmRequestHandler handles a request to request a email confirmation.
 func (app *LoginApp) ConfirmRequestHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -68,7 +68,7 @@ func (app *LoginApp) ConfirmRequestHandler(w http.ResponseWriter, r *http.Reques
 // confirmRequestGet serves the page to initiate a confirm email request.
 func (app *LoginApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	data := ConfirmRequestPageData{}
 	app.renderConfirmRequestPage(w, logger, data)
@@ -82,7 +82,7 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 	email := strings.TrimSpace(r.PostFormValue("email"))
 
 	// Get logger with request info and function name and add form values.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 	logger = logger.With(
 		slog.String("email", email),
 	)

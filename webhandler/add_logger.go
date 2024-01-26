@@ -17,52 +17,53 @@ type loggerKeyType struct{}
 // loggerKey is used as a key for storing and retrieving the logger from the context.
 var loggerKey = loggerKeyType{}
 
-// GetRequestLogger returns a logger with a "request" group with request-specific information.
+// RequestLogger returns a logger that includes a "request" group with
+// request-specific information.
 // This function can be a substitute to AddLogger middleware.
-func GetRequestLogger(r *http.Request) *slog.Logger {
+func RequestLogger(r *http.Request) *slog.Logger {
 	// Create a slice with basic attributes of the request.
-	// This allows addition of attributes to the group based on additional logic or conditions.
-	// I could not determine another method to do this with the existing slog package.
+	// This allows addition of attributes to the group based on
+	// additional logic or conditions. I could not determine another
+	// method to do this with the existing slog package.
 	attrValues := []interface{}{
-		"method", r.Method,
-		"url", r.URL.String(),
-		"ip", webutil.RealRemoteAddr(r),
+		slog.String("method", r.Method),
+		slog.String("url", r.URL.String()),
+		slog.String("ip", webutil.RealRemoteAddr(r)),
 	}
 
 	// If request ID is not empty, add it to the log attributes.
 	if id := RequestID(r.Context()); id != "" {
-		attrValues = append(attrValues, "id", id)
+		attrValues = append(attrValues, slog.String("id", id))
 	}
 
 	// Return a new logger instance with the specified attributes.
 	return slog.With(slog.Group("request", attrValues...))
 }
 
-// GetRequestLoggerWithFunc returns a RequestLogger enhanced with the function name.
-func GetRequestLoggerWithFunc(r *http.Request) *slog.Logger {
-	return GetRequestLogger(r).With(slog.String("func", FuncNameParent()))
+// RequestLoggerWithFunc returns a RequestLogger that includes function name.
+func RequestLoggerWithFunc(r *http.Request) *slog.Logger {
+	return RequestLogger(r).With(slog.String("func", FuncNameParent()))
 }
 
-// AddLogger is middleware that adds a specialized logger to the request's context.
-// This logger is enriched with request-specific attributes and can be retrieved in downstream handlers using the Logger function.
+// AddLogger is middleware that adds a logger to the request's context.
+// This logger is enriched with request-specific attributes and can be
+// retrieved in downstream handlers using the Logger function.
 func AddLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Create a new logger instance with the specified attributes.
-		logger := GetRequestLogger(r)
+		logger := RequestLogger(r)
 
 		// Add the logger to the request's context.
 		ctx := context.WithValue(r.Context(), loggerKey, logger)
 
-		logger.Debug("executed",
-			slog.String("func", "AddLogger"))
-
-		// Call the next handler in the chain using the updated context.
+		// Call the next handler in the chain with the updated context.
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 // LoggerFromContext retrieves the logger from the given context.
-// If the context is nil or does not contain a logger, the default logger is returned.
+// If the context is nil or does not contain a logger, the default logger
+// is returned.
 func LoggerFromContext(ctx context.Context) *slog.Logger {
 	// Return the default logger if the context is nil.
 	if ctx == nil {

@@ -40,7 +40,7 @@ func (app *LoginApp) renderRegisterPage(w http.ResponseWriter, logger *slog.Logg
 // RegisterHandler handles requests to register a user.
 func (app *LoginApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
@@ -61,7 +61,7 @@ func (app *LoginApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 // registerPost handles POST of the registration form.
 func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Get form values and remove leading and trailing white space.
 	username := strings.TrimSpace(r.PostFormValue("username"))

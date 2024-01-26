@@ -37,7 +37,7 @@ func (app *LoginApp) renderEventsPage(w http.ResponseWriter, logger *slog.Logger
 // EventsHandler displays a list of events.
 func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
@@ -72,7 +72,7 @@ func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 // EventsCSVHandler provides list of events as a CSV file.
 func (app *LoginApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
