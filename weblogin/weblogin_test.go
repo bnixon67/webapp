@@ -16,7 +16,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	cfg, err := weblogin.GetConfigFromFile(TestConfigFile)
+	cfg, err := weblogin.ConfigFromJSONFile(TestConfigFile)
 	if err != nil {
 		t.Fatalf("failed to created config: %v", err)
 	}
@@ -84,7 +84,7 @@ func AppForTest(t *testing.T) *weblogin.LoginApp {
 			t.Fatalf("failed to initialize logging: %v", err)
 		}
 
-		cfg, err := weblogin.GetConfigFromFile(TestConfigFile)
+		cfg, err := weblogin.ConfigFromJSONFile(TestConfigFile)
 		if err != nil {
 			t.Fatalf("failed to created config: %v", err)
 		}

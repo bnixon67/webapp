@@ -25,42 +25,41 @@ type ConfigSQL struct {
 
 // ConfigSMTP holds SMTP server settings for email functionality.
 type ConfigSMTP struct {
-	Host     string // SMTP server host address.
-	Port     string // SMTP server port number.
-	User     string // SMTP server username.
-	Password string // SMTP server password.
+	Host     string // Host address.
+	Port     string // Port number.
+	User     string // Server username.
+	Password string // Server password.
 }
 
 // Config represents the overall application configuration.
 type Config struct {
 	webapp.Config // Inherit webapp.Config
 
-	BaseURL          string     // Base URL of the application (e.g., https://example.com).
-	ParseGlobPattern string     // Glob pattern for parsing template files.
-	LoginExpires     string     // Duration string for login expiry. See time#ParseDuration.
-	SQL              ConfigSQL  // SQL Database configuration.
-	SMTP             ConfigSMTP // SMTP server configuration.
+	BaseURL          string // Base URL of the application.
+	ParseGlobPattern string // Glob pattern for parsing template files.
+	LoginExpires     string // Duration string for login expiry.
+
+	SQL  ConfigSQL  // SQL Database configuration.
+	SMTP ConfigSMTP // SMTP server configuration.
 }
 
-// GetConfigFromFile loads configuration settings from a JSON file.
-func GetConfigFromFile(filename string) (Config, error) {
-	var config Config
-
+// ConfigFromJSONFile loads configuration settings from a JSON file.
+func ConfigFromJSONFile(filename string) (Config, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return config, fmt.Errorf("%w: %v", ErrConfigOpen, err)
+		return Config{}, fmt.Errorf("%w: %v", ErrConfigOpen, err)
 	}
 	defer file.Close()
 
-	// decode json from config
-	if err := json.NewDecoder(file).Decode(&config); err != nil {
-		return config, fmt.Errorf("%w: %v", ErrConfigDecode, err)
+	var c Config
+	if err := json.NewDecoder(file).Decode(&c); err != nil {
+		return Config{}, fmt.Errorf("%w: %v", ErrConfigDecode, err)
 	}
 
-	return config, nil
+	return c, nil
 }
 
-// appendIfEmpty appends a message to a slice if a string is empty.
+// appendIfEmpty appends message to a slice if value is empty.
 func appendIfEmpty(messages []string, value, message string) []string {
 	if value == "" {
 		messages = append(messages, message)
@@ -70,13 +69,11 @@ func appendIfEmpty(messages []string, value, message string) []string {
 }
 
 // IsValid checks if all required Config fields are populated.
-// Returns a boolean indicating validity and a slice of missing field messages.
+// Returns a boolean and a slice of messages indicating the issue(s).
 func (c *Config) IsValid() (bool, []string) {
-	//var missing []string
+	isValid, missing := c.Config.IsValid()
 
-	_, missing := c.Config.IsValid()
-
-	// Append errors for each missing mandatory field to help identify which are missing.
+	// Append errors for each missing mandatory field.
 	missing = appendIfEmpty(missing, c.BaseURL, "missing BaseURL")
 	missing = appendIfEmpty(missing, c.ParseGlobPattern, "missing ParseGlobPattern")
 	missing = appendIfEmpty(missing, c.LoginExpires, "missing LoginExpires")
@@ -89,7 +86,7 @@ func (c *Config) IsValid() (bool, []string) {
 	missing = appendIfEmpty(missing, c.SMTP.User, "missing SMTP.User")
 	missing = appendIfEmpty(missing, c.SMTP.Password, "missing SMTP.Password")
 
-	return len(missing) == 0, missing
+	return isValid && len(missing) == 0, missing
 }
 
 // RedactedConfig provides a redacted copy of Config for secure logging.
@@ -107,7 +104,7 @@ func (c Config) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-// String returns a string representation of Config with sensitive data redacted.
+// String returns string representation of Config with sensitive data redacted.
 func (c Config) String() string {
 	// Create a copy of Config that will contain the redacted data.
 	r := RedactedConfig(c)

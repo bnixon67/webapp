@@ -14,7 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestNewConfigFromFile(t *testing.T) {
+func TestConfigFromJSONFile(t *testing.T) {
 	testCases := []struct {
 		name           string
 		configFileName string
@@ -63,7 +63,7 @@ func TestNewConfigFromFile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config, err := weblogin.GetConfigFromFile(tc.configFileName)
+			config, err := weblogin.ConfigFromJSONFile(tc.configFileName)
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Fatalf("want err: %v, got err: %v", tc.wantErr, err)
@@ -99,6 +99,7 @@ func TestConfigIsValid(t *testing.T) {
 
 	// required fields
 	required := []string{
+		"App.Name",
 		"BaseURL",
 		"ParseGlobPattern",
 		"LoginExpires",

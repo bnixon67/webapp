@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// Read config.
-	cfg, err := weblogin.GetConfigFromFile(os.Args[1])
+	cfg, err := weblogin.ConfigFromJSONFile(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to get config:", err)
 		os.Exit(ExitConfig)
