@@ -4,6 +4,7 @@
 package weblogin
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -135,5 +136,64 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	// Registration successful
 	logger.Info("registered user")
 	app.DB.WriteEvent(EventRegister, true, username, "registered user")
+
+	err = app.sendRegistrationEmail(username, fullName, email)
+	if err != nil {
+		logger.Error("unable to send registration email", "err", err)
+	}
+
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+const registrationEmailTmpl = `
+{{.FullName}},
+
+Thank you for registering for {{.Title}}. Your username is {{.Username}}.
+
+Please visit {{.BaseURL}}/confirm?ctoken={{.Token.Value}} by {{.Token.Expires.Format "January 2, 2006 3:04 PM MST"}} to confirm your account.
+
+You can ignore this message if you did not register for an account.
+`
+
+type registrationData struct {
+	FullName string
+	Username string
+	Title    string
+	BaseURL  string
+	Token    Token
+}
+
+func (app *LoginApp) sendRegistrationEmail(username, fullName, email string) error {
+	// Create and save a confirm email token.
+	token, err := app.DB.CreateConfirmEmailToken(username)
+	if err != nil {
+		slog.Error("failed to create confirm email token",
+			"err", err, "username", username)
+		return err
+	}
+
+	subj := fmt.Sprintf("%s registration", app.Cfg.App.Name)
+
+	data := registrationData{
+		FullName: fullName,
+		Username: username,
+		Title:    app.Cfg.App.Name,
+		BaseURL:  app.Cfg.BaseURL,
+		Token:    token,
+	}
+	body, err := emailBody("register", registrationEmailTmpl, data)
+	if err != nil {
+		return err
+	}
+
+	err = SendEmail(app.Cfg.SMTP,
+		MailMessage{To: email, Subject: subj, Body: body})
+	if err != nil {
+		return err
+	}
+
+	slog.Info("sent email", slog.Group("email",
+		slog.String("to", email), slog.String("subject", subj)))
+
+	return nil
 }

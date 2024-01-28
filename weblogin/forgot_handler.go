@@ -180,7 +180,7 @@ Your user name for {{.Title}} is {{.Username}}.
 )
 
 // emailBody constructs the body of an email using a given template and data.
-func emailBody(name, text string, data emailData) (string, error) {
+func emailBody(name, text string, data any) (string, error) {
 	// Create a template.
 	tmpl, err := template.New(name).Parse(text)
 	if err != nil {
@@ -247,7 +247,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 	slog.Info("sent email", slog.Group("email",
 		slog.String("to", email), slog.String("subject", subj)))
 
-	return err
+	return nil
 }
 
 // createPasswordResetToken generates a new token for resetting a user's password.
