@@ -31,6 +31,7 @@ const (
 	ExitConfig              // ExitConfig indicates a config error.
 	ExitDB                  // ExitConfig indicates a database error.
 	ExitApp                 // ExitHandler indicates an app error.
+	ExitEmail               // ExitHandler indicates an email error.
 )
 
 func main() {
@@ -129,6 +130,24 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating server:", err)
 		os.Exit(ExitServer)
+	}
+
+	hostName, err := os.Hostname()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Unable to get hostname:", err)
+		os.Exit(ExitEmail)
+	}
+
+	// Send an email to confirm SMTP is correct.
+	err = weblogin.SendEmail(cfg.SMTP,
+		weblogin.MailMessage{
+			To:      "bnixon67@gmail.com",
+			Subject: "starting weblogin",
+			Body:    "starting weblogin on " + hostName,
+		})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to send starting email:", err)
+		os.Exit(ExitEmail)
 	}
 
 	// Create a new context.

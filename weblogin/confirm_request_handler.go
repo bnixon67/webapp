@@ -178,8 +178,8 @@ func sendEmailToConfirm(username, email string, token Token, cfg Config) error {
 		}
 	}
 
-	err = SendEmail(cfg.SMTP.User, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port,
-		email, subj, body)
+	err = SendEmail(cfg.SMTP,
+		MailMessage{To: email, Subject: subj, Body: body})
 	if err != nil {
 		return err
 	}

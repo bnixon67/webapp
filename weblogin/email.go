@@ -10,14 +10,6 @@ import (
 	"text/template"
 )
 
-// TODO: move template to file
-const emailTmpl = `From: {{ .From }}
-To: {{ .To }}
-Subject: {{ .Subject }}
-
-{{ .Body }}
-`
-
 // MailMessage contains data to include in the email template.
 type MailMessage struct {
 	From    string
@@ -26,35 +18,33 @@ type MailMessage struct {
 	Body    string
 }
 
-// SendEmail will send an email using the values provided.
-func SendEmail(smtpUser, smtpPassword, smtpHost, smtpPort, to, subject, body string) error {
-	mailMessage := MailMessage{
-		From:    smtpUser,
-		To:      to,
-		Subject: subject,
-		Body:    body,
-	}
+const emailTmplText = `From: {{ .From }}
+To: {{ .To }}
+Subject: {{ .Subject }}
 
-	// TODO: cache template
-	t, err := template.New("email").Parse(emailTmpl)
-	if err != nil {
-		return fmt.Errorf("SendEmail: failed to parse template: %w", err)
-	}
+{{ .Body }}
+`
 
-	// fill message template
+var emailTmpl = template.Must(template.New("email").Parse(emailTmplText))
+
+// SendEmail sends an email using the values provided.
+func SendEmail(smtpConfig ConfigSMTP, mailMessage MailMessage) error {
+	mailMessage.From = smtpConfig.User
+
+	// Fill message template.
 	message := &bytes.Buffer{}
-	err = t.Execute(message, mailMessage)
+	err := emailTmpl.Execute(message, mailMessage)
 	if err != nil {
-		return fmt.Errorf("SendEmail: failed to execute template: %w", err)
+		return fmt.Errorf("failed to execute mail template: %w", err)
 	}
 
-	// authenticate to SMTP server
-	auth := smtp.PlainAuth("", smtpUser, smtpPassword, smtpHost)
+	// Authenticate to SMTP server
+	auth := smtp.PlainAuth("", smtpConfig.User, smtpConfig.Password, smtpConfig.Host)
 
 	// send email
-	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, mailMessage.From, []string{mailMessage.To}, message.Bytes())
+	err = smtp.SendMail(smtpConfig.Host+":"+smtpConfig.Port, auth, mailMessage.From, []string{mailMessage.To}, message.Bytes())
 	if err != nil {
-		return fmt.Errorf("SendEmail: failed to send mail: %w", err)
+		return fmt.Errorf("failed to send mail: %w", err)
 	}
 
 	return err
