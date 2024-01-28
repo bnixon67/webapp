@@ -5,6 +5,7 @@ package weblogin
 
 import (
 	"errors"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -16,7 +17,7 @@ import (
 // ConfirmPageData contains data to render the confirm template.
 type ConfirmPageData struct {
 	Title        string
-	Message      string
+	Message      template.HTML
 	ConfirmToken string
 }
 
@@ -67,8 +68,8 @@ func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 
 const (
 	MsgMissingConfirmToken  = "Please provide a confirmation token."
-	MsgInvalidConfirmToken  = "Please provide a valid confirmation token."
-	MsgExpiredConfirmToken  = "The confirmation token has expired. Please request a new one."
+	MsgInvalidConfirmToken  = "Invalid confirmation token. Please <a href=\"/confirm_request\">request</a> a new one."
+	MsgExpiredConfirmToken  = "The confirmation token has expired. Please <a href=\"/confirm_request\">request</a> a new one."
 	MsgUserAlreadyConfirmed = "The user has already been confirmed." // TODO: is there a security risk in providing this information?
 )
 
@@ -83,7 +84,9 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 	// Check for missing values.
 	if ctoken == "" {
 		logger.Warn("missing ctoken")
-		data := ConfirmPageData{Message: MsgMissingConfirmToken}
+		data := ConfirmPageData{
+			Message: template.HTML(MsgMissingConfirmToken),
+		}
 		app.renderConfirmPage(w, logger, data)
 		return
 	}
@@ -100,7 +103,10 @@ func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
 			msg = MsgExpiredConfirmToken
 		}
 
-		data := ConfirmPageData{Message: msg, ConfirmToken: ctoken}
+		data := ConfirmPageData{
+			Message:      template.HTML(msg),
+			ConfirmToken: ctoken,
+		}
 		app.renderConfirmPage(w, logger, data)
 		return
 	}
