@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package weblogin
@@ -10,11 +10,6 @@ import (
 	"os"
 
 	"github.com/bnixon67/webapp/webapp"
-)
-
-var (
-	ErrConfigOpen   = errors.New("failed to open config file")
-	ErrConfigDecode = errors.New("failed to decode config file")
 )
 
 // ConfigSQL hold SQL database connection settings.
@@ -43,26 +38,33 @@ type Config struct {
 	SMTP ConfigSMTP // SMTP server configuration.
 }
 
+var (
+	ErrConfigRead      = errors.New("failed to read config file")
+	ErrConfigUnmarshal = errors.New("failed to unmarshal config file")
+)
+
 // ConfigFromJSONFile loads configuration settings from a JSON file.
 func ConfigFromJSONFile(filename string) (Config, error) {
-	file, err := os.Open(filename)
+	// Read the entire file.
+	data, err := os.ReadFile(filename)
 	if err != nil {
-		return Config{}, fmt.Errorf("%w: %v", ErrConfigOpen, err)
+		return Config{}, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
-	defer file.Close()
 
+	// Decode JSON data into Config struct.
 	var c Config
-	if err := json.NewDecoder(file).Decode(&c); err != nil {
-		return Config{}, fmt.Errorf("%w: %v", ErrConfigDecode, err)
+	if err := json.Unmarshal(data, &c); err != nil {
+		return Config{}, fmt.Errorf("%w: %v", ErrConfigUnmarshal, err)
 	}
 
 	return c, nil
 }
 
-// appendIfEmpty appends message to a slice if value is empty.
+// appendIfEmpty appends message to messages if value is empty, and
+// returns the updated slice.
 func appendIfEmpty(messages []string, value, message string) []string {
 	if value == "" {
-		messages = append(messages, message)
+		return append(messages, message)
 	}
 
 	return messages
@@ -73,18 +75,25 @@ func appendIfEmpty(messages []string, value, message string) []string {
 func (c *Config) IsValid() (bool, []string) {
 	isValid, missing := c.Config.IsValid()
 
+	// Fields to check.
+	fields := map[string]string{
+		"BaseURL":            c.BaseURL,
+		"ParseGlobPattern":   c.ParseGlobPattern,
+		"LoginExpires":       c.LoginExpires,
+		"Server.Host":        c.Server.Host,
+		"Server.Port":        c.Server.Port,
+		"SQL.DriverName":     c.SQL.DriverName,
+		"SQL.DataSourceName": c.SQL.DataSourceName,
+		"SMTP.Host":          c.SMTP.Host,
+		"SMTP.Port":          c.SMTP.Port,
+		"SMTP.User":          c.SMTP.User,
+		"SMTP.Password":      c.SMTP.Password,
+	}
+
 	// Append errors for each missing mandatory field.
-	missing = appendIfEmpty(missing, c.BaseURL, "missing BaseURL")
-	missing = appendIfEmpty(missing, c.ParseGlobPattern, "missing ParseGlobPattern")
-	missing = appendIfEmpty(missing, c.LoginExpires, "missing LoginExpires")
-	missing = appendIfEmpty(missing, c.Server.Host, "missing Server.Host")
-	missing = appendIfEmpty(missing, c.Server.Port, "missing Server.Port")
-	missing = appendIfEmpty(missing, c.SQL.DriverName, "missing SQL.DriverName")
-	missing = appendIfEmpty(missing, c.SQL.DataSourceName, "missing SQL.DataSourceName")
-	missing = appendIfEmpty(missing, c.SMTP.Host, "missing SMTP.Host")
-	missing = appendIfEmpty(missing, c.SMTP.Port, "missing SMTP.Port")
-	missing = appendIfEmpty(missing, c.SMTP.User, "missing SMTP.User")
-	missing = appendIfEmpty(missing, c.SMTP.Password, "missing SMTP.Password")
+	for key, value := range fields {
+		missing = appendIfEmpty(missing, value, "missing "+key)
+	}
 
 	return isValid && len(missing) == 0, missing
 }
@@ -92,28 +101,22 @@ func (c *Config) IsValid() (bool, []string) {
 // RedactedConfig provides a redacted copy of Config for secure logging.
 type RedactedConfig Config
 
-// MarshalJSON customizes JSON marshalling to redact sensitive Config data.
-func (c Config) MarshalJSON() ([]byte, error) {
-	// Create a copy of Config that will contain the redacted data.
+// redact creates a redacted copy of Config to hide sensitive data.
+func (c Config) redact() RedactedConfig {
 	r := RedactedConfig(c)
-
-	// Redact sensitive data fields.
 	r.SQL.DataSourceName = "[REDACTED]"
 	r.SMTP.Password = "[REDACTED]"
+	return r
+}
 
-	return json.Marshal(r)
+// MarshalJSON customizes JSON marshalling to redact sensitive Config data.
+func (c Config) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.redact())
 }
 
 // String returns string representation of Config with sensitive data redacted.
 func (c Config) String() string {
-	// Create a copy of Config that will contain the redacted data.
-	r := RedactedConfig(c)
-
-	// Redact sensitive data fields.
-	r.SQL.DataSourceName = "[REDACTED]"
-	r.SMTP.Password = "[REDACTED]"
-
-	return fmt.Sprintf("%+v", r)
+	return fmt.Sprintf("%+v", c.redact())
 }
 
 // TODO: slog.LogValuer for Config

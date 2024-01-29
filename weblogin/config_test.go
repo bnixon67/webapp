@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package weblogin_test
@@ -24,7 +24,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 		{
 			name:           "emptyFileName",
 			configFileName: "",
-			wantErr:        weblogin.ErrConfigOpen,
+			wantErr:        weblogin.ErrConfigRead,
 			wantConfig:     weblogin.Config{},
 		},
 		{
@@ -36,7 +36,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 		{
 			name:           "invalidJSON",
 			configFileName: "testdata/invalid.json",
-			wantErr:        weblogin.ErrConfigDecode,
+			wantErr:        weblogin.ErrConfigUnmarshal,
 			wantConfig:     weblogin.Config{},
 		},
 		{
@@ -65,13 +65,12 @@ func TestConfigFromJSONFile(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			config, err := weblogin.ConfigFromJSONFile(tc.configFileName)
 
-			if !errors.Is(err, tc.wantErr) {
-				t.Fatalf("want err: %v, got err: %v", tc.wantErr, err)
+			if tc.wantErr != nil && !errors.Is(err, tc.wantErr) || err != nil && tc.wantErr == nil {
+				t.Fatalf("want error: %v, got: %v", tc.wantErr, err)
 			}
 
 			if diff := cmp.Diff(config, tc.wantConfig); diff != "" {
-				t.Errorf("config mismatch for %q (-got +want):\n%s",
-					tc.configFileName, diff)
+				t.Errorf("config mismatch for %q (-got +want):\n%s", tc.configFileName, diff)
 			}
 		})
 	}
@@ -97,7 +96,6 @@ func TestConfigIsValid(t *testing.T) {
 
 	var cases []tcase
 
-	// required fields
 	required := []string{
 		"App.Name",
 		"BaseURL",
@@ -145,8 +143,6 @@ func TestConfigIsValid(t *testing.T) {
 		// Add the modified 'config' to 'cases'.
 		cases = append(cases, tcase{config, false})
 	}
-	// last case should be true since all required fields are present
-	//cases[len(cases)-1].expected = true
 
 	for _, testCase := range cases {
 		got, _ := testCase.config.IsValid()
@@ -180,7 +176,6 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
-	// Run tests
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := tc.input.MarshalJSON()
@@ -214,7 +209,6 @@ func TestConfigString(t *testing.T) {
 		},
 	}
 
-	// Run tests
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := tc.input.String()
