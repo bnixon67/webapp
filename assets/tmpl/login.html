@@ -28,6 +28,11 @@
               <input class="w3-input" type="password" placeholder="Enter your password" id="password" name="password" required>
             </p>
 
+            <p>
+              <input class="w3-check" type="checkbox" checked value="on" id="remember" name="remember">
+              <label for="remember">Remember Me</label>
+            </p>
+
             {{ if .Message }}
             <p class="w3-text-red">
               <b><span class="w3-badge w3-red">!</span> {{ .Message }}</b>

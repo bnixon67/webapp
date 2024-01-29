@@ -1,186 +1,151 @@
 package weblogin_test
 
 import (
+	"bytes"
+	"html/template"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
-	"strings"
+	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/bnixon67/webapp/assets"
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-func TestLoginHandlerInvalidMethod(t *testing.T) {
-	app := AppForTest(t)
+func loginBody(data weblogin.LoginPageData) string {
+	// Get path to template file.
+	assetDir := assets.AssetPath()
+	tmplFile := filepath.Join(assetDir, "tmpl", "login.html")
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/login", nil)
+	// Parse the HTML template from a file.
+	tmpl := template.Must(template.ParseFiles(tmplFile))
 
-	app.LoginHandler(w, r)
+	// Create a buffer to store the rendered HTML.
+	var body bytes.Buffer
 
-	expectedStatus := http.StatusMethodNotAllowed
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
+	// Execute the template with the data and write result to the buffer.
+	tmpl.Execute(&body, data)
+
+	return body.String()
 }
 
-func TestLoginHandlerGet(t *testing.T) {
+func TestLoginHandler(t *testing.T) {
 	app := AppForTest(t)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/login", nil)
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
+	header := http.Header{
+		"Content-Type": {"application/x-www-form-urlencoded"},
 	}
 
-	expectedInBody := "<form method=\"post\""
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
+	d, err := time.ParseDuration(app.Cfg.LoginExpires)
+	if err != nil {
+		t.Fatalf("cannot parse duration")
 	}
-}
+	expires := time.Now().Add(d)
 
-func TestLoginHanlderPostMissingUsernameAndPassword(t *testing.T) {
-	app := AppForTest(t)
+	loginDontRememberCookie := weblogin.LoginCookie("value", time.Time{})
+	loginRememberCookie := weblogin.LoginCookie("value", expires)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/login", nil)
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := weblogin.MsgMissingUsernameAndPassword
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
-}
-
-func TestLoginHandlerPostMissingPassword(t *testing.T) {
-	data := url.Values{
-		"username": {"foo"},
-	}
-
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(data.Encode()))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := weblogin.MsgMissingPassword
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
-}
-
-func TestLoginHandlerPostMissingUsername(t *testing.T) {
-	data := url.Values{
-		"password": {"foo"},
-	}
-
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(data.Encode()))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := weblogin.MsgMissingUsername
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
-}
-
-func TestLoginHanlderPostInvalidUsernameAndPassword(t *testing.T) {
-	data := url.Values{
-		"username": {"foo"},
-		"password": {"bar"},
-	}
-
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(data.Encode()))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := weblogin.MsgLoginFailed
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
-}
-
-func TestLoginHandlerPostValidUsernameAndPassword(t *testing.T) {
-	data := url.Values{
-		"username": {"test"},
-		"password": {"password"},
-	}
-
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(data.Encode()))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusSeeOther
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
+	tests := []webhandler.TestCase{
+		{
+			Name:          "Invalid Method",
+			Target:        "/login",
+			RequestMethod: http.MethodPatch,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "PATCH Method Not Allowed\n",
+		},
+		{
+			Name:          "Valid GET Request",
+			Target:        "/login",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusOK,
+			WantBody: loginBody(weblogin.LoginPageData{
+				Title: app.Cfg.App.Name,
+			}),
+		},
+		{
+			Name:           "Missing username and password",
+			Target:         "/login",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{}.Encode(),
+			WantStatus:     http.StatusOK,
+			WantBody: loginBody(weblogin.LoginPageData{
+				Title:   app.Cfg.App.Name,
+				Message: weblogin.MsgMissingUsernameAndPassword,
+			}),
+		},
+		{
+			Name:           "Missing username",
+			Target:         "/login",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{"password": {"foo"}}.Encode(),
+			WantStatus:     http.StatusOK,
+			WantBody: loginBody(weblogin.LoginPageData{
+				Title:   app.Cfg.App.Name,
+				Message: weblogin.MsgMissingUsername,
+			}),
+		},
+		{
+			Name:           "Missing password",
+			Target:         "/login",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{"username": {"foo"}}.Encode(),
+			WantStatus:     http.StatusOK,
+			WantBody: loginBody(weblogin.LoginPageData{
+				Title:   app.Cfg.App.Name,
+				Message: weblogin.MsgMissingPassword,
+			}),
+		},
+		{
+			Name:           "Invalid Login",
+			Target:         "/login",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{"username": {"foo"}, "password": {"bar"}}.Encode(),
+			WantStatus:     http.StatusOK,
+			WantBody: loginBody(weblogin.LoginPageData{
+				Title:   app.Cfg.App.Name,
+				Message: weblogin.MsgLoginFailed,
+			}),
+		},
+		{
+			Name:           "Valid Login - Don't Remember",
+			Target:         "/login",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{"username": {"test"}, "password": {"password"}}.Encode(),
+			WantStatus:     http.StatusSeeOther,
+			WantBody:       "",
+			WantCookies:    []http.Cookie{*loginDontRememberCookie},
+			WantCookiesCmpOpts: []cmp.Option{
+				cmpopts.IgnoreFields(http.Cookie{}, "Value"),
+				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
+			},
+		},
+		{
+			Name:           "Valid Login - Remember",
+			Target:         "/login",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{"username": {"test"}, "password": {"password"}, "remember": {"on"}}.Encode(),
+			WantStatus:     http.StatusSeeOther,
+			WantBody:       "",
+			WantCookies:    []http.Cookie{*loginRememberCookie},
+			WantCookiesCmpOpts: []cmp.Option{
+				cmpopts.IgnoreFields(http.Cookie{}, "Value"),
+				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
+				cmpopts.IgnoreFields(http.Cookie{}, "RawExpires"),
+				cmpopts.EquateApproxTime(5 * time.Second),
+			},
+		},
 	}
 
-	expected := ""
-	if w.Body.String() != expected {
-		t.Errorf("got body %q, expected %q", w.Body, expected)
-	}
-}
-
-func TestLoginHandlerPostValidUsernameAndInvalidPassword(t *testing.T) {
-	data := url.Values{
-		"username": {"test"},
-		"password": {"invalid"},
-	}
-
-	app := AppForTest(t)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(data.Encode()))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.LoginHandler(w, r)
-
-	expectedStatus := http.StatusOK
-	if w.Code != expectedStatus {
-		t.Errorf("got status %d %q, expected %d %q", w.Code, http.StatusText(w.Code), expectedStatus, http.StatusText(expectedStatus))
-	}
-
-	expectedInBody := weblogin.MsgLoginFailed
-	if !strings.Contains(w.Body.String(), expectedInBody) {
-		t.Errorf("got body %q, expected %q in body", w.Body, expectedInBody)
-	}
+	// Test the handler using the utility function.
+	webhandler.HandlerTestWithCases(t, app.LoginHandler, tests)
 }

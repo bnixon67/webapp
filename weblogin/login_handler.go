@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
@@ -81,6 +82,12 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Get form values.
 	username := strings.TrimSpace(r.PostFormValue("username"))
 	password := strings.TrimSpace(r.PostFormValue("password"))
+	remember := r.PostFormValue("remember")
+
+	logger = slog.With(slog.Group("form",
+		slog.String("username", username),
+		slog.Bool("password", password == ""),
+		slog.String("remember", remember)))
 
 	// Check for missing values.
 	var msg string
@@ -109,16 +116,14 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Login successful, so create a cookie for the login token.
+	// Create cookie for login token.
 	app.DB.WriteEvent(EventLogin, true, username, "user logged in")
-	http.SetCookie(w, &http.Cookie{
-		Name:     LoginTokenCookieName,
-		Value:    token.Value,
-		Expires:  token.Expires,
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	})
+	var expires time.Time
+	if remember == "on" {
+		expires = token.Expires
+	}
+	cookie := LoginCookie(token.Value, expires)
+	http.SetCookie(w, cookie)
 
 	// Redirect to the specified "r" query parameter or default to root.
 	redirect := r.URL.Query().Get("r")
@@ -128,4 +133,15 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
 
 	logger.Info("login successful")
+}
+
+func LoginCookie(value string, expires time.Time) *http.Cookie {
+	return &http.Cookie{
+		Name:     LoginTokenCookieName,
+		Value:    value,
+		Expires:  expires,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}
 }

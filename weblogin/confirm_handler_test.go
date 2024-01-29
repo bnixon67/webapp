@@ -78,8 +78,7 @@ func TestConfirmHandler(t *testing.T) {
 			Name:          "Valid GET Request",
 			Target:        "/confirm",
 			RequestMethod: http.MethodGet,
-			//RequestBody:   url.Values{"ctoken": {"foo"}}.Encode(),
-			WantStatus: http.StatusOK,
+			WantStatus:    http.StatusOK,
 			WantBody: confirmBody(weblogin.ConfirmPageData{
 				Title: app.Cfg.App.Name,
 			}),

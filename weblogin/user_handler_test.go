@@ -73,6 +73,7 @@ func TestUserHandler(t *testing.T) {
 			WantBody: userBody(weblogin.UserPageData{
 				Title: app.Cfg.App.Name,
 			}),
+			WantCookies: []http.Cookie{http.Cookie{Name: "login", MaxAge: -1, Raw: "login=; Max-Age=0"}},
 		},
 		{
 			Name:          "Valid GET Request with Good Login Token",

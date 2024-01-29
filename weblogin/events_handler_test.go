@@ -98,6 +98,7 @@ func TestEventsHandler(t *testing.T) {
 			WantBody: eventsBody(t, weblogin.EventsPageData{
 				Title: app.Cfg.App.Name,
 			}),
+			WantCookies: []http.Cookie{http.Cookie{Name: "login", MaxAge: -1, Raw: "login=; Max-Age=0"}},
 		},
 		{
 			Name:          "Valid GET Request with Good Login Token - Non Admin",
@@ -174,8 +175,9 @@ func TestEventsCSVHandler(t *testing.T) {
 			RequestCookies: []http.Cookie{
 				{Name: weblogin.LoginTokenCookieName, Value: "foo"},
 			},
-			WantStatus: http.StatusUnauthorized,
-			WantBody:   "Error: Unauthorized\n",
+			WantStatus:  http.StatusUnauthorized,
+			WantBody:    "Error: Unauthorized\n",
+			WantCookies: []http.Cookie{http.Cookie{Name: "login", MaxAge: -1, Raw: "login=; Max-Age=0"}},
 		},
 		{
 			Name:          "Valid GET Request with Good Login Token - Non Admin",
