@@ -51,19 +51,25 @@ func (app *LoginApp) ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		// Get confirm token.
-		ctoken := r.URL.Query().Get("ctoken")
-
-		data := ConfirmPageData{ConfirmToken: ctoken}
-		app.renderConfirmPage(w, logger, data)
-
-		logger.Info("done")
-		return
-
+		app.ConfirmGetHandler(w, r)
 	case http.MethodPost:
-		app.confirmPost(w, r)
+		app.ConfirmPostHandler(w, r)
 		return
 	}
+}
+
+func (app *LoginApp) ConfirmGetHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.RequestLoggerWithFunc(r)
+
+	// Get confirm token.
+	ctoken := r.URL.Query().Get("ctoken")
+
+	data := ConfirmPageData{ConfirmToken: ctoken}
+	app.renderConfirmPage(w, logger, data)
+
+	logger.Info("done")
+	return
 }
 
 const (
@@ -73,8 +79,8 @@ const (
 	MsgUserAlreadyConfirmed = "The user has already been confirmed." // TODO: is there a security risk in providing this information?
 )
 
-// confirmPost is called for the POST method of the RegisterHandler.
-func (app *LoginApp) confirmPost(w http.ResponseWriter, r *http.Request) {
+// ConfirmPostHandler is called for the POST method of the RegisterHandler.
+func (app *LoginApp) ConfirmPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
 
