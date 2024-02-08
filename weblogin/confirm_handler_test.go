@@ -80,7 +80,9 @@ func TestConfirmHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: confirmBody(weblogin.ConfirmPageData{
-				Title: app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 			}),
 		},
 		{
@@ -98,7 +100,9 @@ func TestConfirmHandler(t *testing.T) {
 			RequestBody:    url.Values{}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: confirmBody(weblogin.ConfirmPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgMissingConfirmToken,
 			}),
 		},
@@ -110,7 +114,9 @@ func TestConfirmHandler(t *testing.T) {
 			RequestBody:    url.Values{"ctoken": {"foo"}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: confirmBody(weblogin.ConfirmPageData{
-				Title:        app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message:      weblogin.MsgInvalidConfirmToken,
 				ConfirmToken: "foo",
 			}),
@@ -131,7 +137,9 @@ func TestConfirmHandler(t *testing.T) {
 			RequestBody:    url.Values{"ctoken": {ctoken.Value}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: confirmBody(weblogin.ConfirmPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgUserAlreadyConfirmed,
 			}),
 		},

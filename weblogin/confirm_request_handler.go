@@ -23,26 +23,9 @@ const (
 
 // ConfirmRequestPageData contains data to render the confirm request template.
 type ConfirmRequestPageData struct {
-	Title     string // The application's title.
+	CommonPageData
 	Message   string // An message to display to the user.
 	EmailFrom string // The email address that sends the confirm message.
-}
-
-// renderConfirmRequestPage renders the confirm request page.
-//
-// If the page cannot be rendered, http.StatusInternalServerError is
-// set and the caller should ensure no further writes are done to w.
-func (app *LoginApp) renderConfirmRequestPage(w http.ResponseWriter, logger *slog.Logger, data ConfirmRequestPageData) {
-	// Ensure title is set.
-	if data.Title == "" {
-		data.Title = app.Cfg.App.Name
-	}
-
-	err := webutil.RenderTemplate(app.Tmpl, w, "confirm_request.html", data)
-	if err != nil {
-		logger.Error("unable to render template", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
-	}
 }
 
 // ConfirmRequestHandler handles a request to request a email confirmation.
@@ -71,7 +54,7 @@ func (app *LoginApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
 	data := ConfirmRequestPageData{}
-	app.renderConfirmRequestPage(w, logger, data)
+	app.RenderPage(w, logger, "confirm_request.html", &data)
 
 	logger.Info("done")
 }
@@ -91,7 +74,7 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 	if email == "" {
 		logger.Warn("email is empty")
 		data := ConfirmRequestPageData{Message: MsgMissingEmail}
-		app.renderConfirmRequestPage(w, logger, data)
+		app.RenderPage(w, logger, "confirm_request.html", &data)
 		return
 	}
 
@@ -128,8 +111,8 @@ func (app *LoginApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) 
 
 	err = webutil.RenderTemplate(app.Tmpl, w, "confirm_request_sent.html",
 		ConfirmRequestPageData{
-			Title:     app.Cfg.App.Name,
-			EmailFrom: app.Cfg.SMTP.User,
+			CommonPageData: CommonPageData{Title: app.Cfg.App.Name},
+			EmailFrom:      app.Cfg.SMTP.User,
 		})
 	if err != nil {
 		logger.Error("failed to render template", "err", err)

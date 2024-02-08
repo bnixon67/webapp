@@ -63,7 +63,9 @@ func TestLoginHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: loginBody(weblogin.LoginPageData{
-				Title: app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 			}),
 		},
 		{
@@ -74,7 +76,9 @@ func TestLoginHandler(t *testing.T) {
 			RequestBody:    url.Values{}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(weblogin.LoginPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgMissingUsernameAndPassword,
 			}),
 		},
@@ -86,7 +90,9 @@ func TestLoginHandler(t *testing.T) {
 			RequestBody:    url.Values{"password": {"foo"}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(weblogin.LoginPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgMissingUsername,
 			}),
 		},
@@ -98,7 +104,9 @@ func TestLoginHandler(t *testing.T) {
 			RequestBody:    url.Values{"username": {"foo"}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(weblogin.LoginPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgMissingPassword,
 			}),
 		},
@@ -110,7 +118,9 @@ func TestLoginHandler(t *testing.T) {
 			RequestBody:    url.Values{"username": {"foo"}, "password": {"bar"}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(weblogin.LoginPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgLoginFailed,
 			}),
 		},

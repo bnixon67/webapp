@@ -61,7 +61,9 @@ func TestConfirmRequestHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: confirmRequestBody(weblogin.ConfirmRequestPageData{
-				Title: app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 			}),
 		},
 		{
@@ -78,7 +80,9 @@ func TestConfirmRequestHandler(t *testing.T) {
 			RequestHeaders: header,
 			WantStatus:     http.StatusOK,
 			WantBody: confirmRequestBody(weblogin.ConfirmRequestPageData{
-				Title:   app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				Message: weblogin.MsgMissingEmail,
 			}),
 		},
@@ -92,7 +96,9 @@ func TestConfirmRequestHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentConfirmRequestBody(weblogin.ConfirmRequestPageData{
-				Title:     app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				EmailFrom: app.Cfg.SMTP.User,
 			}),
 		},
@@ -106,7 +112,9 @@ func TestConfirmRequestHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentConfirmRequestBody(weblogin.ConfirmRequestPageData{
-				Title:     app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 				EmailFrom: app.Cfg.SMTP.User,
 			}),
 		},

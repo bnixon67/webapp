@@ -6,7 +6,6 @@ package weblogin
 import (
 	"errors"
 	"html/template"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -16,26 +15,9 @@ import (
 
 // ConfirmPageData contains data to render the confirm template.
 type ConfirmPageData struct {
-	Title        string
+	CommonPageData
 	Message      template.HTML
 	ConfirmToken string
-}
-
-// renderConfirmPage renders the confirm page.
-//
-// If the page cannot be rendered, http.StatusInternalServerError is
-// set and the caller should ensure no further writes are done to w.
-func (app *LoginApp) renderConfirmPage(w http.ResponseWriter, logger *slog.Logger, data ConfirmPageData) {
-	// Ensure title is set.
-	if data.Title == "" {
-		data.Title = app.Cfg.App.Name
-	}
-
-	err := webutil.RenderTemplate(app.Tmpl, w, "confirm.html", data)
-	if err != nil {
-		logger.Error("unable to render template", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
-	}
 }
 
 // ConfirmHandler handles request to confirm a user.
@@ -66,7 +48,7 @@ func (app *LoginApp) ConfirmGetHandler(w http.ResponseWriter, r *http.Request) {
 	ctoken := r.URL.Query().Get("ctoken")
 
 	data := ConfirmPageData{ConfirmToken: ctoken}
-	app.renderConfirmPage(w, logger, data)
+	app.RenderPage(w, logger, "confirm.html", &data)
 
 	logger.Info("done")
 	return
@@ -93,7 +75,7 @@ func (app *LoginApp) ConfirmPostHandler(w http.ResponseWriter, r *http.Request) 
 		data := ConfirmPageData{
 			Message: template.HTML(MsgMissingConfirmToken),
 		}
-		app.renderConfirmPage(w, logger, data)
+		app.RenderPage(w, logger, "confirm.html", &data)
 		return
 	}
 
@@ -113,7 +95,7 @@ func (app *LoginApp) ConfirmPostHandler(w http.ResponseWriter, r *http.Request) 
 			Message:      template.HTML(msg),
 			ConfirmToken: ctoken,
 		}
-		app.renderConfirmPage(w, logger, data)
+		app.RenderPage(w, logger, "confirm.html", &data)
 		return
 	}
 
@@ -128,7 +110,7 @@ func (app *LoginApp) ConfirmPostHandler(w http.ResponseWriter, r *http.Request) 
 			data := ConfirmPageData{
 				Message: MsgUserAlreadyConfirmed,
 			}
-			app.renderConfirmPage(w, logger, data)
+			app.RenderPage(w, logger, "confirm.html", &data)
 			return
 		}
 

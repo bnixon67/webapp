@@ -61,7 +61,7 @@ func TestForgotHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title: app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
 			}),
 		},
 		{
@@ -81,8 +81,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title:   app.Cfg.App.Name,
-				Message: weblogin.MsgMissingEmail,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
+				Message:        weblogin.MsgMissingEmail,
 			}),
 		},
 		{
@@ -95,8 +95,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title:   app.Cfg.App.Name,
-				Message: weblogin.MsgMissingAction,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
+				Message:        weblogin.MsgMissingAction,
 			}),
 		},
 		{
@@ -110,8 +110,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(weblogin.ForgotPageData{
-				Title:   app.Cfg.App.Name,
-				Message: weblogin.MsgInvalidAction,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
+				Message:        weblogin.MsgInvalidAction,
 			}),
 		},
 		{
@@ -125,8 +125,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(weblogin.ForgotPageData{
-				Title:     app.Cfg.App.Name,
-				EmailFrom: app.Cfg.SMTP.User,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
+				EmailFrom:      app.Cfg.SMTP.User,
 			}),
 		},
 		{
@@ -140,8 +140,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(weblogin.ForgotPageData{
-				Title:     app.Cfg.App.Name,
-				EmailFrom: app.Cfg.SMTP.User,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
+				EmailFrom:      app.Cfg.SMTP.User,
 			}),
 		},
 		{
@@ -155,8 +155,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(weblogin.ForgotPageData{
-				Title:     app.Cfg.App.Name,
-				EmailFrom: app.Cfg.SMTP.User,
+				CommonPageData: weblogin.CommonPageData{Title: app.Cfg.App.Name},
+				EmailFrom:      app.Cfg.SMTP.User,
 			}),
 		},
 	}

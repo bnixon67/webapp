@@ -15,27 +15,8 @@ import (
 
 // LoginPageData contains data passed to the HTML template.
 type LoginPageData struct {
-	Title   string
+	CommonPageData
 	Message string
-}
-
-// renderLoginPage renders the login page.
-//
-// If the page cannot be rendered, http.StatusInternalServerError is
-// set and the caller should ensure no further writes are done to w.
-func (app *LoginApp) renderLoginPage(w http.ResponseWriter, logger *slog.Logger, data LoginPageData) {
-	// Ensure title is set.
-	if data.Title == "" {
-		data.Title = app.Cfg.App.Name
-	}
-
-	err := webutil.RenderTemplate(app.Tmpl, w, "login.html", data)
-	if err != nil {
-		logger.Error("unable to render template", "err", err)
-		return
-	}
-
-	return
 }
 
 // LoginHandler handles login requests.
@@ -62,7 +43,7 @@ func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	app.renderLoginPage(w, logger, LoginPageData{})
+	app.RenderPage(w, logger, "login.html", &LoginPageData{})
 
 	logger.Info("done")
 }
@@ -102,7 +83,9 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	if msg != "" {
 		logger.Error("missing form values", slog.String("message", msg))
 
-		app.renderLoginPage(w, logger, LoginPageData{Message: msg})
+		data := LoginPageData{Message: msg}
+		app.RenderPage(w, logger, "login.html", &data)
+
 		return
 	}
 
@@ -112,7 +95,9 @@ func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error("failed to login user", "err", err)
 		app.DB.WriteEvent(EventLogin, false, username, err.Error())
 
-		app.renderLoginPage(w, logger, LoginPageData{Message: MsgLoginFailed})
+		data := LoginPageData{Message: MsgLoginFailed}
+		app.RenderPage(w, logger, "login.html", &data)
+
 		return
 	}
 

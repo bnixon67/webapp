@@ -12,7 +12,7 @@ import (
 
 // LogoutPageData contains data passed to the HTML template.
 type LogoutPageData struct {
-	Title   string
+	CommonPageData
 	Message string
 }
 
@@ -62,13 +62,8 @@ func (app *LoginApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// display page
-	err = webutil.RenderTemplate(app.Tmpl, w, "logout.html",
-		LogoutPageData{Title: app.Cfg.App.Name})
-	if err != nil {
-		logger.Error("failed to RenderTemplate", "err", err)
-		return
-	}
+	// Render page.
+	app.RenderPage(w, logger, "logout.html", &LogoutPageData{})
 
 	logger.Info("logged out", "user", user)
 	app.DB.WriteEvent(EventLogout, true, user.Username, "logged out user")

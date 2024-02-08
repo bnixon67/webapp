@@ -29,7 +29,7 @@ const (
 
 // ForgotPageData contains data required to render the forgot templates.
 type ForgotPageData struct {
-	Title     string // The application's title.
+	CommonPageData
 	Message   string // An informational or error message to display to the user.
 	EmailFrom string // The email address from which the reset or reminder email will be sent.
 }
@@ -59,14 +59,10 @@ func (app *LoginApp) forgotGet(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	err := webutil.RenderTemplate(app.Tmpl, w, TemplateForgot,
-		ForgotPageData{Title: app.Cfg.App.Name})
-	if err != nil {
-		logger.Error("unable to render forgot template", "err", err)
-		return
-	}
+	data := ForgotPageData{}
+	app.RenderPage(w, logger, TemplateForgot, &data)
 
-	logger.Info("success")
+	logger.Info("done")
 }
 
 // validateForgotPostForm ensures all required form fields are present and valid.
@@ -106,15 +102,7 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 	errMessage := validateForgotPostForm(email, action)
 	if errMessage != "" {
 		logger.Warn("invalid form data", "errMessage", errMessage)
-		err := webutil.RenderTemplate(app.Tmpl, w, "forgot.html",
-			ForgotPageData{
-				Title:   app.Cfg.App.Name,
-				Message: errMessage,
-			})
-		if err != nil {
-			logger.Error("unable to RenderTemplate", "err", err)
-			return
-		}
+		app.RenderPage(w, logger, "forgot.html", &ForgotPageData{Message: errMessage})
 		return
 	}
 
@@ -140,17 +128,10 @@ func (app *LoginApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = webutil.RenderTemplate(app.Tmpl, w, TemplateForgotSent,
-		ForgotPageData{
-			Title:     app.Cfg.App.Name,
-			EmailFrom: app.Cfg.SMTP.User,
-		})
-	if err != nil {
-		logger.Error("failed to render template", "err", err)
-		return
-	}
+	data := ForgotPageData{EmailFrom: app.Cfg.SMTP.User}
+	app.RenderPage(w, logger, TemplateForgotSent, &data)
 
-	logger.Info("success")
+	logger.Info("done")
 }
 
 // emailData contain the data required to populate the email templates.

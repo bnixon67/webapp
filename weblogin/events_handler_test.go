@@ -84,7 +84,9 @@ func TestEventsHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: eventsBody(t, weblogin.EventsPageData{
-				Title: app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 			}),
 		},
 		{
@@ -96,7 +98,9 @@ func TestEventsHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: eventsBody(t, weblogin.EventsPageData{
-				Title: app.Cfg.App.Name,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
 			}),
 			WantCookies: []http.Cookie{http.Cookie{Name: "login", MaxAge: -1, Raw: "login=; Max-Age=0"}},
 		},
@@ -109,7 +113,10 @@ func TestEventsHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: eventsBody(t, weblogin.EventsPageData{
-				Title: app.Cfg.App.Name, User: user,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
+				User: user,
 			}),
 		},
 		{
@@ -121,7 +128,10 @@ func TestEventsHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: eventsBody(t, weblogin.EventsPageData{
-				Title: app.Cfg.App.Name, User: admin, Events: events,
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
+				User: admin, Events: events,
 			}),
 		},
 	}

@@ -23,19 +23,8 @@ const (
 
 // RegisterPageData contains data passed to the HTML template.
 type RegisterPageData struct {
-	Title   string
+	CommonPageData
 	Message string
-}
-
-// renderRegisterPage renders the page.
-func (app *LoginApp) renderRegisterPage(w http.ResponseWriter, logger *slog.Logger, message string) {
-	data := RegisterPageData{Title: app.Cfg.App.Name, Message: message}
-
-	err := webutil.RenderTemplate(app.Tmpl, w, "register.html", data)
-	if err != nil {
-		logger.Error("unable to render template", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
-	}
 }
 
 // RegisterHandler handles requests to register a user.
@@ -51,8 +40,8 @@ func (app *LoginApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		app.renderRegisterPage(w, logger, "")
-		logger.Info("success")
+		app.RenderPage(w, logger, "register.html", &RegisterPageData{})
+		logger.Info("done")
 
 	case http.MethodPost:
 		app.registerPost(w, r)
@@ -85,14 +74,16 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	// Check for missing values.
 	if IsEmpty(username, fullName, email, password1, password2) {
 		logger.Warn("missing values")
-		app.renderRegisterPage(w, logger, MsgMissingRequired)
+		app.RenderPage(w, logger, "register.html",
+			&RegisterPageData{Message: MsgMissingRequired})
 		return
 	}
 
 	// Check that password match.
 	if password1 != password2 {
 		logger.Warn("passwords do not match")
-		app.renderRegisterPage(w, logger, MsgPasswordsDifferent)
+		app.RenderPage(w, logger, "register.html",
+			&RegisterPageData{Message: MsgPasswordsDifferent})
 		return
 	}
 
@@ -106,7 +97,8 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	if userExists {
 		logger.Warn("user name already exists")
 		app.DB.WriteEvent(EventRegister, false, username, "user name already exists")
-		app.renderRegisterPage(w, logger, MsgUsernameExists)
+		app.RenderPage(w, logger, "register.html",
+			&RegisterPageData{Message: MsgUsernameExists})
 		return
 	}
 
@@ -120,7 +112,8 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	if emailExists {
 		logger.Warn("email already exists")
 		app.DB.WriteEvent(EventRegister, false, username, "email already exists: "+email)
-		app.renderRegisterPage(w, logger, MsgEmailExists)
+		app.RenderPage(w, logger, "register.html",
+			&RegisterPageData{Message: MsgEmailExists})
 		return
 	}
 
@@ -129,7 +122,8 @@ func (app *LoginApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("RegisterUser failed", "err", err)
 		app.DB.WriteEvent(EventRegister, false, username, err.Error())
-		app.renderRegisterPage(w, logger, MsgRegisterFailed)
+		app.RenderPage(w, logger, "register.html",
+			&RegisterPageData{Message: MsgRegisterFailed})
 		return
 	}
 

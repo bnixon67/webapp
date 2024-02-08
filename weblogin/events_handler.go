@@ -4,7 +4,6 @@
 package weblogin
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/bnixon67/webapp/webhandler"
@@ -13,25 +12,9 @@ import (
 
 // EventsPageData contains data passed to the HTML template.
 type EventsPageData struct {
-	Title  string
+	CommonPageData
 	User   User
 	Events []Event
-}
-
-// renderEventsPage renders the events page.  If the page cannot be
-// rendered, http.StatusInternalServerError is set and the caller should
-// ensure no further writes are done to w.
-func (app *LoginApp) renderEventsPage(w http.ResponseWriter, logger *slog.Logger, data EventsPageData) {
-	// Ensure title is set.
-	if data.Title == "" {
-		data.Title = app.Cfg.App.Name
-	}
-
-	err := webutil.RenderTemplate(app.Tmpl, w, "events.html", data)
-	if err != nil {
-		logger.Error("unable to render template", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
-	}
 }
 
 // EventsHandler displays a list of events.
@@ -59,11 +42,11 @@ func (app *LoginApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.renderEventsPage(w, logger,
-		EventsPageData{
-			Title:  app.Cfg.App.Name,
-			User:   user,
-			Events: events,
+	app.RenderPage(w, logger, "events.html",
+		&EventsPageData{
+			CommonPageData: CommonPageData{Title: app.Cfg.App.Name},
+			User:           user,
+			Events:         events,
 		})
 
 	logger.Info("done")
