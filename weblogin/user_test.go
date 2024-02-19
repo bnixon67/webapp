@@ -103,3 +103,67 @@ func TestUserFromRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestUserForLoginToken(t *testing.T) {
+	app := AppForTest(t)
+	db := app.DB
+
+	validToken, err := app.LoginUser("test", "password")
+	if err != nil {
+		t.Fatalf("could not login user to get login token")
+	}
+
+	validUser, err := app.DB.UserForLoginToken(validToken.Value)
+	if err != nil {
+		t.Fatalf("could not get user")
+	}
+
+	expiredToken, err := db.CreateToken(weblogin.LoginTokenKind, "test", weblogin.LoginTokenSize, "0s")
+
+	if err != nil {
+		t.Fatalf("could not get user")
+	}
+
+	tests := []struct {
+		name       string
+		loginToken string
+		wantUser   weblogin.User
+		wantErr    error
+	}{
+		{
+			name:       "valid token",
+			loginToken: validToken.Value,
+			wantUser:   validUser,
+			wantErr:    nil,
+		},
+		{
+			name:       "invalid token",
+			loginToken: "invalid",
+			wantUser:   weblogin.EmptyUser,
+			wantErr:    weblogin.ErrUserLoginTokenNotFound,
+		},
+		{
+			name:       "expired token",
+			loginToken: expiredToken.Value,
+			wantUser:   weblogin.EmptyUser,
+			wantErr:    weblogin.ErrUserLoginTokenExpired,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			gotUser, gotErr := db.UserForLoginToken(tt.loginToken)
+
+			if gotErr != tt.wantErr {
+				t.Errorf("UserForLoginToken(%q) gotErr = %v, wantErr %v", tt.loginToken, gotErr, tt.wantErr)
+
+			}
+
+			if !reflect.DeepEqual(gotUser, tt.wantUser) {
+				t.Errorf("UserFromRequest() gotUser = %v, want %v", gotUser, tt.wantUser)
+			}
+
+		})
+	}
+}

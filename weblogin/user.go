@@ -61,7 +61,7 @@ func (db *LoginDB) UserForLoginToken(loginToken string) (User, error) {
 		user    User
 	)
 
-	hashedValue := hash(loginToken)
+	hashedValue := Hash(loginToken)
 
 	if db == nil {
 		return EmptyUser, ErrInvalidDB
@@ -71,7 +71,7 @@ func (db *LoginDB) UserForLoginToken(loginToken string) (User, error) {
 	result := db.QueryRow(qry, LoginTokenKind, hashedValue)
 	err := result.Scan(&user.Username, &user.FullName, &user.Email, &expires, &user.IsAdmin, &user.Confirmed, &user.Created)
 	if err != nil {
-		// return custom error and empty user if login not found
+		// Return custom error if login not found
 		if errors.Is(err, sql.ErrNoRows) {
 			slog.Warn("unexpected",
 				"err", ErrUserLoginTokenNotFound,
@@ -81,12 +81,20 @@ func (db *LoginDB) UserForLoginToken(loginToken string) (User, error) {
 		return EmptyUser, err
 	}
 
-	// return empty user if login is expired
+	// Check if login token is expired.
 	if expires.Before(time.Now()) {
 		slog.Warn("unexpected",
-			"err", ErrUserLoginTokenExpired,
-			"expires", expires,
-			"user", user)
+			slog.Any("err", ErrUserLoginTokenExpired),
+			slog.Time("expires", expires),
+			slog.Any("user", user))
+
+		// Remove expired token.
+		err := db.RemoveToken(LoginTokenKind, loginToken)
+		if err != nil {
+			slog.Error("failed to remove login token",
+				"loginToken", loginToken, "err", err)
+		}
+
 		return EmptyUser, ErrUserLoginTokenExpired
 	}
 
@@ -149,7 +157,7 @@ func (db *LoginDB) UsernameForEmail(email string) (string, error) {
 func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
 	var username string
 	var expires time.Time
-	hashedValue := hash(tokenValue)
+	hashedValue := Hash(tokenValue)
 
 	qry := `SELECT username, expires FROM tokens WHERE kind="reset" AND hashedValue=?`
 	row := db.QueryRow(qry, hashedValue)
@@ -180,7 +188,7 @@ func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
 func (db *LoginDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 	var username string
 	var expires time.Time
-	hashedValue := hash(tokenValue)
+	hashedValue := Hash(tokenValue)
 
 	qry := `SELECT tokens.username, tokens.expires FROM tokens JOIN users ON tokens.username = users.username WHERE kind="confirm" AND hashedValue=? LIMIT 1`
 	row := db.QueryRow(qry, hashedValue)
@@ -278,7 +286,8 @@ func (db *LoginDB) LastLoginForUser(username string) (time.Time, string, error) 
 const LoginTokenCookieName = "login"
 
 // UserFromRequest returns the user for the login token cookie in the request.
-// If the login token is invalid or expired, the cookie is removed and an empty user returned.
+// If the login token is invalid or expired, the cookie is removed and
+// an empty user returned.
 func (db *LoginDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
 	// Get value of the login token cookie from the request.
 	loginToken, err := CookieValue(r, LoginTokenCookieName)
