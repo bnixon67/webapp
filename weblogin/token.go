@@ -18,9 +18,9 @@ type Token struct {
 	Kind    string
 }
 
-// hash returns a hex encoded sha256 hash of the given string.
-// TODO: should this be a salted hash to be more secure?
-func hash(s string) string {
+// Hash returns a hex encoded sha256 Hash of the given string.
+// TODO: should this be a salted Hash to be more secure?
+func Hash(s string) string {
 	h := sha256.New()
 	h.Write([]byte(s))
 	return hex.EncodeToString(h.Sum(nil))
@@ -46,7 +46,7 @@ func (db *LoginDB) CreateToken(kind, username string, size int, duration string)
 		"duration", duration, "d", d.String(), "expires", token.Expires.String())
 
 	// hash the token to avoid reuse if database is compromised
-	hashedValue := hash(token.Value)
+	hashedValue := Hash(token.Value)
 
 	// Insert token into database but ensure username exists.
 	qry := `INSERT INTO tokens (hashedValue, expires, kind, username) SELECT ?, ?, ?, ? FROM users WHERE EXISTS (SELECT 1 FROM users WHERE username = ?) LIMIT 1`
@@ -71,7 +71,7 @@ var ErrTokenNotFound = errors.New("token not found")
 
 // RemoveToken removes the token with kind and value.
 func (db *LoginDB) RemoveToken(kind, value string) error {
-	hashedValue := hash(value)
+	hashedValue := Hash(value)
 
 	const qry = "DELETE FROM tokens WHERE kind = ? AND hashedValue = ?"
 	result, err := db.Exec(qry, kind, hashedValue)
