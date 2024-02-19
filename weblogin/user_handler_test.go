@@ -32,7 +32,7 @@ func userBody(data weblogin.UserPageData) string {
 	return body.String()
 }
 
-func TestUserHandler(t *testing.T) {
+func TestUserGetHandler(t *testing.T) {
 	app := AppForTest(t)
 
 	// TODO: better way to define a test user
@@ -51,10 +51,10 @@ func TestUserHandler(t *testing.T) {
 			Target:        "/user",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
-			Name:          "Valid GET Request without Cookie",
+			Name:          "Valid GET without Cookie",
 			Target:        "/user",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
@@ -63,122 +63,44 @@ func TestUserHandler(t *testing.T) {
 			}),
 		},
 		{
-			Name:          "Valid GET Request with Bad Login Token",
+			Name:          "Valid GET with Bad Login Token",
 			Target:        "/user",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.LoginTokenCookieName, Value: "foo"},
+				{
+					Name:  weblogin.LoginTokenCookieName,
+					Value: "foo",
+				},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: userBody(weblogin.UserPageData{
 				Title: app.Cfg.App.Name,
 			}),
-			WantCookies: []http.Cookie{http.Cookie{Name: "login", MaxAge: -1, Raw: "login=; Max-Age=0"}},
+			WantCookies: []http.Cookie{
+				{
+					Name:   "login",
+					MaxAge: -1,
+					Raw:    "login=; Max-Age=0",
+				},
+			},
 		},
 		{
-			Name:          "Valid GET Request with Good Login Token",
+			Name:          "Valid GET with Good Login Token",
 			Target:        "/user",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.LoginTokenCookieName, Value: token.Value},
+				{
+					Name:  weblogin.LoginTokenCookieName,
+					Value: token.Value,
+				},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: userBody(weblogin.UserPageData{
 				Title: app.Cfg.App.Name, User: user,
 			}),
 		},
-		/*
-			{
-				Name:           "Missing Email",
-				Target:         "/forgot",
-				RequestMethod:  http.MethodPost,
-				RequestHeaders: header,
-				RequestBody: url.Values{
-					"action": {"user"},
-				}.Encode(),
-				WantStatus: http.StatusOK,
-				WantBody: forgotBody(weblogin.ForgotPageData{
-					Title:   app.Cfg.App.Name,
-					Message: weblogin.MsgMissingEmail,
-				}),
-			},
-			{
-				Name:           "Missing Action",
-				Target:         "/forgot",
-				RequestMethod:  http.MethodPost,
-				RequestHeaders: header,
-				RequestBody: url.Values{
-					"email": {"test@email"},
-				}.Encode(),
-				WantStatus: http.StatusOK,
-				WantBody: forgotBody(weblogin.ForgotPageData{
-					Title:   app.Cfg.App.Name,
-					Message: weblogin.MsgMissingAction,
-				}),
-			},
-			{
-				Name:           "Invalid Action",
-				Target:         "/forgot",
-				RequestMethod:  http.MethodPost,
-				RequestHeaders: header,
-				RequestBody: url.Values{
-					"email":  {"test@email"},
-					"action": {"invalid"},
-				}.Encode(),
-				WantStatus: http.StatusOK,
-				WantBody: forgotBody(weblogin.ForgotPageData{
-					Title:   app.Cfg.App.Name,
-					Message: weblogin.MsgInvalidAction,
-				}),
-			},
-			{
-				Name:           "Valid User Action",
-				Target:         "/forgot",
-				RequestMethod:  http.MethodPost,
-				RequestHeaders: header,
-				RequestBody: url.Values{
-					"action": {"user"},
-					"email":  {"test@email"},
-				}.Encode(),
-				WantStatus: http.StatusOK,
-				WantBody: sentBody(weblogin.ForgotPageData{
-					Title:     app.Cfg.App.Name,
-					EmailFrom: app.Cfg.SMTP.User,
-				}),
-			},
-			{
-				Name:           "Valid Password Action",
-				Target:         "/forgot",
-				RequestMethod:  http.MethodPost,
-				RequestHeaders: header,
-				RequestBody: url.Values{
-					"action": {"password"},
-					"email":  {"test@email"},
-				}.Encode(),
-				WantStatus: http.StatusOK,
-				WantBody: sentBody(weblogin.ForgotPageData{
-					Title:     app.Cfg.App.Name,
-					EmailFrom: app.Cfg.SMTP.User,
-				}),
-			},
-			{
-				Name:           "Unknown Email",
-				Target:         "/forgot",
-				RequestMethod:  http.MethodPost,
-				RequestHeaders: header,
-				RequestBody: url.Values{
-					"action": {"user"},
-					"email":  {"unknown@email"},
-				}.Encode(),
-				WantStatus: http.StatusOK,
-				WantBody: sentBody(weblogin.ForgotPageData{
-					Title:     app.Cfg.App.Name,
-					EmailFrom: app.Cfg.SMTP.User,
-				}),
-			},
-		*/
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.UserHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.UserGetHandler, tests)
 }

@@ -19,29 +19,17 @@ type LoginPageData struct {
 	Message string
 }
 
-// LoginHandler handles login requests.
-func (app *LoginApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
-	logger := webhandler.RequestLoggerWithFunc(r)
-
-	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
-		logger.Error("invalid method")
-		return
-	}
-
-	switch r.Method {
-	case http.MethodGet:
-		app.LoginGetHandler(w, r)
-	case http.MethodPost:
-		app.LoginPostHandler(w, r)
-	}
-}
-
 // LoginGetHandler handles login GET requests.
 func (app *LoginApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
+	if r.Method != http.MethodGet {
+		webutil.HttpError(w, http.StatusMethodNotAllowed)
+		logger.Error("invalid method")
+		return
+	}
 
 	app.RenderPage(w, logger, "login.html", &LoginPageData{})
 
@@ -59,6 +47,13 @@ const (
 func (app *LoginApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
+	if r.Method != http.MethodPost {
+		webutil.HttpError(w, http.StatusMethodNotAllowed)
+		logger.Error("invalid method")
+		return
+	}
 
 	// Get form values.
 	username := strings.TrimSpace(r.PostFormValue("username"))

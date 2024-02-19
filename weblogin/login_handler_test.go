@@ -33,7 +33,35 @@ func loginBody(data weblogin.LoginPageData) string {
 	return body.String()
 }
 
-func TestLoginHandler(t *testing.T) {
+func TestLoginGetHandler(t *testing.T) {
+	app := AppForTest(t)
+
+	tests := []webhandler.TestCase{
+		{
+			Name:          "Invalid Method",
+			Target:        "/login",
+			RequestMethod: http.MethodPost,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "Error: Method Not Allowed\n",
+		},
+		{
+			Name:          "Valid GET Request",
+			Target:        "/login",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusOK,
+			WantBody: loginBody(weblogin.LoginPageData{
+				CommonPageData: weblogin.CommonPageData{
+					Title: app.Cfg.App.Name,
+				},
+			}),
+		},
+	}
+
+	// Test the handler using the utility function.
+	webhandler.HandlerTestWithCases(t, app.LoginGetHandler, tests)
+}
+
+func TestLoginPostHandler(t *testing.T) {
 	app := AppForTest(t)
 
 	header := http.Header{
@@ -53,20 +81,9 @@ func TestLoginHandler(t *testing.T) {
 		{
 			Name:          "Invalid Method",
 			Target:        "/login",
-			RequestMethod: http.MethodPatch,
-			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "PATCH Method Not Allowed\n",
-		},
-		{
-			Name:          "Valid GET Request",
-			Target:        "/login",
 			RequestMethod: http.MethodGet,
-			WantStatus:    http.StatusOK,
-			WantBody: loginBody(weblogin.LoginPageData{
-				CommonPageData: weblogin.CommonPageData{
-					Title: app.Cfg.App.Name,
-				},
-			}),
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
 			Name:           "Missing username and password",
@@ -115,8 +132,9 @@ func TestLoginHandler(t *testing.T) {
 			Target:         "/login",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
-			RequestBody:    url.Values{"username": {"foo"}, "password": {"bar"}}.Encode(),
-			WantStatus:     http.StatusOK,
+			RequestBody: url.Values{"username": {"foo"},
+				"password": {"bar"}}.Encode(),
+			WantStatus: http.StatusOK,
 			WantBody: loginBody(weblogin.LoginPageData{
 				CommonPageData: weblogin.CommonPageData{
 					Title: app.Cfg.App.Name,
@@ -129,10 +147,11 @@ func TestLoginHandler(t *testing.T) {
 			Target:         "/login",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
-			RequestBody:    url.Values{"username": {"test"}, "password": {"password"}}.Encode(),
-			WantStatus:     http.StatusSeeOther,
-			WantBody:       "",
-			WantCookies:    []http.Cookie{*loginDontRememberCookie},
+			RequestBody: url.Values{"username": {"test"},
+				"password": {"password"}}.Encode(),
+			WantStatus:  http.StatusSeeOther,
+			WantBody:    "",
+			WantCookies: []http.Cookie{*loginDontRememberCookie},
 			WantCookiesCmpOpts: []cmp.Option{
 				cmpopts.IgnoreFields(http.Cookie{}, "Value"),
 				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
@@ -143,10 +162,12 @@ func TestLoginHandler(t *testing.T) {
 			Target:         "/login",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
-			RequestBody:    url.Values{"username": {"test"}, "password": {"password"}, "remember": {"on"}}.Encode(),
-			WantStatus:     http.StatusSeeOther,
-			WantBody:       "",
-			WantCookies:    []http.Cookie{*loginRememberCookie},
+			RequestBody: url.Values{"username": {"test"},
+				"password": {"password"},
+				"remember": {"on"}}.Encode(),
+			WantStatus:  http.StatusSeeOther,
+			WantBody:    "",
+			WantCookies: []http.Cookie{*loginRememberCookie},
 			WantCookiesCmpOpts: []cmp.Option{
 				cmpopts.IgnoreFields(http.Cookie{}, "Value"),
 				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
@@ -157,5 +178,5 @@ func TestLoginHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.LoginHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.LoginPostHandler, tests)
 }

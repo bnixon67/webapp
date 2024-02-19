@@ -18,12 +18,13 @@ type UserPageData struct {
 }
 
 // UserHandler shows user information.
-func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *LoginApp) UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if r.Method != http.MethodGet {
+		webutil.HttpError(w, http.StatusMethodNotAllowed)
 		logger.Error("invalid method")
 		return
 	}
@@ -31,10 +32,8 @@ func (app *LoginApp) UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Attempt to get the user from the request.
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
+		webutil.HttpError(w, http.StatusInternalServerError)
 		logger.Error("failed to get user from request", "err", err)
-		http.Error(w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
 		return
 	}
 

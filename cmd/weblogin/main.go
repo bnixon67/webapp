@@ -108,8 +108,7 @@ func main() {
 		http.RedirectHandler("/user", http.StatusMovedPermanently))
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
 	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
-	mux.HandleFunc("/user", app.UserHandler)
-	mux.HandleFunc("/login", app.LoginHandler)
+	mux.HandleFunc("GET /user", app.UserGetHandler)
 	mux.HandleFunc("/logout", app.LogoutHandler)
 	mux.HandleFunc("/register", app.RegisterHandler)
 	mux.HandleFunc("/users", app.UsersHandler)
@@ -120,6 +119,8 @@ func main() {
 	mux.HandleFunc("/reset", app.ResetHandler)
 	mux.HandleFunc("/events", app.EventsHandler)
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
+	mux.HandleFunc("GET /login", app.LoginGetHandler)
+	mux.HandleFunc("POST /login", app.LoginPostHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
