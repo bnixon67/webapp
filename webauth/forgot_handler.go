@@ -232,7 +232,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 }
 
 // createPasswordResetToken generates a new token for resetting a user's password.
-func (db *LoginDB) createPasswordResetToken(username string) (Token, error) {
+func (db *AuthDB) createPasswordResetToken(username string) (Token, error) {
 	// special case for empty username
 	if username == "" {
 		return Token{}, nil

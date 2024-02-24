@@ -55,7 +55,7 @@ var (
 var EmptyUser User // EmptyUser is a empty User used when returning a error.
 
 // UserForLoginToken returns a user for the given loginToken.
-func (db *LoginDB) UserForLoginToken(loginToken string) (User, error) {
+func (db *AuthDB) UserForLoginToken(loginToken string) (User, error) {
 	var (
 		expires time.Time
 		user    User
@@ -107,7 +107,7 @@ func (db *LoginDB) UserForLoginToken(loginToken string) (User, error) {
 }
 
 // UserForName returns a user for the given username.
-func (db *LoginDB) UserForName(username string) (User, error) {
+func (db *AuthDB) UserForName(username string) (User, error) {
 	var user User
 
 	qry := `SELECT username, fullName, email, admin FROM users WHERE username=? LIMIT 1`
@@ -124,12 +124,12 @@ func (db *LoginDB) UserForName(username string) (User, error) {
 }
 
 // UserExists returns true if the given username already exists in db.
-func (db *LoginDB) UserExists(username string) (bool, error) {
+func (db *AuthDB) UserExists(username string) (bool, error) {
 	return db.RowExists("SELECT 1 FROM users WHERE username=? LIMIT 1", username)
 }
 
 // EmailExists returns true if the given email already exists.
-func (db *LoginDB) EmailExists(email string) (bool, error) {
+func (db *AuthDB) EmailExists(email string) (bool, error) {
 	return db.RowExists("SELECT 1 FROM users WHERE email=? LIMIT 1", email)
 }
 
@@ -138,7 +138,7 @@ func (db *LoginDB) EmailExists(email string) (bool, error) {
 // If not found, ErrUserNotFound is returned.
 //
 // If a SQL error occurs, other than ErrNoRows, it is returned.
-func (db *LoginDB) UsernameForEmail(email string) (string, error) {
+func (db *AuthDB) UsernameForEmail(email string) (string, error) {
 	var username string
 
 	row := db.QueryRow("SELECT username FROM users WHERE email=?", email)
@@ -154,7 +154,7 @@ func (db *LoginDB) UsernameForEmail(email string) (string, error) {
 }
 
 // UsernameForResetToken returns the username for a given reset token.
-func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
+func (db *AuthDB) UsernameForResetToken(tokenValue string) (string, error) {
 	var username string
 	var expires time.Time
 	hashedValue := Hash(tokenValue)
@@ -185,7 +185,7 @@ func (db *LoginDB) UsernameForResetToken(tokenValue string) (string, error) {
 // If token is expired, ErrConfirmTokenExpired is returned and token is removed.
 //
 // If a SQL error occurs, it will be returned, except ErrNoRows.
-func (db *LoginDB) UsernameForConfirmToken(tokenValue string) (string, error) {
+func (db *AuthDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 	var username string
 	var expires time.Time
 	hashedValue := Hash(tokenValue)
@@ -213,7 +213,7 @@ var ErrIncorrectPassword = errors.New("incorrect password")
 
 // AuthenticateUser compares the password and hashed password for the user.
 // Returns nil on success or an error on failure.
-func (db *LoginDB) AuthenticateUser(username, password string) error {
+func (db *AuthDB) AuthenticateUser(username, password string) error {
 	if db == nil {
 		return errors.New("invalid db")
 	}
@@ -242,7 +242,7 @@ func (db *LoginDB) AuthenticateUser(username, password string) error {
 
 // RegisterUser registers a user with the given values.
 // Returns nil on success or an error on failure.
-func (db *LoginDB) RegisterUser(username, fullName, email, password string) error {
+func (db *AuthDB) RegisterUser(username, fullName, email, password string) error {
 	// hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -260,7 +260,7 @@ func (db *LoginDB) RegisterUser(username, fullName, email, password string) erro
 }
 
 // LastLoginForUser retrieves the last login time and result for a given username.  It returns zero values in case of no previous login.
-func (db *LoginDB) LastLoginForUser(username string) (time.Time, string, error) {
+func (db *AuthDB) LastLoginForUser(username string) (time.Time, string, error) {
 	var lastLogin time.Time
 	var success string
 
@@ -288,7 +288,7 @@ const LoginTokenCookieName = "login"
 // UserFromRequest returns the user for the login token cookie in the request.
 // If the login token is invalid or expired, the cookie is removed and
 // an empty user returned.
-func (db *LoginDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
+func (db *AuthDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User, error) {
 	// Get value of the login token cookie from the request.
 	loginToken, err := CookieValue(r, LoginTokenCookieName)
 	if err != nil {
@@ -326,7 +326,7 @@ func (db *LoginDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User
 // If a SQL error occurs, it will be returned.
 //
 // If username is not found, ErrUserNotFound is returned.
-func (db *LoginDB) ConfirmUser(username string) error {
+func (db *AuthDB) ConfirmUser(username string) error {
 	// Check if user is already confirmed.
 	alreadyConfirmed, err := db.RowExists("SELECT 1 FROM users WHERE confirmed = ? AND username = ?", true, username)
 	if err != nil {

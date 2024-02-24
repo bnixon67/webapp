@@ -101,7 +101,7 @@ func (app *AuthApp) UsersCSVHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUsers returns a list of all users.
-func GetUsers(db *LoginDB) ([]User, error) {
+func GetUsers(db *AuthDB) ([]User, error) {
 	var users []User
 	var err error
 

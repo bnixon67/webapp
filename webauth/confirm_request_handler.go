@@ -174,7 +174,7 @@ func sendEmailToConfirm(username, email string, token Token, cfg Config) error {
 }
 
 // CreateConfirmEmailToken generates a new token to confirm a user's email.
-func (db *LoginDB) CreateConfirmEmailToken(username string) (Token, error) {
+func (db *AuthDB) CreateConfirmEmailToken(username string) (Token, error) {
 	// special case for empty username
 	if username == "" {
 		return Token{}, nil

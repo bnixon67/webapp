@@ -50,7 +50,7 @@ var (
 )
 
 // WriteEvent saves an event to database.
-func (db *LoginDB) WriteEvent(name EventName, succeeded bool, username, message string) error {
+func (db *AuthDB) WriteEvent(name EventName, succeeded bool, username, message string) error {
 	e := Event{Name: name, Succeeded: succeeded, Username: username, Message: message}
 	logger := slog.With("event", e, "func", "WriteEvent")
 
@@ -90,7 +90,7 @@ var (
 )
 
 // GetEvents returns a list of all events.
-func (db *LoginDB) GetEvents() ([]Event, error) {
+func (db *AuthDB) GetEvents() ([]Event, error) {
 	logger := slog.With("func", "GetEvents")
 
 	if db == nil {

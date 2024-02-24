@@ -12,7 +12,7 @@ func TestWriteEvent(t *testing.T) {
 
 	testCases := []struct {
 		name    string
-		db      *webauth.LoginDB
+		db      *webauth.AuthDB
 		event   webauth.Event
 		wantErr error
 	}{

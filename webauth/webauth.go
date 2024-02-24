@@ -14,13 +14,14 @@ import (
 	"github.com/bnixon67/webapp/webapp"
 )
 
-// AuthApp extends WebApp with additional variables.
+// AuthApp extends the WebApp to support authentication.
 type AuthApp struct {
-	*webapp.WebApp          // Embedded WebApp
-	DB             *LoginDB // DB is the database connection.
+	*webapp.WebApp         // Embedded WebApp
+	DB             *AuthDB // DB is the database connection.
 	Cfg            Config
 }
 
+// String returns a string representation of the AuthApp instance.
 func (a *AuthApp) String() string {
 	if a == nil {
 		return fmt.Sprintf("%v", nil)
@@ -33,14 +34,14 @@ func (a *AuthApp) String() string {
 // This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
 type Option func(*AuthApp)
 
-// WithDB returns an Option to set the DB of a AuthApp.
-func WithDB(db *LoginDB) Option {
+// WithDB returns an Option to set the DB for a AuthApp.
+func WithDB(db *AuthDB) Option {
 	return func(a *AuthApp) {
 		a.DB = db
 	}
 }
 
-// WithConfig returns an Option to set the Config of a AuthApp.
+// WithConfig returns an Option to set the Config for a AuthApp.
 func WithConfig(cfg Config) Option {
 	return func(a *AuthApp) {
 		a.Cfg = cfg
@@ -68,7 +69,7 @@ func New(options ...interface{}) (*AuthApp, error) {
 			// Apply AuthApp option.
 			o(authApp)
 		default:
-			// If the option doesn't match expected types, return an error.
+			// If option doesn't match expected types, return error.
 			return nil, fmt.Errorf("invalid option type: %T", opt)
 		}
 	}
@@ -92,7 +93,8 @@ func New(options ...interface{}) (*AuthApp, error) {
 			ErrAppInvalidConfig, err)
 	}
 
-	slog.Debug("created new auth app", slog.String("authApp", authApp.String()))
+	slog.Debug("created new auth app",
+		slog.String("authApp", authApp.String()))
 
 	return authApp, nil
 }
