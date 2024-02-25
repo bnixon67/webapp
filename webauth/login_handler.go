@@ -21,12 +21,9 @@ type LoginPageData struct {
 
 // LoginGetHandler handles login GET requests.
 func (app *AuthApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	// Check if the HTTP method is valid.
-	if r.Method != http.MethodGet {
-		webutil.HttpError(w, http.StatusMethodNotAllowed)
+	if !webutil.EnforceMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
@@ -43,66 +40,80 @@ const (
 	MsgLoginFailed                = "Login failed."
 )
 
+type LoginForm struct {
+	Username string
+	Password string
+	Remember string
+	Message  string
+}
+
+// ParseLoginForm extracts and validates the login form fields.
+// Message is updated with any errors related to the validation.
+func ParseLoginForm(r *http.Request) LoginForm {
+	form := LoginForm{
+		Username: strings.TrimSpace(r.PostFormValue("username")),
+		Password: strings.TrimSpace(r.PostFormValue("password")),
+		Remember: r.PostFormValue("remember"),
+	}
+
+	// Check for missing values.
+	switch {
+	case form.Username == "" && form.Password == "":
+		form.Message = MsgMissingUsernameAndPassword
+	case form.Username == "":
+		form.Message = MsgMissingUsername
+	case form.Password == "":
+		form.Message = MsgMissingPassword
+	}
+
+	return form
+}
+
 // LoginPostHandler handles login POST requests.
 func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	// Check if the HTTP method is valid.
-	if r.Method != http.MethodPost {
-		webutil.HttpError(w, http.StatusMethodNotAllowed)
+	if !webutil.EnforceMethod(w, r, http.MethodPost) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Get form values.
-	username := strings.TrimSpace(r.PostFormValue("username"))
-	password := strings.TrimSpace(r.PostFormValue("password"))
-	remember := r.PostFormValue("remember")
+	form := ParseLoginForm(r)
 
-	logger = slog.With(slog.Group("form",
-		slog.String("username", username),
-		slog.Bool("password", password == ""),
-		slog.String("remember", remember)))
+	logger = slog.With(
+		slog.Group("form",
+			slog.String("username", form.Username),
+			slog.Bool("password", form.Password != ""),
+			slog.String("remember", form.Remember),
+		),
+	)
 
-	// Check for missing values.
-	var msg string
-	switch {
-	case username == "" && password == "":
-		msg = MsgMissingUsernameAndPassword
-	case username == "":
-		msg = MsgMissingUsername
-	case password == "":
-		msg = MsgMissingPassword
-	}
-	if msg != "" {
-		logger.Error("missing form values", slog.String("message", msg))
+	if form.Message != "" {
+		logger.Error("missing form values",
+			slog.String("message", form.Message))
 
-		data := LoginPageData{Message: msg}
+		data := LoginPageData{Message: form.Message}
 		app.RenderPage(w, logger, "login.html", &data)
 
 		return
 	}
 
 	// Attempt to login the user.
-	token, err := app.LoginUser(username, password)
+	token, err := app.LoginUser(form.Username, form.Password)
 	if err != nil {
 		logger.Error("failed to login user", "err", err)
-		app.DB.WriteEvent(EventLogin, false, username, err.Error())
+		app.DB.WriteEvent(EventLogin, false, form.Username, err.Error())
 
 		data := LoginPageData{Message: MsgLoginFailed}
 		app.RenderPage(w, logger, "login.html", &data)
 
 		return
 	}
+	app.DB.WriteEvent(EventLogin, true, form.Username, "logged in user")
 
-	// Create cookie for login token.
-	app.DB.WriteEvent(EventLogin, true, username, "user logged in")
-	var expires time.Time
-	if remember == "on" {
-		expires = token.Expires
-	}
-	cookie := LoginCookie(token.Value, expires)
+	// Create and set login cookie.
+	session := form.Remember != "on"
+	cookie := LoginCookie(token.Value, token.Expires, session)
 	http.SetCookie(w, cookie)
 
 	// Redirect to the specified "r" query parameter or default to root.
@@ -112,10 +123,16 @@ func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
 
-	logger.Info("login successful")
+	logger.Info("done")
 }
 
-func LoginCookie(value string, expires time.Time) *http.Cookie {
+// LoginCookie creates and return a login cookie.
+func LoginCookie(value string, expires time.Time, session bool) *http.Cookie {
+	if session {
+		// Set expires to zero time.Time value for session cookie.
+		expires = time.Time{}
+	}
+
 	return &http.Cookie{
 		Name:     LoginTokenCookieName,
 		Value:    value,

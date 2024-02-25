@@ -12,6 +12,17 @@ import (
 	"strings"
 )
 
+// EnforceMethod ensures the request uses the specified HTTP method.
+// If method is invalid, a HTTP error is set and the caller should ensure
+// no further writes are done to w.
+func EnforceMethod(w http.ResponseWriter, r *http.Request, method string) bool {
+	if r.Method != method {
+		HttpError(w, http.StatusMethodNotAllowed)
+		return false
+	}
+	return true
+}
+
 // ValidMethod checks if the HTTP method of the request is one of the allowed methods.
 // Returns true if the method is allowed, false otherwise.
 // If the method is not allowed, w is updated with appropriate headers, HTTP status, and error message in the body. It does not otherwise end the request; the caller should ensure no further writes are done to w.

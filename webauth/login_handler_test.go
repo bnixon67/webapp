@@ -77,8 +77,8 @@ func TestLoginPostHandler(t *testing.T) {
 	}
 	expires := time.Now().Add(d)
 
-	loginDontRememberCookie := webauth.LoginCookie("value", time.Time{})
-	loginRememberCookie := webauth.LoginCookie("value", expires)
+	sessionCookie := webauth.LoginCookie("value", time.Time{}, true)
+	rememberCookie := webauth.LoginCookie("value", expires, false)
 
 	tests := []webhandler.TestCase{
 		{
@@ -154,7 +154,7 @@ func TestLoginPostHandler(t *testing.T) {
 				"password": {"password"}}.Encode(),
 			WantStatus:  http.StatusSeeOther,
 			WantBody:    "",
-			WantCookies: []http.Cookie{*loginDontRememberCookie},
+			WantCookies: []http.Cookie{*sessionCookie},
 			WantCookiesCmpOpts: []cmp.Option{
 				cmpopts.IgnoreFields(http.Cookie{}, "Value"),
 				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
@@ -170,7 +170,7 @@ func TestLoginPostHandler(t *testing.T) {
 				"remember": {"on"}}.Encode(),
 			WantStatus:  http.StatusSeeOther,
 			WantBody:    "",
-			WantCookies: []http.Cookie{*loginRememberCookie},
+			WantCookies: []http.Cookie{*rememberCookie},
 			WantCookiesCmpOpts: []cmp.Option{
 				cmpopts.IgnoreFields(http.Cookie{}, "Value"),
 				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
