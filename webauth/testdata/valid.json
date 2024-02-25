@@ -1,6 +1,5 @@
 {
   "BaseURL": "test URL",
-  "ParseGlobPattern": "testParseGlobPattern",
   "LoginExpires": "42h",
   "SQL": {
     "DriverName": "testSQLDriverName",

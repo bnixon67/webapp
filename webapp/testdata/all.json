@@ -1,13 +1,14 @@
 {
   "App": {
     "Name": "Test Name",
-    "AssetsDir": "directory"
+    "AssetsDir": "directory",
+    "TmplPattern": "*.html"
   },
   "Log": {
     "FileName": "log.txt",
     "Type": "text",
     "Level": "debug",
-    "WithSource": true
+    "AddSource": true
   },
   "Server": {
     "Host": "localhost",

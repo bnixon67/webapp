@@ -161,8 +161,7 @@ func sendEmailToConfirm(username, email string, token Token, cfg Config) error {
 		}
 	}
 
-	err = SendEmail(cfg.SMTP,
-		MailMessage{To: email, Subject: subj, Body: body})
+	err = cfg.SMTP.SendMessage(email, subj, body)
 	if err != nil {
 		return err
 	}

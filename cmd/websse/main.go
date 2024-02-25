@@ -15,7 +15,6 @@ import (
 	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/webserver"
 	"github.com/bnixon67/webapp/websse"
 	"github.com/bnixon67/webapp/webutil"
@@ -45,12 +44,7 @@ func main() {
 	}
 
 	// Initialize logging.
-	err = weblog.Init(
-		weblog.WithFilename(cfg.Log.Filename),
-		weblog.WithType(cfg.Log.Type),
-		weblog.WithLevel(cfg.Log.Level),
-		weblog.WithSource(cfg.Log.WithSource),
-	)
+	err = cfg.Log.Init()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing logger:", err)
 		os.Exit(ExitLog)

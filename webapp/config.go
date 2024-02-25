@@ -8,35 +8,33 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/bnixon67/webapp/weblog"
+	"github.com/bnixon67/webapp/webserver"
 )
 
 // ConfigApp holds the web app settings.
 type ConfigApp struct {
-	Name      string // Name of the application.
-	AssetsDir string // AssetsDir is directory for web asets.
+	Name        string // Name of the application.
+	AssetsDir   string // AssetsDir is directory for web asets.
+	TmplPattern string // TmplPattern identifies template files.
 }
 
-// ConfigServer holds the web server settings.
-type ConfigServer struct {
-	Host     string // Server host address.
-	Port     string // Server port.
-	CertFile string // CertFile is path to the cert file.
-	KeyFile  string // KeyFile is path to the key file.
-}
-
+/*
 // ConfigLog holds the log settings.
 type ConfigLog struct {
-	Filename   string // Filename of log file.
-	Type       string // Type of log, e.g., json or text.
-	Level      string // Level of log, e.g., DEBUG, INFO, WARN, ERROR.
-	WithSource bool   // WithSource add source info to log.
+	Filename  string // Filename of log file.
+	Type      string // Type of log, e.g., json or text.
+	Level     string // Level of log, e.g., DEBUG, INFO, WARN, ERROR.
+	AddSource bool   // WithSource add source info to log.
 }
+*/
 
 // Config represents the overall application configuration.
 type Config struct {
-	App    ConfigApp    // App configuration.
-	Server ConfigServer // Server configuration.
-	Log    ConfigLog    // Log configuration.
+	App    ConfigApp        // App configuration.
+	Server webserver.Config // Server configuration.
+	Log    *weblog.Config   // Log configuration.
 }
 
 var (

@@ -48,49 +48,48 @@ func WithConfig(cfg Config) Option {
 	}
 }
 
-var ErrAppInvalidConfig = errors.New("invalid config")
+var ErrInvalidConfig = errors.New("invalid config")
 
-// New creates a new AuthApp with the given options and returns it.
+// NewApp creates a new AuthApp with the given options and returns it.
 // These options can be either AuthApp or WebApp Options.
-func New(options ...interface{}) (*AuthApp, error) {
-	// Initialize the AuthApp structure.
+func NewApp(options ...interface{}) (*AuthApp, error) {
 	authApp := &AuthApp{}
 
-	// Slice to store options that are applicable to WebApp.
 	var webAppOpts []webapp.Option
 
-	// Iterate over each provided option.
+	// Process options for both AuthApp and WebApp.
 	for _, opt := range options {
 		switch o := opt.(type) {
 		case webapp.Option:
-			// Append WebApp option to webAppOpts slice.
+			// Collect WebApp options.
 			webAppOpts = append(webAppOpts, o)
 		case Option:
 			// Apply AuthApp option.
 			o(authApp)
 		default:
-			// If option doesn't match expected types, return error.
+			// Handle unexpected option types.
 			return nil, fmt.Errorf("invalid option type: %T", opt)
 		}
 	}
 
-	// Initialize the WebApp portion of AuthApp.
+	// Initialize embedded WebApp.
 	var err error
 	authApp.WebApp, err = webapp.New(webAppOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing WebApp: %w", err)
 	}
 
+	// Validate configuration.
 	isValid, missing := authApp.Cfg.IsValid()
 	if !isValid {
 		return nil, fmt.Errorf("%w: %s",
-			ErrAppInvalidConfig, strings.Join(missing, ", "))
+			ErrInvalidConfig, strings.Join(missing, ", "))
 	}
 
+	// Validate login expiration duration.
 	_, err = time.ParseDuration(authApp.Cfg.LoginExpires)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s",
-			ErrAppInvalidConfig, err)
+		return nil, fmt.Errorf("%w: %s", ErrInvalidConfig, err)
 	}
 
 	slog.Debug("created new auth app",

@@ -13,76 +13,63 @@ import (
 	"github.com/bnixon67/webapp/weblog"
 )
 
-func TestInit(t *testing.T) {
+func TestInitFromConfig(t *testing.T) {
 	tests := []struct {
 		name    string
-		opts    []weblog.Option
+		cfg     weblog.Config
 		wantErr error
 	}{
 		{
-			name: "Invalid Log Type",
-			opts: []weblog.Option{
-				weblog.WithType("invalid"),
-			},
+			name:    "Invalid Log Type",
+			cfg:     weblog.Config{Type: "invalid"},
 			wantErr: weblog.ErrInvalidLogType,
 		},
 		{
-			name: "Invalid Log Level",
-			opts: []weblog.Option{
-				weblog.WithLevel("invalid"),
-			},
-			wantErr: weblog.ErrInvalidLevel,
+			name:    "Invalid Log Level",
+			cfg:     weblog.Config{Level: "invalid"},
+			wantErr: weblog.ErrInvalidLogLevel,
 		},
 		{
-			name: "Valid JSON Log Type",
-			opts: []weblog.Option{
-				weblog.WithType("json"),
-			},
+			name:    "Valid JSON Log Type",
+			cfg:     weblog.Config{Type: "json"},
 			wantErr: nil,
 		},
 		{
 			name: "Valid JSON Log Type with Filename",
-			opts: []weblog.Option{
-				weblog.WithType("json"),
-				weblog.WithFilename("test_json.log"),
+			cfg: weblog.Config{
+				Type:     "json",
+				Filename: "test_json.log",
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Valid Text Log Type",
-			opts: []weblog.Option{
-				weblog.WithType("text"),
-			},
+			name:    "Valid Text Log Type",
+			cfg:     weblog.Config{Type: "text"},
 			wantErr: nil,
 		},
 		{
 			name: "Valid Text Log Type with Filename",
-			opts: []weblog.Option{
-				weblog.WithType("text"),
-				weblog.WithFilename("test_text.log"),
+			cfg: weblog.Config{
+				Type:     "text",
+				Filename: "test_text.log",
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Valid Filename",
-			opts: []weblog.Option{
-				weblog.WithFilename("test.log"),
-			},
+			name:    "Valid Filename",
+			cfg:     weblog.Config{Filename: "test.log"},
 			wantErr: nil,
 		},
 		{
-			name: "Invalid Filename",
-			opts: []weblog.Option{
-				weblog.WithFilename("/no/such/file"),
-			},
-			wantErr: weblog.ErrLogFileOpenError,
+			name:    "Invalid Filename",
+			cfg:     weblog.Config{Filename: "/no/such/file"},
+			wantErr: weblog.ErrOpenLogFile,
 		},
-		// Add more test cases as needed.
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := weblog.Init(tt.opts...)
+			err := tt.cfg.Init()
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -92,15 +79,13 @@ func TestInit(t *testing.T) {
 				t.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
+			// TODO: test log output
+
 			// Cleanup, remove log file if it was created
 			if err == nil {
-				config := &weblog.Log{}
-				for _, opt := range tt.opts {
-					opt(config)
-				}
-
-				if config.Filename != "" {
-					os.Remove(config.Filename) // ignore error
+				if tt.cfg.Filename != "" {
+					// ignore error
+					os.Remove(tt.cfg.Filename)
 				}
 			}
 		})
@@ -130,7 +115,7 @@ func TestLevel(t *testing.T) {
 			name:    "Invalid Level",
 			input:   "INVALID",
 			want:    slog.LevelInfo,
-			wantErr: weblog.ErrInvalidLevel,
+			wantErr: weblog.ErrInvalidLogLevel,
 		},
 		{
 			name:    "Lowercase Level",
@@ -138,13 +123,16 @@ func TestLevel(t *testing.T) {
 			want:    slog.LevelWarn,
 			wantErr: nil,
 		},
-		// Add more test cases as needed
+		{
+			name:    "Empty Level",
+			input:   "",
+			wantErr: nil,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := weblog.ParseLevel(tt.input)
-
+			got, err := weblog.LevelFromString(tt.input)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Level() got = %v, want %v", got, tt.want)
 			}
@@ -170,7 +158,6 @@ func TestLevels(t *testing.T) {
 			name: "Sorted Log Levels",
 			want: "DEBUG,INFO,WARN,ERROR",
 		},
-		// Add more test cases as needed
 	}
 
 	for _, tt := range tests {

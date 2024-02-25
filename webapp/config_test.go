@@ -11,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/weblog"
+	"github.com/bnixon67/webapp/webserver"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -58,20 +60,21 @@ func TestConfigFromJSONFile(t *testing.T) {
 			wantErr:        nil,
 			wantConfig: webapp.Config{
 				App: webapp.ConfigApp{
-					Name:      "Test Name",
-					AssetsDir: "directory",
+					Name:        "Test Name",
+					AssetsDir:   "directory",
+					TmplPattern: "*.html",
 				},
-				Server: webapp.ConfigServer{
+				Server: webserver.Config{
 					Host:     "localhost",
 					Port:     "8080",
 					CertFile: "cert.pem",
 					KeyFile:  "key.pem",
 				},
-				Log: webapp.ConfigLog{
-					Filename:   "log.txt",
-					Type:       "text",
-					Level:      "debug",
-					WithSource: true,
+				Log: &weblog.Config{
+					Filename:  "log.txt",
+					Type:      "text",
+					Level:     "debug",
+					AddSource: true,
 				},
 			},
 		},

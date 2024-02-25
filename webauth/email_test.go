@@ -19,10 +19,12 @@ import (
 
 // Define a test struct to hold the test case data
 type sendEmailTest struct {
-	name        string
-	smtpConfig  webauth.ConfigSMTP
-	mailMessage webauth.MailMessage
-	wantErr     bool
+	name       string
+	smtpConfig webauth.ConfigSMTP
+	to         string
+	subject    string
+	body       string
+	wantErr    bool
 }
 
 const (
@@ -114,11 +116,9 @@ func TestSendEmail(t *testing.T) {
 				User:     "smtpuser@example.com",
 				Password: "password",
 			},
-			mailMessage: webauth.MailMessage{
-				To:      "recipient@example.com",
-				Subject: "Greetings",
-				Body:    "Hello, How are you?",
-			},
+			to:      "recipient@example.com",
+			subject: "Greetings",
+			body:    "Hello, How are you?",
 			wantErr: true,
 		},
 		{
@@ -129,18 +129,16 @@ func TestSendEmail(t *testing.T) {
 				User:     "smtpuser@example.com",
 				Password: "password",
 			},
-			mailMessage: webauth.MailMessage{
-				To:      "recipient@example.com",
-				Subject: "Greetings",
-				Body:    "Hello, How are you?",
-			},
+			to:      "recipient@example.com",
+			subject: "Greetings",
+			body:    "Hello, How are you?",
 			wantErr: false,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := webauth.SendEmail(tc.smtpConfig, tc.mailMessage)
+			err := tc.smtpConfig.SendMessage(tc.to, tc.subject, tc.body)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("SendEmail() error = %v, wantErr %v", err, tc.wantErr)
 			}

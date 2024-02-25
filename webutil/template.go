@@ -32,7 +32,7 @@ func Templates(pattern string) (*template.Template, error) {
 func TemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*template.Template, error) {
 	tmpls, err := template.New("tmpl").Funcs(funcMap).ParseGlob(pattern)
 	if err != nil {
-		return nil, fmt.Errorf("TemplatesWithFuncs: %w", err)
+		return nil, err
 	}
 
 	tmplNames := strings.Join(TemplateNames(tmpls), ", ")

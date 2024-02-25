@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	ErrInitDBOpen = errors.New("InitDB: open failed")
-	ErrInitDBPing = errors.New("InitDB: ping failed")
+	ErrInitDBOpen = errors.New("db open failed")
+	ErrInitDBPing = errors.New("db ping failed")
 )
 
 type AuthDB struct {

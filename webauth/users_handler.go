@@ -55,6 +55,8 @@ func (app *AuthApp) UsersHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return
 	}
+
+	logger.Info("done")
 }
 
 // UsersCSVHandler provides list of the current users as a CSV file.

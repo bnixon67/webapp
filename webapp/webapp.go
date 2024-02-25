@@ -19,7 +19,7 @@ import (
 // WebApp contains common variables used across the web application.
 // This is used in handlers or other functions to avoid global variables.
 type WebApp struct {
-	Name          string             // Name is the name of the app.
+	ConfigApp                        // Embed ConfigApp.
 	Tmpl          *template.Template // Tmpl stores parsed templates.
 	BuildDateTime time.Time          // BuildDateTime is the executable's modification time.
 }

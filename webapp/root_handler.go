@@ -47,5 +47,5 @@ func (app *WebApp) RootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("success", slog.Any("data", data))
+	logger.Info("done", slog.Any("data", data))
 }

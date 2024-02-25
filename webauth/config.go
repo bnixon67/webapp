@@ -30,9 +30,8 @@ type ConfigSMTP struct {
 type Config struct {
 	webapp.Config // Inherit webapp.Config
 
-	BaseURL          string // Base URL of the application.
-	ParseGlobPattern string // Glob pattern for parsing template files.
-	LoginExpires     string // Duration string for login expiry.
+	BaseURL      string // Base URL of the application.
+	LoginExpires string // Duration string for login expiry.
 
 	SQL  ConfigSQL  // SQL Database configuration.
 	SMTP ConfigSMTP // SMTP server configuration.
@@ -78,7 +77,6 @@ func (c *Config) IsValid() (bool, []string) {
 	// Fields to check.
 	fields := map[string]string{
 		"BaseURL":            c.BaseURL,
-		"ParseGlobPattern":   c.ParseGlobPattern,
 		"LoginExpires":       c.LoginExpires,
 		"Server.Host":        c.Server.Host,
 		"Server.Port":        c.Server.Port,

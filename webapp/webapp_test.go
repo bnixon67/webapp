@@ -13,7 +13,9 @@ import (
 
 func TestWebAppString(t *testing.T) {
 	emptyWebApp := &webapp.WebApp{}
-	nameWebApp := &webapp.WebApp{Name: "name"}
+
+	nameWebApp := &webapp.WebApp{}
+	nameWebApp.Name = "name"
 
 	tests := []struct {
 		name   string

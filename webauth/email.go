@@ -6,6 +6,7 @@ package webauth
 import (
 	"bytes"
 	"fmt"
+	"net"
 	"net/smtp"
 	"text/template"
 )
@@ -27,9 +28,14 @@ Subject: {{ .Subject }}
 
 var emailTmpl = template.Must(template.New("email").Parse(emailTmplText))
 
-// SendEmail sends an email using the values provided.
-func SendEmail(smtpConfig ConfigSMTP, mailMessage MailMessage) error {
-	mailMessage.From = smtpConfig.User
+// SendMessage sends an email using the values provided.
+func (cfg ConfigSMTP) SendMessage(to, subject, body string) error {
+	mailMessage := MailMessage{
+		From:    cfg.User,
+		To:      to,
+		Subject: subject,
+		Body:    body,
+	}
 
 	// Fill message template.
 	message := &bytes.Buffer{}
@@ -39,10 +45,13 @@ func SendEmail(smtpConfig ConfigSMTP, mailMessage MailMessage) error {
 	}
 
 	// Authenticate to SMTP server
-	auth := smtp.PlainAuth("", smtpConfig.User, smtpConfig.Password, smtpConfig.Host)
+	auth := smtp.PlainAuth("", cfg.User, cfg.Password, cfg.Host)
 
 	// send email
-	err = smtp.SendMail(smtpConfig.Host+":"+smtpConfig.Port, auth, mailMessage.From, []string{mailMessage.To}, message.Bytes())
+	srv := net.JoinHostPort(cfg.Host, cfg.Port)
+	tos := []string{mailMessage.To}
+	msg := message.Bytes()
+	err = smtp.SendMail(srv, auth, mailMessage.From, tos, msg)
 	if err != nil {
 		return fmt.Errorf("failed to send mail: %w", err)
 	}

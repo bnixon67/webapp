@@ -1,6 +1,7 @@
 {
   "App": {
-    "Name": "Web App"
+    "Name": "Web App",
+    "TmplPattern": "../../assets/tmpl/*.html"
   },
   "Log": {
     "FileName": "",

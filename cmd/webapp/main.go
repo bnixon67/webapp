@@ -10,13 +10,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 
-	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webapp"
-	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblog"
-	"github.com/bnixon67/webapp/webserver"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -44,22 +39,11 @@ func main() {
 	}
 
 	// Initialize logging.
-	err = weblog.Init(
-		weblog.WithFilename(cfg.Log.Filename),
-		weblog.WithType(cfg.Log.Type),
-		weblog.WithLevel(cfg.Log.Level),
-		weblog.WithSource(cfg.Log.WithSource),
-	)
+	err = cfg.Log.Init()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing logger:", err)
 		os.Exit(ExitLog)
 	}
-
-	// Get directory for assets, using a default if not specified in config.
-	if cfg.App.AssetsDir == "" {
-		cfg.App.AssetsDir = assets.AssetPath()
-	}
-	assetsDir := cfg.App.AssetsDir
 
 	// Show config in log.
 	slog.Info("using config", slog.Any("config", cfg))
@@ -71,8 +55,7 @@ func main() {
 	}
 
 	// Parse templates.
-	pattern := filepath.Join(assetsDir, "tmpl", "*.html")
-	tmpl, err := webutil.TemplatesWithFuncs(pattern, funcMap)
+	tmpl, err := webutil.TemplatesWithFuncs(cfg.App.TmplPattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)
@@ -86,36 +69,15 @@ func main() {
 		os.Exit(ExitHandler)
 	}
 
-	cssFile := filepath.Join(assetsDir, "css", "w3.css")
-	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")
-
-	// Create a new ServeMux to handle HTTP requests.
+	// Create new ServeMux for HTTP requests and add routes and middleware.
 	mux := http.NewServeMux()
-
-	// Add middleware to mux.
-	// Functions are executed in reverse, so last added is called first.
-	h := webhandler.LogRequest(mux)
-	h = webhandler.AddLogger(h)
-	h = webhandler.AddRequestID(h)
-
-	mux.HandleFunc("/", app.RootHandler)
-	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
-	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
-	mux.HandleFunc("/hello", app.HelloTextHandler)
-	mux.HandleFunc("/hellohtml", app.HelloHTMLHandler)
-	mux.HandleFunc("/build", app.BuildHandler)
-	mux.HandleFunc("/headers", app.HeadersHandler)
-	mux.HandleFunc("/remote", webhandler.RemoteHandler)
-	mux.HandleFunc("/request", webhandler.RequestHandler)
+	AddRoutes(mux, app)
+	handler := AddMiddleware(mux)
 
 	// Create the web server.
-	srv, err := webserver.New(
-		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
-		webserver.WithHandler(h),
-		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
-	)
+	srv, err := cfg.Server.Create(handler)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating server:", err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(ExitServer)
 	}
 

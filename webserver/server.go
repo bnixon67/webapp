@@ -17,11 +17,18 @@ import (
 	"time"
 )
 
+// Config holds the web server configuration.
+type Config struct {
+	Host     string // Server host address.
+	Port     string // Server port.
+	CertFile string // CertFile is path to the cert file.
+	KeyFile  string // KeyFile is path to the key file.
+}
+
 // WebServer represents an HTTP server.
 type WebServer struct {
+	Config
 	HTTPServer       http.Server
-	CertFile         string
-	KeyFile          string
 	shutdownComplete chan struct{} // Channel to signal shutdown completion
 
 }
@@ -34,6 +41,13 @@ type Option func(*WebServer)
 func WithAddr(addr string) Option {
 	return func(s *WebServer) {
 		s.HTTPServer.Addr = addr
+	}
+}
+
+// WithHostPort returns an Option to set the address the server will bind to.
+func WithHostPort(host, port string) Option {
+	return func(s *WebServer) {
+		s.HTTPServer.Addr = net.JoinHostPort(host, port)
 	}
 }
 
@@ -82,6 +96,14 @@ func New(opts ...Option) (*WebServer, error) {
 	}
 
 	return s, nil
+}
+
+func (cfg Config) Create(h http.Handler) (*WebServer, error) {
+	return New(
+		WithHostPort(cfg.Host, cfg.Port),
+		WithHandler(h),
+		WithTLS(cfg.CertFile, cfg.KeyFile),
+	)
 }
 
 var ErrServerStart = errors.New("failed to start server")
