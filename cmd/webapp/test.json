@@ -1,0 +1,13 @@
+{
+  "App": {
+    "Name": "Web App",
+    "TmplPattern": "../../assets/tmpl/*.html"
+  },
+  "Server": {
+    "Host": "localhost",
+    "Port": "8443",
+    "CertFile": "cert/cert.pem",
+    "KeyFile": "cert/key.pem"
+  },
+  "Log": { "Level": "foo" }
+}
