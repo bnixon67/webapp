@@ -160,7 +160,7 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
-	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":null,"BaseURL":"","LoginExpires":"","SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
+	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"BaseURL":"","LoginExpires":"","SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
 
 	testCases := []struct {
 		name  string
@@ -203,7 +203,7 @@ func TestConfigString(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:<nil>} BaseURL: LoginExpires: SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
+			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} BaseURL: LoginExpires: SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
 		},
 	}
 

@@ -70,7 +70,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 					CertFile: "cert.pem",
 					KeyFile:  "key.pem",
 				},
-				Log: &weblog.Config{
+				Log: weblog.Config{
 					Filename:  "log.txt",
 					Type:      "text",
 					Level:     "debug",

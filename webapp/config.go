@@ -34,7 +34,7 @@ type ConfigLog struct {
 type Config struct {
 	App    ConfigApp        // App configuration.
 	Server webserver.Config // Server configuration.
-	Log    *weblog.Config   // Log configuration.
+	Log    weblog.Config    // Log configuration.
 }
 
 var (

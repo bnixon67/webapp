@@ -69,7 +69,7 @@ func TestInitFromConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.cfg.Init()
+			err := weblog.Init(tt.cfg)
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 				return

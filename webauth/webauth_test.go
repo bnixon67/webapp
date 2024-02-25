@@ -11,6 +11,7 @@ import (
 
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webauth"
+	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -80,7 +81,7 @@ func AppForTest(t *testing.T) *webauth.AuthApp {
 		}
 
 		// Initialize logging.
-		err = cfg.Log.Init()
+		err = weblog.Init(cfg.Log)
 		if err != nil {
 			t.Fatalf("failed to initialize logging: %v", err)
 		}

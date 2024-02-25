@@ -40,7 +40,7 @@ type Config struct {
 }
 
 // Init validates and initializes the logger using the Config.
-func (c *Config) Init() error {
+func Init(c Config) error {
 	if err := validateLogType(c.Type); err != nil {
 		return err
 	}

@@ -3,12 +3,6 @@
     "Name": "Web App",
     "TmplPattern": "../../assets/tmpl/*.html"
   },
-  "Log": {
-    "FileName": "",
-    "Type": "json",
-    "Level": "info",
-    "WithSource": false
-  },
   "Server": {
     "Host": "localhost",
     "Port": "8443",
