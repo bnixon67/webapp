@@ -132,7 +132,7 @@ func TestLevel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := weblog.LevelFromString(tt.input)
+			got, err := weblog.ParseLevel(tt.input)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Level() got = %v, want %v", got, tt.want)
 			}
@@ -150,21 +150,9 @@ func TestLevel(t *testing.T) {
 }
 
 func TestLevels(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{
-			name: "Sorted Log Levels",
-			want: "DEBUG,INFO,WARN,ERROR",
-		},
-	}
+	want := []string{"DEBUG", "INFO", "WARN", "ERROR"}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := weblog.Levels(); got != tt.want {
-				t.Errorf("Levels() = %v, want %v", got, tt.want)
-			}
-		})
+	if got := weblog.Levels(); !reflect.DeepEqual(got, want) {
+		t.Errorf("got %q, want %q", got, want)
 	}
 }

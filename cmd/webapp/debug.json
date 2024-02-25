@@ -1,12 +1,12 @@
 {
   "App": {
-    "Name": "Web App"
+    "Name": "Web App",
+    "TmplPattern": "../../assets/tmpl/*.html"
   },
   "Log": {
-    "FileName": "",
     "Type": "json",
     "Level": "debug",
-    "WithSource": false
+    "AddSource": true
   },
   "Server": {
     "Host": "localhost",
