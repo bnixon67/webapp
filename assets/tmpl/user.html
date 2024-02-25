@@ -24,22 +24,39 @@
         <a href="/logout">Logout {{.User.Username}}</a>
       </div>
     </div>
-    {{ end }}
-
-    {{ if .User.Username }}
+    {{ end }} {{ if .User.Username }}
     <table class="w3-container w3-mobile w3-table w3-responsive">
-      <tr> <th>User Name</th> <td>{{ .User.Username }}</td> </tr>
-      <tr> <th>Full Name</th> <td>{{ .User.FullName }}</td> </tr>
-      <tr> <th>Email</th> <td>{{ .User.Email }}</td> </tr>
-      <tr> <th>IsAdmin</th> <td>{{ .User.IsAdmin }}</td> </tr>
-      <tr> <th>Confirmed</th> <td>{{ .User.Confirmed }}</td> </tr>
-      <tr> <th>Created</th> <td>{{ .User.Created.Format "2006-01-02 03:04 PM" }}</td> </tr>
-      <tr> <th>Last Login</th> <td>{{ .User.LastLoginTime.Format "2006-01-02 03:04 PM" }}</td> </tr>
+      <tr>
+        <th>User Name</th>
+        <td>{{ .User.Username }}</td>
+      </tr>
+      <tr>
+        <th>Full Name</th>
+        <td>{{ .User.FullName }}</td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>{{ .User.Email }}</td>
+      </tr>
+      <tr>
+        <th>IsAdmin</th>
+        <td>{{ .User.IsAdmin }}</td>
+      </tr>
+      <tr>
+        <th>Confirmed</th>
+        <td>{{ .User.Confirmed }}</td>
+      </tr>
+      <tr>
+        <th>Created</th>
+        <td>{{ .User.Created.Format "2006-01-02 03:04 PM" }}</td>
+      </tr>
+      <tr>
+        <th>Last Login</th>
+        <td>{{ .User.LastLoginTime.Format "2006-01-02 03:04 PM" }}</td>
+      </tr>
     </table>
     {{ else }}
-    <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/hello">Login</a>
-    </div>
+    <div class="w3-panel w3-pale-red">You must <a href="/login?r=/hello">Login</a></div>
     {{ end }}
   </body>
 </html>

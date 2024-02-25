@@ -4,41 +4,42 @@
     <title>{{ .Title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/w3.css">
-    <style>input:required:invalid{background-color:#ffdddd;}</style>
+    <style>
+      input:required:invalid {
+        background-color: #ffdddd;
+      }
+    </style>
   </head>
 
   <body>
-
     <header class="w3-container w3-indigo w3-large w3-padding">
       <b>{{.Title}}</b>
     </header>
 
-    <div class="w3-content" style="width:320px;">
+    <div class="w3-content" style="width: 320px;">
       <div class="w3-container w3-margin-top">
         <div class="w3-container w3-card">
           <form method="post">
-            <p>Enter your email to receive your username or link to reset your password.</p>
-  
-            <p>
+            <div class="w3-section">Enter your email to get your username or a link to reset your password.</div>
+
+            <div class="w3-section">
               <label for="email"><b>Email (required):</b></label>
-              <input class="w3-input" type="email" placeholder="Enter your email address" id="email" name="email" maxlength="256" required autofocus>
-            </p>
-  
+              <input class="w3-input" type="email" placeholder="Enter your email address" id="email" name="email" maxlength="256" required autofocus autocomplete="email">
+            </div>
+
             {{ if .Message }}
-            <p class="w3-text-red">
+            <div class="w3-section w3-text-red">
               <b><span class="w3-badge w3-red">!</span> {{ .Message }}</b>
-            </p>
+            </div>
             {{ end }}
-  
+
             <button type="submit" class="w3-button w3-block w3-indigo" name="action" value="user">Forgot Username</button>
             <br>
             <button type="submit" class="w3-button w3-block w3-indigo" name="action" value="password">Forgot Password</button>
           </form>
-  
-          <p class="w3-border-top w3-border-bottom"></p>
-  
+
           <div class="w3-center">
-            <div class="w3-bar">
+            <div class="w3-section w3-bar">
               <div class="w3-bar-item"><a href="/login">Login</a></div>
               <div class="w3-bar-item"><a href="/register">Register</a></div>
               <div class="w3-bar-item"><a href="/">Cancel</a></div>

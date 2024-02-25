@@ -4,7 +4,11 @@
     <title>{{ .Title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/w3.css">
-    <style>input:required:invalid{background-color:#ffdddd;}</style>
+    <style>
+      input:required:invalid {
+        background-color: #ffdddd;
+      }
+    </style>
   </head>
 
   <body>
@@ -12,31 +16,29 @@
       <b>{{.Title}}</b>
     </header>
 
-    <div class="w3-content" style="width:320px;">
+    <div class="w3-content" style="width: 320px;">
       <div class="w3-container w3-margin-top">
         <div class="w3-container w3-card">
           <form method="post" autocomplete="off">
-            <p>Please enter your account info.</p>
-
-            <p>
+            <div class="w3-section">
               <label for="username"><b>Username (required):</b></label>
-              <input class="w3-input" type="text" placeholder="Enter your username" id="username" name="username" maxlength="30" required autofocus>
-            </p>
+              <input class="w3-input" type="text" placeholder="Enter your username" id="username" name="username" maxlength="30" required autofocus autocomplete="username">
+            </div>
 
-            <p>
+            <div class="w3-section">
               <label for="password"><b>Password (required):</b></label>
-              <input class="w3-input" type="password" placeholder="Enter your password" id="password" name="password" required>
-            </p>
+              <input class="w3-input" type="password" placeholder="Enter your password" id="password" name="password" required autocomplete="current-password">
+            </div>
 
-            <p>
+            <div class="w3-section">
               <input class="w3-check" type="checkbox" checked value="on" id="remember" name="remember">
               <label for="remember">Remember Me</label>
-            </p>
+            </div>
 
             {{ if .Message }}
-            <p class="w3-text-red">
+            <div class="w3-section w3-text-red">
               <b><span class="w3-badge w3-red">!</span> {{ .Message }}</b>
-            </p>
+            </div>
             {{ end }}
 
             <button type="submit" class="w3-button w3-block w3-indigo">
@@ -44,10 +46,8 @@
             </button>
           </form>
 
-          <p class="w3-border-top w3-border-bottom"></p>
-
           <div class="w3-center">
-            <div class="w3-bar">
+            <div class="w3-section w3-bar">
               <div class="w3-bar-item"><a href="/forgot">Forgot</a></div>
               <div class="w3-bar-item"><a href="/register">Register</a></div>
               <div class="w3-bar-item"><a href="/">Cancel</a></div>

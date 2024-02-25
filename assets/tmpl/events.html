@@ -21,32 +21,27 @@
         <a href="/logout">Logout {{.User.Username}}</a>
       </div>
     </div>
-    {{ end }}
-
-    {{ if .User.IsAdmin }}
+    {{ end }} {{ if .User.IsAdmin }}
     <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
       <tr>
-	<th>Name</th>
-	<th class="w3-center">Succeeded</th>
-	<th>Username</th>
-	<th>Message</th>
-	<th>Created</th>
+        <th>Name</th>
+        <th class="w3-center">Succeeded</th>
+        <th>Username</th>
+        <th>Message</th>
+        <th>Created</th>
       </tr>
       {{ range .Events }}
       <tr>
-	<td>{{ .Name }}</td>
-	<td class="w3-center">{{ .Succeeded }}</td>
-	<td>{{ .Username }}</td>
-	<td>{{ .Message }}</td>
-	<td>{{ (ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
+        <td>{{ .Name }}</td>
+        <td class="w3-center">{{ .Succeeded }}</td>
+        <td>{{ .Username }}</td>
+        <td>{{ .Message }}</td>
+        <td>{{ (ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
       </tr>
       {{ end }}
     </table>
     {{ else }}
-    <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/events">Login</a> as an administrator to see events.
-    </div>
+    <div class="w3-panel w3-pale-red">You must <a href="/login?r=/events">Login</a> as an administrator to see events.</div>
     {{ end }}
-
   </body>
 </html>

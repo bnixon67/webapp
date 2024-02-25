@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>{{.Title}}</title>
-        <link rel="stylesheet" href="/w3.css">
-    </head>
+  <head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/w3.css">
+  </head>
 
-    <body>
-        <table class="w3-table w3-striped w3-bordered">
-            <caption>
-                <h1>Response Headers</h1>
-            </caption>
-            <thead>
-                <tr class="w3-indigo">
-                    <th>Key</th>
-                    <th>Value(s)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{- range .Headers}}
-                <tr>
-                    <td>{{.Key}}</td>
-                    <td>{{Join .Values "<br>"}}</td>
-                </tr>
-                {{- end}}
-            </tbody>
-        </table>
-    </body>
+  <body>
+    <table class="w3-table w3-striped w3-bordered">
+      <caption>
+        <h1>Response Headers</h1>
+      </caption>
+      <thead>
+        <tr class="w3-indigo">
+          <th>Key</th>
+          <th>Value(s)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{- range .Headers}}
+        <tr>
+          <td>{{.Key}}</td>
+          <td>{{Join .Values "<br>"}}</td>
+        </tr>
+        {{- end}}
+      </tbody>
+    </table>
+  </body>
 </html>

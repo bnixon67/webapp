@@ -10,13 +10,12 @@
       <b>{{ .Title }} Users</b>
     </div>
     <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile"> <a href="/">Home</a> </div>
+      <div class="w3-bar-item w3-mobile"><a href="/">Home</a></div>
       {{ if .User.IsAdmin }}
       <div class="w3-bar-item w3-mobile">
         <a href="/userscsv">Download</a>
       </div>
-      {{ end }}
-      {{ if .User.Username }}
+      {{ end }} {{ if .User.Username }}
       <div class="w3-bar-item w3-mobile w3-right">
         <a href="/logout">Logout {{.User.Username}}</a>
       </div>
@@ -26,31 +25,28 @@
     {{ if .User.Username }}
     <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
       <tr>
-	<th>User Name</th>
-	<th>Full Name</th>
+        <th>User Name</th>
+        <th>Full Name</th>
         {{ if $.User.IsAdmin }}
-	<th>Email</th>
-	<th class="w3-center">IsAdmin</th>
-	<th>Created</th>
+        <th>Email</th>
+        <th class="w3-center">IsAdmin</th>
+        <th>Created</th>
         {{ end }}
       </tr>
       {{ range .Users }}
       <tr>
-	<td>{{ .Username }}</td>
-	<td>{{ .FullName }}</td>
+        <td>{{ .Username }}</td>
+        <td>{{ .FullName }}</td>
         {{ if $.User.IsAdmin }}
-	<td>{{ .Email }}</td>
-	<td class="w3-center">{{ .IsAdmin }}</td>
-	<td>{{ .Created.Format "2006-01-02 03:04 PM" }}</td>
+        <td>{{ .Email }}</td>
+        <td class="w3-center">{{ .IsAdmin }}</td>
+        <td>{{ .Created.Format "2006-01-02 03:04 PM" }}</td>
         {{ end }}
       </tr>
       {{ end }}
     </table>
     {{ else }}
-    <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/users">Login</a>
-    </div>
+    <div class="w3-panel w3-pale-red">You must <a href="/login?r=/users">Login</a></div>
     {{ end }}
-
   </body>
 </html>
