@@ -46,10 +46,10 @@ var (
 	ErrUserLoginTokenNotFound    = errors.New("user login token not found")
 	ErrUserNotFound              = errors.New("user not found")
 	ErrUserLoginTokenExpired     = errors.New("user login expired")
-	ErrUserAlreadyConfirmed      = errors.New("user already confirmed")
 	ErrResetPasswordTokenExpired = errors.New("reset password token expired")
 	ErrConfirmTokenExpired       = errors.New("confirm token expired")
 	ErrUserGetLastLoginFailed    = errors.New("failed to get user last login")
+	ErrMissingConfirmToken       = errors.New("empty confirm token")
 )
 
 var EmptyUser User // EmptyUser is a empty User used when returning a error.
@@ -186,6 +186,10 @@ func (db *AuthDB) UsernameForResetToken(tokenValue string) (string, error) {
 //
 // If a SQL error occurs, it will be returned, except ErrNoRows.
 func (db *AuthDB) UsernameForConfirmToken(tokenValue string) (string, error) {
+	if tokenValue == "" {
+		return "", ErrMissingConfirmToken
+	}
+
 	var username string
 	var expires time.Time
 	hashedValue := Hash(tokenValue)
@@ -195,7 +199,7 @@ func (db *AuthDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 	err := row.Scan(&username, &expires)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", ErrUserNotFound
+			return "", ErrTokenNotFound
 		}
 		return "", err
 	}
@@ -206,7 +210,7 @@ func (db *AuthDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 		return "", ErrConfirmTokenExpired
 	}
 
-	return username, err
+	return username, nil
 }
 
 var ErrIncorrectPassword = errors.New("incorrect password")
@@ -322,32 +326,16 @@ func (db *AuthDB) UserFromRequest(w http.ResponseWriter, r *http.Request) (User,
 }
 
 // ConfirmUser updates database to indicate user confirmed their email.
-//
-// If a SQL error occurs, it will be returned.
-//
-// If username is not found, ErrUserNotFound is returned.
-func (db *AuthDB) ConfirmUser(username string) error {
-	// Check if user is already confirmed.
-	alreadyConfirmed, err := db.RowExists("SELECT 1 FROM users WHERE confirmed = ? AND username = ?", true, username)
-	if err != nil {
-		return err
-	}
-	if alreadyConfirmed {
-		return ErrUserAlreadyConfirmed
-	}
-
-	const qry = "UPDATE users SET confirmed = ? WHERE username = ?"
-	result, err := db.Exec(qry, true, username)
+func (db *AuthDB) ConfirmUser(username, ctoken string) error {
+	const qry = "UPDATE users SET confirmed = true WHERE username = ? AND confirmed = false"
+	_, err := db.Exec(qry, username)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
+	err = db.RemoveToken("confirm", ctoken)
 	if err != nil {
 		return err
-	}
-	if rows != 1 {
-		return ErrUserNotFound
 	}
 
 	return nil

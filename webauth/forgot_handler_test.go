@@ -61,7 +61,7 @@ func TestForgotHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: forgotBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
 			}),
 		},
 		{
@@ -81,8 +81,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
-				Message:        webauth.MsgMissingEmail,
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
+				Message:    webauth.MsgMissingEmail,
 			}),
 		},
 		{
@@ -95,8 +95,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
-				Message:        webauth.MsgMissingAction,
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
+				Message:    webauth.MsgMissingAction,
 			}),
 		},
 		{
@@ -110,8 +110,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: forgotBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
-				Message:        webauth.MsgInvalidAction,
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
+				Message:    webauth.MsgInvalidAction,
 			}),
 		},
 		{
@@ -125,8 +125,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
-				EmailFrom:      app.Cfg.SMTP.User,
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
+				EmailFrom:  app.Cfg.SMTP.User,
 			}),
 		},
 		{
@@ -140,8 +140,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
-				EmailFrom:      app.Cfg.SMTP.User,
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
+				EmailFrom:  app.Cfg.SMTP.User,
 			}),
 		},
 		{
@@ -155,8 +155,8 @@ func TestForgotHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(webauth.ForgotPageData{
-				CommonPageData: webauth.CommonPageData{Title: app.Cfg.App.Name},
-				EmailFrom:      app.Cfg.SMTP.User,
+				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
+				EmailFrom:  app.Cfg.SMTP.User,
 			}),
 		},
 	}

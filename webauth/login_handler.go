@@ -15,7 +15,7 @@ import (
 
 // LoginPageData contains data passed to the HTML template.
 type LoginPageData struct {
-	CommonPageData
+	CommonData
 	Message string
 }
 

@@ -16,10 +16,10 @@ import (
 	"github.com/bnixon67/webapp/webhandler"
 )
 
-func confirmBody(data webauth.ConfirmPageData) string {
+func confirmBody(data webauth.ConfirmData) string {
 	// Get path to template file.
 	assetDir := assets.AssetPath()
-	tmplFile := filepath.Join(assetDir, "tmpl", "confirm.html")
+	tmplFile := filepath.Join(assetDir, "tmpl", webauth.ConfirmTmpl)
 
 	// Parse the HTML template from a file.
 	tmpl := template.Must(template.ParseFiles(tmplFile))
@@ -33,7 +33,7 @@ func confirmBody(data webauth.ConfirmPageData) string {
 	return body.String()
 }
 
-func sentConfirmBody(data webauth.ConfirmPageData) string {
+func sentConfirmBody(data webauth.ConfirmData) string {
 	// Get path to template file.
 	assetDir := assets.AssetPath()
 	tmplFile := filepath.Join(assetDir, "tmpl", "confirm_request.html")
@@ -50,28 +50,8 @@ func sentConfirmBody(data webauth.ConfirmPageData) string {
 	return body.String()
 }
 
-func TestConfirmHandler(t *testing.T) {
+func TestConfirmHandlerGet(t *testing.T) {
 	app := AppForTest(t)
-
-	header := http.Header{
-		"Content-Type": {"application/x-www-form-urlencoded"},
-	}
-
-	ctoken, err := app.DB.CreateConfirmEmailToken("confirmed")
-	if err != nil {
-		t.Fatalf("could not create confirm email token")
-	}
-
-	utoken, err := app.DB.CreateConfirmEmailToken("unconfirmed")
-	if err != nil {
-		t.Fatalf("could not create confirm email token")
-	}
-
-	const qry = "UPDATE users SET confirmed = 0 WHERE username = ?"
-	_, err = app.DB.Exec(qry, "unconfirmed")
-	if err != nil {
-		t.Fatalf("could not unconfirm user")
-	}
 
 	tests := []webhandler.TestCase{
 		{
@@ -79,8 +59,8 @@ func TestConfirmHandler(t *testing.T) {
 			Target:        "/confirm",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
-			WantBody: confirmBody(webauth.ConfirmPageData{
-				CommonPageData: webauth.CommonPageData{
+			WantBody: confirmBody(webauth.ConfirmData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 			}),
@@ -88,9 +68,54 @@ func TestConfirmHandler(t *testing.T) {
 		{
 			Name:          "Invalid Method",
 			Target:        "/confirm",
-			RequestMethod: http.MethodPatch,
+			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "PATCH Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
+		},
+	}
+
+	// Test the handler using the utility function.
+	webhandler.HandlerTestWithCases(t, app.ConfirmHandlerGet, tests)
+}
+
+func TestConfirmHandlerPost(t *testing.T) {
+	app := AppForTest(t)
+
+	header := http.Header{
+		"Content-Type": {"application/x-www-form-urlencoded"},
+	}
+
+	utoken, err := app.DB.CreateConfirmEmailToken("unconfirmed")
+	if err != nil {
+		t.Fatalf("could not create confirm email token")
+	}
+
+	_, err = app.DB.Exec(
+		"UPDATE users SET confirmed = 0 WHERE username = ?",
+		"unconfirmed")
+	if err != nil {
+		t.Fatalf("could not unconfirm user")
+	}
+
+	expiredToken, err := app.DB.CreateConfirmEmailToken("expired")
+	if err != nil {
+		t.Fatalf("could not create expired confirm email token")
+	}
+
+	_, err = app.DB.Exec(
+		"UPDATE tokens SET expires = NOW() WHERE username = ?",
+		"expired")
+	if err != nil {
+		t.Fatalf("could not expire token: %v", err)
+	}
+
+	tests := []webhandler.TestCase{
+		{
+			Name:          "Invalid Method",
+			Target:        "/confirm",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
 			Name:           "Missing Token",
@@ -99,8 +124,8 @@ func TestConfirmHandler(t *testing.T) {
 			RequestHeaders: header,
 			RequestBody:    url.Values{}.Encode(),
 			WantStatus:     http.StatusOK,
-			WantBody: confirmBody(webauth.ConfirmPageData{
-				CommonPageData: webauth.CommonPageData{
+			WantBody: confirmBody(webauth.ConfirmData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				Message: webauth.MsgMissingConfirmToken,
@@ -113,12 +138,25 @@ func TestConfirmHandler(t *testing.T) {
 			RequestHeaders: header,
 			RequestBody:    url.Values{"ctoken": {"foo"}}.Encode(),
 			WantStatus:     http.StatusOK,
-			WantBody: confirmBody(webauth.ConfirmPageData{
-				CommonPageData: webauth.CommonPageData{
+			WantBody: confirmBody(webauth.ConfirmData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
-				Message:      webauth.MsgInvalidConfirmToken,
-				ConfirmToken: "foo",
+				Message: webauth.MsgInvalidConfirmToken,
+			}),
+		},
+		{
+			Name:           "Expired Token",
+			Target:         "/confirm",
+			RequestMethod:  http.MethodPost,
+			RequestHeaders: header,
+			RequestBody:    url.Values{"ctoken": {expiredToken.Value}}.Encode(),
+			WantStatus:     http.StatusOK,
+			WantBody: confirmBody(webauth.ConfirmData{
+				CommonData: webauth.CommonData{
+					Title: app.Cfg.App.Name,
+				},
+				Message: webauth.MsgExpiredConfirmToken,
 			}),
 		},
 		{
@@ -129,22 +167,8 @@ func TestConfirmHandler(t *testing.T) {
 			RequestBody:    url.Values{"ctoken": {utoken.Value}}.Encode(),
 			WantStatus:     http.StatusSeeOther,
 		},
-		{
-			Name:           "Confirmed User",
-			Target:         "/confirm",
-			RequestMethod:  http.MethodPost,
-			RequestHeaders: header,
-			RequestBody:    url.Values{"ctoken": {ctoken.Value}}.Encode(),
-			WantStatus:     http.StatusOK,
-			WantBody: confirmBody(webauth.ConfirmPageData{
-				CommonPageData: webauth.CommonPageData{
-					Title: app.Cfg.App.Name,
-				},
-				Message: webauth.MsgUserAlreadyConfirmed,
-			}),
-		},
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ConfirmHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.ConfirmHandlerPost, tests)
 }

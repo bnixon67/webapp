@@ -61,7 +61,7 @@ func TestConfirmRequestHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: confirmRequestBody(webauth.ConfirmRequestPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 			}),
@@ -80,7 +80,7 @@ func TestConfirmRequestHandler(t *testing.T) {
 			RequestHeaders: header,
 			WantStatus:     http.StatusOK,
 			WantBody: confirmRequestBody(webauth.ConfirmRequestPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				Message: webauth.MsgMissingEmail,
@@ -96,7 +96,7 @@ func TestConfirmRequestHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentConfirmRequestBody(webauth.ConfirmRequestPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				EmailFrom: app.Cfg.SMTP.User,
@@ -112,7 +112,7 @@ func TestConfirmRequestHandler(t *testing.T) {
 			}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: sentConfirmRequestBody(webauth.ConfirmRequestPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				EmailFrom: app.Cfg.SMTP.User,

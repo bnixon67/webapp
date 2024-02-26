@@ -12,7 +12,7 @@ import (
 
 // EventsPageData contains data passed to the HTML template.
 type EventsPageData struct {
-	CommonPageData
+	CommonData
 	User   User
 	Events []Event
 }
@@ -44,9 +44,9 @@ func (app *AuthApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.RenderPage(w, logger, "events.html",
 		&EventsPageData{
-			CommonPageData: CommonPageData{Title: app.Cfg.App.Name},
-			User:           user,
-			Events:         events,
+			CommonData: CommonData{Title: app.Cfg.App.Name},
+			User:       user,
+			Events:     events,
 		})
 
 	logger.Info("done")

@@ -53,7 +53,7 @@ func TestLoginGetHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: loginBody(webauth.LoginPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 			}),
@@ -96,7 +96,7 @@ func TestLoginPostHandler(t *testing.T) {
 			RequestBody:    url.Values{}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(webauth.LoginPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				Message: webauth.MsgMissingUsernameAndPassword,
@@ -110,7 +110,7 @@ func TestLoginPostHandler(t *testing.T) {
 			RequestBody:    url.Values{"password": {"foo"}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(webauth.LoginPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				Message: webauth.MsgMissingUsername,
@@ -124,7 +124,7 @@ func TestLoginPostHandler(t *testing.T) {
 			RequestBody:    url.Values{"username": {"foo"}}.Encode(),
 			WantStatus:     http.StatusOK,
 			WantBody: loginBody(webauth.LoginPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				Message: webauth.MsgMissingPassword,
@@ -139,7 +139,7 @@ func TestLoginPostHandler(t *testing.T) {
 				"password": {"bar"}}.Encode(),
 			WantStatus: http.StatusOK,
 			WantBody: loginBody(webauth.LoginPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				Message: webauth.MsgLoginFailed,

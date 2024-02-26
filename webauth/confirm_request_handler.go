@@ -23,7 +23,7 @@ const (
 
 // ConfirmRequestPageData contains data to render the confirm request template.
 type ConfirmRequestPageData struct {
-	CommonPageData
+	CommonData
 	Message   string // An message to display to the user.
 	EmailFrom string // The email address that sends the confirm message.
 }
@@ -111,8 +111,8 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 
 	err = webutil.RenderTemplate(app.Tmpl, w, "confirm_request_sent.html",
 		ConfirmRequestPageData{
-			CommonPageData: CommonPageData{Title: app.Cfg.App.Name},
-			EmailFrom:      app.Cfg.SMTP.User,
+			CommonData: CommonData{Title: app.Cfg.App.Name},
+			EmailFrom:  app.Cfg.SMTP.User,
 		})
 	if err != nil {
 		logger.Error("failed to render template", "err", err)

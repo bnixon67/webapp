@@ -23,7 +23,7 @@ const (
 
 // RegisterPageData contains data passed to the HTML template.
 type RegisterPageData struct {
-	CommonPageData
+	CommonData
 	Message string
 }
 

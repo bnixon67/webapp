@@ -84,7 +84,7 @@ func TestEventsHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: eventsBody(t, webauth.EventsPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 			}),
@@ -98,7 +98,7 @@ func TestEventsHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: eventsBody(t, webauth.EventsPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 			}),
@@ -113,7 +113,7 @@ func TestEventsHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: eventsBody(t, webauth.EventsPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				User: user,
@@ -128,7 +128,7 @@ func TestEventsHandler(t *testing.T) {
 			},
 			WantStatus: http.StatusOK,
 			WantBody: eventsBody(t, webauth.EventsPageData{
-				CommonPageData: webauth.CommonPageData{
+				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
 				User: admin, Events: events,

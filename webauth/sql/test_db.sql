@@ -13,6 +13,9 @@ VALUES ('unconfirmed', 'Unconfirmed User', 'unconfirmed@email', '$2a$10$2bLycFqU
 INSERT INTO users(username, fullName, email, hashedPassword, admin, confirmed)
 VALUES ('confirmed', 'Unconfirmed User', 'confirmed@email', '$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd9IoAPMbXRNNuJ8Sv9ItgV29O', 1, 1);
 
+INSERT INTO users(username, fullName, email, hashedPassword, admin, confirmed)
+VALUES ('expired', 'Expired Confirm Token', 'expired@email', '$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd9IoAPMbXRNNuJ8Sv9ItgV29O', 1, 1);
+
 DROP TABLE IF EXISTS tokens;
 source tokens.sql;
 

@@ -12,7 +12,7 @@ import (
 
 // LogoutPageData contains data passed to the HTML template.
 type LogoutPageData struct {
-	CommonPageData
+	CommonData
 	Message string
 }
 

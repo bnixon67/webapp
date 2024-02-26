@@ -15,14 +15,14 @@ type PageData interface {
 	SetDefaultTitle(appName string)
 }
 
-// CommonPageData holds common fields for page data.
-type CommonPageData struct {
+// CommonData holds common fields for page data.
+type CommonData struct {
 	Title string
 }
 
 // SetDefaultTitle ensures that the Title of CommonPageData is not empty.
 // If Title is empty, this method sets it to the value of appName.
-func (c *CommonPageData) SetDefaultTitle(appName string) {
+func (c *CommonData) SetDefaultTitle(appName string) {
 	if c.Title == "" {
 		c.Title = appName
 	}

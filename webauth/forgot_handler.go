@@ -29,7 +29,7 @@ const (
 
 // ForgotPageData contains data required to render the forgot templates.
 type ForgotPageData struct {
-	CommonPageData
+	CommonData
 	Message   string // An informational or error message to display to the user.
 	EmailFrom string // The email address from which the reset or reminder email will be sent.
 }
