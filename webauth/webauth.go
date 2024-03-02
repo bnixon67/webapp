@@ -87,7 +87,7 @@ func NewApp(options ...interface{}) (*AuthApp, error) {
 	}
 
 	// Validate login expiration duration.
-	_, err = time.ParseDuration(authApp.Cfg.LoginExpires)
+	_, err = time.ParseDuration(authApp.Cfg.Auth.LoginExpires)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrInvalidConfig, err)
 	}

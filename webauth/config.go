@@ -12,6 +12,12 @@ import (
 	"github.com/bnixon67/webapp/webapp"
 )
 
+// ConfigAuth holds settings specific to the auth app.
+type ConfigAuth struct {
+	BaseURL      string // Base URL of the application.
+	LoginExpires string // Duration string for login expiry.
+}
+
 // ConfigSQL hold SQL database connection settings.
 type ConfigSQL struct {
 	DriverName     string // Database driver name.
@@ -30,9 +36,7 @@ type ConfigSMTP struct {
 type Config struct {
 	webapp.Config // Inherit webapp.Config
 
-	BaseURL      string // Base URL of the application.
-	LoginExpires string // Duration string for login expiry.
-
+	Auth ConfigAuth
 	SQL  ConfigSQL  // SQL Database configuration.
 	SMTP ConfigSMTP // SMTP server configuration.
 }
@@ -76,8 +80,8 @@ func (c *Config) IsValid() (bool, []string) {
 
 	// Fields to check.
 	fields := map[string]string{
-		"BaseURL":            c.BaseURL,
-		"LoginExpires":       c.LoginExpires,
+		"BaseURL":            c.Auth.BaseURL,
+		"LoginExpires":       c.Auth.LoginExpires,
 		"Server.Host":        c.Server.Host,
 		"Server.Port":        c.Server.Port,
 		"SQL.DriverName":     c.SQL.DriverName,

@@ -172,7 +172,7 @@ func (app *AuthApp) sendRegistrationEmail(username, fullName, email string) erro
 		FullName: fullName,
 		Username: username,
 		Title:    app.Cfg.App.Name,
-		BaseURL:  app.Cfg.BaseURL,
+		BaseURL:  app.Cfg.Auth.BaseURL,
 		Token:    token,
 	}
 	body, err := emailBody("register", registrationEmailTmpl, data)

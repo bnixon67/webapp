@@ -44,8 +44,10 @@ func TestConfigFromJSONFile(t *testing.T) {
 			configFileName: "testdata/valid.json",
 			wantErr:        nil,
 			wantConfig: webauth.Config{
-				BaseURL:      "test URL",
-				LoginExpires: "42h",
+				Auth: webauth.ConfigAuth{
+					BaseURL:      "test URL",
+					LoginExpires: "42h",
+				},
 				SQL: webauth.ConfigSQL{
 					DriverName:     "testSQLDriverName",
 					DataSourceName: "testSQLDataSourceName",
@@ -97,8 +99,8 @@ func TestConfigIsValid(t *testing.T) {
 
 	required := []string{
 		"App.Name",
-		"BaseURL",
-		"LoginExpires",
+		"Auth.BaseURL",
+		"Auth.LoginExpires",
 		"SQL.DriverName",
 		"SQL.DataSourceName",
 		"SMTP.Host",
@@ -160,7 +162,7 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
-	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"BaseURL":"","LoginExpires":"","SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
+	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
 
 	testCases := []struct {
 		name  string
@@ -203,7 +205,7 @@ func TestConfigString(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} BaseURL: LoginExpires: SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
+			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} Auth:{BaseURL: LoginExpires:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
 		},
 	}
 

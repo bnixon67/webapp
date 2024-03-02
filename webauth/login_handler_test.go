@@ -71,7 +71,7 @@ func TestLoginPostHandler(t *testing.T) {
 		"Content-Type": {"application/x-www-form-urlencoded"},
 	}
 
-	d, err := time.ParseDuration(app.Cfg.LoginExpires)
+	d, err := time.ParseDuration(app.Cfg.Auth.LoginExpires)
 	if err != nil {
 		t.Fatalf("cannot parse duration")
 	}

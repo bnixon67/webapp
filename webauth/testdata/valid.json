@@ -1,6 +1,8 @@
 {
-  "BaseURL": "test URL",
-  "LoginExpires": "42h",
+  "Auth": {
+    "BaseURL": "test URL",
+    "LoginExpires": "42h"
+  },
   "SQL": {
     "DriverName": "testSQLDriverName",
     "DataSourceName": "testSQLDataSourceName"

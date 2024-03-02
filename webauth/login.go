@@ -14,7 +14,7 @@ const LoginTokenKind = "login"
 
 // CreateLoginToken creates a login token for username.
 func (app *AuthApp) CreateLoginToken(username string) (Token, error) {
-	token, err := app.DB.CreateToken(LoginTokenKind, username, LoginTokenSize, app.Cfg.LoginExpires)
+	token, err := app.DB.CreateToken(LoginTokenKind, username, LoginTokenSize, app.Cfg.Auth.LoginExpires)
 	if err != nil {
 		return Token{}, err
 	}

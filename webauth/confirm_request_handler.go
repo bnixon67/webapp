@@ -144,7 +144,7 @@ func sendEmailToConfirm(username, email string, token Token, cfg Config) error {
 			emailData{
 				Email:   email,
 				Title:   cfg.App.Name,
-				BaseURL: cfg.BaseURL,
+				BaseURL: cfg.Auth.BaseURL,
 			})
 	default:
 		body, err = emailBody(
@@ -153,7 +153,7 @@ func sendEmailToConfirm(username, email string, token Token, cfg Config) error {
 			emailData{
 				Token:   token,
 				Title:   cfg.App.Name,
-				BaseURL: cfg.BaseURL,
+				BaseURL: cfg.Auth.BaseURL,
 			})
 
 		if err != nil {

@@ -193,7 +193,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 			emailData{
 				Email:   email,
 				Title:   cfg.App.Name,
-				BaseURL: cfg.BaseURL,
+				BaseURL: cfg.Auth.BaseURL,
 			})
 	case action == "password":
 		body, err = emailBody(
@@ -202,7 +202,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 			emailData{
 				Token:   token,
 				Title:   cfg.App.Name,
-				BaseURL: cfg.BaseURL,
+				BaseURL: cfg.Auth.BaseURL,
 			})
 	case action == "user":
 		body, err = emailBody(
@@ -211,7 +211,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 			emailData{
 				Username: username,
 				Title:    cfg.App.Name,
-				BaseURL:  cfg.BaseURL,
+				BaseURL:  cfg.Auth.BaseURL,
 			})
 	}
 

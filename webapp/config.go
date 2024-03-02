@@ -20,16 +20,6 @@ type ConfigApp struct {
 	TmplPattern string // TmplPattern identifies template files.
 }
 
-/*
-// ConfigLog holds the log settings.
-type ConfigLog struct {
-	Filename  string // Filename of log file.
-	Type      string // Type of log, e.g., json or text.
-	Level     string // Level of log, e.g., DEBUG, INFO, WARN, ERROR.
-	AddSource bool   // WithSource add source info to log.
-}
-*/
-
 // Config represents the overall application configuration.
 type Config struct {
 	App    ConfigApp        // App configuration.
