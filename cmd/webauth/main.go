@@ -14,6 +14,7 @@ import (
 
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webauth"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 const (
@@ -26,7 +27,7 @@ const (
 )
 
 // SendStartingEmail sends an email indicating the server is starting.
-func SendStartingEmail(to string, cfg webauth.ConfigSMTP) error {
+func SendStartingEmail(to string, cfg webutil.SMTPConfig) error {
 	hostName, err := os.Hostname()
 	if err != nil {
 		return err

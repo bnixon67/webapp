@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 // ConfigAuth holds settings specific to the auth app.
@@ -24,21 +25,12 @@ type ConfigSQL struct {
 	DataSourceName string // Database connection string.
 }
 
-// ConfigSMTP holds SMTP server settings for email functionality.
-type ConfigSMTP struct {
-	Host     string // Host address.
-	Port     string // Port number.
-	User     string // Server username.
-	Password string // Server password.
-}
-
 // Config represents the overall application configuration.
 type Config struct {
-	webapp.Config // Inherit webapp.Config
-
-	Auth ConfigAuth
-	SQL  ConfigSQL  // SQL Database configuration.
-	SMTP ConfigSMTP // SMTP server configuration.
+	webapp.Config                    // Inherit webapp.Config
+	Auth          ConfigAuth         // Auth app configuration.
+	SQL           ConfigSQL          // SQL Database configuration.
+	SMTP          webutil.SMTPConfig // SMTP server configuration.
 }
 
 var (
@@ -107,7 +99,6 @@ type RedactedConfig Config
 func (c Config) redact() RedactedConfig {
 	r := RedactedConfig(c)
 	r.SQL.DataSourceName = "[REDACTED]"
-	r.SMTP.Password = "[REDACTED]"
 	return r
 }
 

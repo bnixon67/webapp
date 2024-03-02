@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/webauth"
+	"github.com/bnixon67/webapp/webutil"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -52,7 +53,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 					DriverName:     "testSQLDriverName",
 					DataSourceName: "testSQLDataSourceName",
 				},
-				SMTP: webauth.ConfigSMTP{
+				SMTP: webutil.SMTPConfig{
 					Host:     "test SMTP host",
 					Port:     "test SMTP port",
 					User:     "test SMTP user",
@@ -157,7 +158,7 @@ func TestConfigMarshalJSON(t *testing.T) {
 		SQL: webauth.ConfigSQL{
 			DataSourceName: "user:password@localhost/db",
 		},
-		SMTP: webauth.ConfigSMTP{
+		SMTP: webutil.SMTPConfig{
 			Password: "supersecret",
 		},
 	}
@@ -201,7 +202,7 @@ func TestConfigString(t *testing.T) {
 				SQL: webauth.ConfigSQL{
 					DataSourceName: "user:password@localhost/db",
 				},
-				SMTP: webauth.ConfigSMTP{
+				SMTP: webutil.SMTPConfig{
 					Password: "supersecret",
 				},
 			},
