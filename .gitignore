@@ -1,13 +1,12 @@
-*~
-*.dll
-*.dylib
-*.exe
-*.exe~
-go.work
 *.log
 *.out
 *.pem
-*.so
+*.service
 *.swp
-targets.txt
 *.test
+*~
+
+# Ignore all .json files
+*.json
+# But not those in the testdata directory (or its subdirectories)
+!testdata/**/*.json
