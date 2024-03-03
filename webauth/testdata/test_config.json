@@ -1,0 +1,27 @@
+{
+  "App": {
+    "Name": "Go Weblogin",
+    "TmplPattern": "../assets/tmpl/*.html"
+  },
+  "Auth": {
+    "BaseURL": "https://host:port",
+    "LoginExpires": "48h"
+  },
+  "Server": {
+    "Host": "host",
+    "Port": "port"
+  },
+  "SQL": {
+    "DriverName": "mysql",
+    "DataSourceName": "weblogin_test:password@/weblogin_test?parseTime=true"
+  },
+  "SMTP": {
+    "Host": "localhost",
+    "Port": "2525",
+    "User": "user",
+    "Password": "password"
+  },
+  "Log": {
+    "Filename": "test.log"
+  }
+}
