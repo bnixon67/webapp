@@ -34,7 +34,8 @@ func SendStartingEmail(to string, cfg webutil.SMTPConfig) error {
 	}
 	subj := "starting webauth"
 	body := "starting webauth on" + hostName
-	err = cfg.SendMessage(to, subj, body)
+
+	err = cfg.SendMessage(cfg.User, []string{to}, subj, body)
 	if err != nil {
 		return err
 	}

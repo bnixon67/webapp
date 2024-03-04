@@ -18,10 +18,11 @@
   "SMTP": {
     "Host": "localhost",
     "Port": "2525",
-    "User": "user",
+    "User": "user@domain",
     "Password": "password"
   },
   "Log": {
-    "Filename": "test.log"
+    "Filename": "test.log",
+    "AddSource": true
   }
 }

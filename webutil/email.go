@@ -4,13 +4,12 @@
 package webutil
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"net/smtp"
-	"text/template"
+	"strings"
 )
 
 // SMTPConfig holds SMTP server settings for email functionality.
@@ -21,24 +20,9 @@ type SMTPConfig struct {
 	Password string // Server password.
 }
 
-// MailMessage contains data to include in the email template.
-type MailMessage struct {
-	From    string
-	To      string
-	Subject string
-	Body    string
-}
-
-const emailTmplText = `From: {{ .From }}
-To: {{ .To }}
-Subject: {{ .Subject }}
-
-{{ .Body }}
-`
-
 var (
-	emailTmpl = template.Must(template.New("email").Parse(emailTmplText))
-
+	ErrEmailInvalidFrom       = errors.New("invalid from address")
+	ErrEmailInvalidTo         = errors.New("invalid to address")
 	ErrEmailInvalidSMTPConfig = errors.New("invalid SMTP configuration")
 	ErrEmailSendFailed        = errors.New("failed to send email")
 )
@@ -74,33 +58,30 @@ func (s SMTPConfig) Valid() bool {
 }
 
 // SendMessage sends an email using the values provided.
-func (s SMTPConfig) SendMessage(to, subject, body string) error {
+func (s SMTPConfig) SendMessage(from string, to []string, subject, body string) error {
 	if !s.Valid() {
 		return ErrEmailInvalidSMTPConfig
 	}
 
-	mailMessage := MailMessage{
-		From:    s.User,
-		To:      to,
-		Subject: subject,
-		Body:    body,
+	if from == "" || !strings.Contains(from, "@") {
+		return fmt.Errorf("%w: %q", ErrEmailInvalidFrom, from)
 	}
 
-	// Fill message template.
-	message := &bytes.Buffer{}
-	err := emailTmpl.Execute(message, mailMessage)
-	if err != nil {
-		return fmt.Errorf("failed to execute mail template: %w", err)
+	if len(to) == 0 || to[0] == "" || !strings.Contains(to[0], "@") {
+		return fmt.Errorf("%w: %q", ErrEmailInvalidTo, to)
 	}
 
 	// Authenticate to SMTP server.
 	auth := smtp.PlainAuth("", s.User, s.Password, s.Host)
 
-	// Send email.
+	headers := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n",
+		from, strings.Join(to, ", "), subject)
+
+	msg := []byte(headers + body)
+
 	addr := net.JoinHostPort(s.Host, s.Port)
-	tos := []string{mailMessage.To}
-	msg := message.Bytes()
-	err = smtp.SendMail(addr, auth, mailMessage.From, tos, msg)
+
+	err := smtp.SendMail(addr, auth, from, to, msg)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrEmailSendFailed, err)
 	}

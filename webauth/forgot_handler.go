@@ -219,7 +219,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 		return err
 	}
 
-	err = cfg.SMTP.SendMessage(email, subj, body)
+	err = cfg.SMTP.SendMessage(cfg.SMTP.User, []string{email}, subj, body)
 	if err != nil {
 		return err
 	}

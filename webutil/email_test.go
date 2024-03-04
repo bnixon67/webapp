@@ -16,7 +16,8 @@ import (
 type sendEmailTest struct {
 	name       string
 	smtpConfig webutil.SMTPConfig
-	to         string
+	from       string
+	to         []string
 	subject    string
 	body       string
 	wantErr    error
@@ -58,20 +59,65 @@ func TestSendEmail(t *testing.T) {
 				User:     "smtpuser@example.com",
 				Password: "password",
 			},
-			to:      "recipient@example.com",
-			subject: "Greetings",
-			body:    "Hello, How are you?",
+			from:    "from@example.com",
+			to:      []string{"to@example.com"},
 			wantErr: webutil.ErrEmailSendFailed,
 		},
 		{
-			name: "valid smtp server",
+			name: "empty from",
+			smtpConfig: webutil.SMTPConfig{
+				Host:     "smtp.example.com",
+				Port:     "587",
+				User:     "smtpuser@example.com",
+				Password: "password",
+			},
+			to:      []string{"to@example.com"},
+			wantErr: webutil.ErrEmailInvalidFrom,
+		},
+		{
+			name: "invalid from",
+			smtpConfig: webutil.SMTPConfig{
+				Host:     "smtp.example.com",
+				Port:     "587",
+				User:     "smtpuser@example.com",
+				Password: "password",
+			},
+			to:      []string{"to"},
+			wantErr: webutil.ErrEmailInvalidFrom,
+		},
+		{
+			name: "empty to",
+			smtpConfig: webutil.SMTPConfig{
+				Host:     "smtp.example.com",
+				Port:     "587",
+				User:     "smtpuser@example.com",
+				Password: "password",
+			},
+			from:    "from@example.com",
+			wantErr: webutil.ErrEmailInvalidTo,
+		},
+		{
+			name: "invalid to",
+			smtpConfig: webutil.SMTPConfig{
+				Host:     "smtp.example.com",
+				Port:     "587",
+				User:     "smtpuser@example.com",
+				Password: "password",
+			},
+			from:    "from@example.com",
+			to:      []string{"to"},
+			wantErr: webutil.ErrEmailInvalidTo,
+		},
+		{
+			name: "valid message",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     MockSMTPHost,
 				Port:     MockSMTPPort,
 				User:     "smtpuser@example.com",
 				Password: "password",
 			},
-			to:      "recipient@example.com",
+			from:    "from@example.com",
+			to:      []string{"recipient@example.com"},
 			subject: "Greetings",
 			body:    "Hello, How are you?",
 			wantErr: nil,
@@ -80,7 +126,7 @@ func TestSendEmail(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.smtpConfig.SendMessage(tc.to, tc.subject, tc.body)
+			err := tc.smtpConfig.SendMessage(tc.from, tc.to, tc.subject, tc.body)
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("SendEmail() got error = %q, want error %q", err, tc.wantErr)
 			}
