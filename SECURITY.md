@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-Please report a vulnerability to the repository owner.
+Please report any vulnerabilities to the repository owner.
