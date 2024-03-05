@@ -52,32 +52,27 @@ func SortHeaders(httpHeader http.Header) []HeaderPair {
 	return headerList
 }
 
-// HeadersHandler prints the headers of the request in sorted order.
-func (app *WebApp) HeadersHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
+// HeadersHandlerGet shows the headers of the request in sorted order.
+func (app *WebApp) HeadersHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.EnforceMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Sort the headers from the request for consistent ordering.
-	sortedHeaders := SortHeaders(r.Header)
+	sortedHeaders := SortHeaders(r.Header) // sort for consistent ordering
 
-	// Prepare the data for rendering the template.
 	data := HeadersPageData{
 		Title:   "Request Headers",
 		Headers: sortedHeaders,
 	}
 
-	// Render the template with the data.
 	err := webutil.RenderTemplate(app.Tmpl, w, HeadersPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return
 	}
 
-	logger.Info("success", slog.Any("data", data))
+	logger.Info("done", slog.Any("data", data))
 }
