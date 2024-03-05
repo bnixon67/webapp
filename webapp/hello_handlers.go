@@ -12,47 +12,36 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// HelloTextHandler responds with a simple "hello" message in plain text format.
-func (app *WebApp) HelloTextHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
+// HelloTextHandlerGet responds with a hello message in plain text format.
+func (app *WebApp) HelloTextHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.EnforceMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Set the content type to plain text.
-	webutil.SetTextContentType(w)
-
-	// Set no-cache headers to prevent caching.
 	webutil.SetNoCacheHeaders(w)
 
-	// Write the "hello" message to the response with the application name.
+	webutil.SetTextContentType(w)
 	fmt.Fprintln(w, "hello from", app.Name)
 
-	// Log sucecss of the handler.
-	logger.Info("success")
+	logger.Info("done")
 }
 
-// HelloHTMLHandler responds with a simple "hello" message in HTML format.
-func (app *WebApp) HelloHTMLHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
+// HelloHTMLHandlerGet responds with a hello message in HTML format.
+func (app *WebApp) HelloHTMLHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.EnforceMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Set no-cache headers to prevent caching.
 	webutil.SetNoCacheHeaders(w)
 
 	// Write the HTML content to the response from the assets package.
 	fmt.Fprint(w, assets.HelloHTML)
 
-	// Log sucecss of the handler.
-	logger.Info("success")
+	logger.Info("done")
 }

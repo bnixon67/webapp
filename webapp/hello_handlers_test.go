@@ -35,7 +35,7 @@ func TestGetHelloTextMessage(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.HelloTextHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.HelloTextHandlerGet, tests)
 }
 
 func TestGetHelloHTMLMessage(t *testing.T) {
@@ -61,5 +61,5 @@ func TestGetHelloHTMLMessage(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.HelloHTMLHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.HelloHTMLHandlerGet, tests)
 }
