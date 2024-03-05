@@ -33,7 +33,7 @@ func TestBuildHandler(t *testing.T) {
 			Name:          "Invalid Request Method",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 	}
 
@@ -44,5 +44,5 @@ func TestBuildHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.BuildHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.BuildHandlerGet, tests)
 }

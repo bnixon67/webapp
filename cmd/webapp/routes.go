@@ -29,7 +29,7 @@ func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("/hello", app.HelloTextHandler)
 	mux.HandleFunc("/hellohtml", app.HelloHTMLHandler)
-	mux.HandleFunc("/build", app.BuildHandler)
+	mux.HandleFunc("GET /build", app.BuildHandlerGet)
 	mux.HandleFunc("/headers", app.HeadersHandler)
 	mux.HandleFunc("/remote", webhandler.RemoteHandler)
 	mux.HandleFunc("/request", webhandler.RequestHandler)

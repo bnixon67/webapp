@@ -15,29 +15,20 @@ import (
 // BuildDateTimeFormat can be used to format a time as "YYYY-MM-DD HH:MM:SS"
 const BuildDateTimeFormat = "2006-01-02 15:04:05"
 
-// BuildHandler responds with the executable modification date and time.
-func (app *WebApp) BuildHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
+// BuildHandlerGet responds with the executable modification date and time.
+func (app *WebApp) BuildHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.EnforceMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Set no-cache headers to prevent caching of the response.
 	webutil.SetNoCacheHeaders(w)
 
-	// Format the time as a string.
-	build := app.BuildDateTime.Format(BuildDateTimeFormat)
-
-	// Set the content type of the response to text.
 	webutil.SetTextContentType(w)
-
-	// Write the build time to the response.
+	build := app.BuildDateTime.Format(BuildDateTimeFormat)
 	fmt.Fprintln(w, build)
 
-	// Log success of the handler.
-	logger.Info("success", slog.String("build", build))
+	logger.Info("done", slog.String("build", build))
 }
