@@ -49,7 +49,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 			configFileName: "testdata/valid.json",
 			wantErr:        nil,
 			wantConfig: webapp.Config{
-				App: webapp.ConfigApp{
+				App: webapp.AppConfig{
 					Name: "Test Name",
 				},
 			},
@@ -59,7 +59,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 			configFileName: "testdata/all.json",
 			wantErr:        nil,
 			wantConfig: webapp.Config{
-				App: webapp.ConfigApp{
+				App: webapp.AppConfig{
 					Name:        "Test Name",
 					AssetsDir:   "directory",
 					TmplPattern: "*.html",
@@ -159,7 +159,7 @@ func TestConfigIsValid(t *testing.T) {
 	cases[len(cases)-1].want = true
 
 	for _, testCase := range cases {
-		got, _ := testCase.config.IsValid()
+		got, _ := testCase.config.Valid()
 		if got != testCase.want {
 			t.Errorf("got %v, want %v for c.IsValid(%+v)", got, testCase.want, testCase.config)
 		}

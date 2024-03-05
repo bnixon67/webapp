@@ -13,8 +13,8 @@ import (
 	"github.com/bnixon67/webapp/webserver"
 )
 
-// ConfigApp holds the web app settings.
-type ConfigApp struct {
+// AppConfig holds the web app settings.
+type AppConfig struct {
 	Name        string // Name of the application.
 	AssetsDir   string // AssetsDir is directory for web asets.
 	TmplPattern string // TmplPattern identifies template files.
@@ -22,7 +22,7 @@ type ConfigApp struct {
 
 // Config represents the overall application configuration.
 type Config struct {
-	App    ConfigApp        // App configuration.
+	App    AppConfig        // App configuration.
 	Server webserver.Config // Server configuration.
 	Log    weblog.Config    // Log configuration.
 }
@@ -50,7 +50,8 @@ func ConfigFromJSONFile(filename string) (Config, error) {
 	return config, nil
 }
 
-// appendIfEmpty appends a message to a slice if a string is empty.
+// appendIfEmpty appends message to messages if value is empty, and
+// returns the updated slice.
 func appendIfEmpty(messages []string, value, message string) []string {
 	if value == "" {
 		messages = append(messages, message)
@@ -59,13 +60,13 @@ func appendIfEmpty(messages []string, value, message string) []string {
 	return messages
 }
 
-// IsValid checks if all required Config fields are populated.
+// Valid checks if all required Config fields are populated.
 // Returns a boolean indicating validity and a slice of missing field messages.
-func (c *Config) IsValid() (bool, []string) {
+func (c *Config) Valid() (bool, []string) {
 	var missing []string
 
 	// Append message for each missing field.
-	missing = appendIfEmpty(missing, c.App.Name, "missing Name")
+	missing = appendIfEmpty(missing, c.App.Name, "missing App.Name")
 
 	return len(missing) == 0, missing
 }
