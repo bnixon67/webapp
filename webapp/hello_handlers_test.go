@@ -24,7 +24,7 @@ func TestGetHelloTextMessage(t *testing.T) {
 			Name:          "Invalid POST Request",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 	}
 
@@ -50,7 +50,7 @@ func TestGetHelloHTMLMessage(t *testing.T) {
 			Name:          "Invalid POST Request",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 	}
 

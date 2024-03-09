@@ -71,7 +71,7 @@ func TestRootHandler(t *testing.T) {
 			Target:        "/",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 	}
 
@@ -88,5 +88,5 @@ func TestRootHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.RootHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.RootHandlerGet, tests)
 }

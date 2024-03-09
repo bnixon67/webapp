@@ -15,8 +15,8 @@ import (
 
 // AppConfig holds the web app settings.
 type AppConfig struct {
-	Name        string // Name of the application.
-	AssetsDir   string // AssetsDir is directory for web asets.
+	Name        string // Name of the web application. (required)
+	AssetsDir   string // AssetsDir is directory for web assets.
 	TmplPattern string // TmplPattern identifies template files.
 }
 
@@ -30,6 +30,7 @@ type Config struct {
 var (
 	ErrConfigOpen   = errors.New("failed to open config file")
 	ErrConfigDecode = errors.New("failed to decode config file")
+	ErrConfigClose  = errors.New("failed to close config file")
 )
 
 // ConfigFromJSONFile returns a Config with settings from a JSON file.
@@ -38,13 +39,12 @@ func ConfigFromJSONFile(filename string) (Config, error) {
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return config, fmt.Errorf("%w: %v", ErrConfigOpen, err)
+		return Config{}, fmt.Errorf("%w: %v", ErrConfigOpen, err)
 	}
 	defer file.Close()
 
-	// decode json from config
 	if err := json.NewDecoder(file).Decode(&config); err != nil {
-		return config, fmt.Errorf("%w: %v", ErrConfigDecode, err)
+		return Config{}, fmt.Errorf("%w: %v", ErrConfigDecode, err)
 	}
 
 	return config, nil

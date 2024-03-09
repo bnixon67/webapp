@@ -12,9 +12,12 @@ import (
 	"strings"
 )
 
-// EnforceMethod ensures the request uses the specified HTTP method.
-// If method is invalid, a HTTP error is set and the caller should ensure
-// no further writes are done to w.
+// EnforceMethod ensures the request matches the specified HTTP method.
+// Returns true if the method matches.
+// Returns false if not matched and responds with StatusMethodNotAllowed (405).
+//
+// Note: When false is returned, it does not otherwise end the request;
+// the caller should ensure no further writes are done to w.
 func EnforceMethod(w http.ResponseWriter, r *http.Request, method string) bool {
 	if r.Method != method {
 		HttpError(w, http.StatusMethodNotAllowed)
@@ -23,16 +26,26 @@ func EnforceMethod(w http.ResponseWriter, r *http.Request, method string) bool {
 	return true
 }
 
-// ValidMethod checks if the HTTP method of the request is one of the allowed methods.
-// Returns true if the method is allowed, false otherwise.
-// If the method is not allowed, w is updated with appropriate headers, HTTP status, and error message in the body. It does not otherwise end the request; the caller should ensure no further writes are done to w.
+// ValidMethod checks the HTTP method of the request against allowed methods.
+//
+// Returns true if the method is in allowed methods list, false otherwise.
+//
+// It adds the OPTIONS method, so clients can determine which methods are valid.
+//
+// If the method is not allowed,
+//   - It sets the 'Allow' header wth the allowed methods.
+//   - For methods not allowed, it responds with StatusMethodNotAllowed (405).
+//   - For OPTIONS, it respondes with a StatusNoContent (204).
+//
+// Note: When false is returned, it does not otherwise end the request;
+// the caller should ensure no further writes are done to w.
 func ValidMethod(w http.ResponseWriter, r *http.Request, allowed ...string) bool {
 	// Check if the request's method is in the list of allowed methods.
 	if slices.Contains(allowed, r.Method) {
 		return true
 	}
 
-	// Append OPTIONS method to allowed methods to adhere to the HTTP standard.
+	// Append OPTIONS method to allowed methods to adhere to HTTP standard.
 	allowed = append(allowed, http.MethodOptions)
 
 	// Set the 'Allow' header to inform client about allowed methods.

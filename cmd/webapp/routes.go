@@ -24,15 +24,15 @@ func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 	cssFile := filepath.Join(assetsDir, "css", "w3.css")
 	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")
 
-	mux.HandleFunc("/", app.RootHandler)
-	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
-	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
+	mux.HandleFunc("GET /w3.css", webutil.ServeFileHandler(cssFile))
+	mux.HandleFunc("GET /favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("GET /hello", app.HelloTextHandlerGet)
 	mux.HandleFunc("GET /hellohtml", app.HelloHTMLHandlerGet)
 	mux.HandleFunc("GET /build", app.BuildHandlerGet)
 	mux.HandleFunc("GET /headers", app.HeadersHandlerGet)
-	mux.HandleFunc("/remote", webhandler.RemoteHandler)
-	mux.HandleFunc("/request", webhandler.RequestHandler)
+	mux.HandleFunc("GET /remote", webhandler.RemoteHandler)
+	mux.HandleFunc("GET /request", webhandler.RequestHandler)
+	mux.HandleFunc("GET /", app.RootHandlerGet)
 }
 
 func AddMiddleware(h http.Handler) http.Handler {

@@ -98,7 +98,7 @@ func main() {
 	sseServer.RegisterEvents("", "event1", "event2")
 	sseServer.Run()
 
-	mux.HandleFunc("/", app.RootHandler)
+	mux.HandleFunc("/", app.RootHandlerGet)
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
 	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("/event", sseServer.EventStreamHandler)
