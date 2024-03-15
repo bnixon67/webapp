@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"testing"
 )
 
 // funcMapToString returns a comma separated list of names for funcMap.
@@ -85,6 +86,19 @@ func RenderTemplate(t *template.Template, w http.ResponseWriter, name string, da
 	}
 
 	return nil
+}
+
+// RenderTemplateForTest renders a specific template with the provided
+// data and returns the result as a string. This function is intended for
+// use in tests to verify template output.
+func RenderTemplateForTest(t *testing.T, tmpl *template.Template, name string, data any) string {
+	var body bytes.Buffer
+
+	if err := tmpl.ExecuteTemplate(&body, name, data); err != nil {
+		t.Fatalf("failed to execute template: %v", err)
+	}
+
+	return body.String()
 }
 
 // TemplateNames returns the names of all templates for t.

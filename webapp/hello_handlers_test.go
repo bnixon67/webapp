@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/assets"
-	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
 )
 
@@ -28,13 +27,7 @@ func TestGetHelloTextMessage(t *testing.T) {
 		},
 	}
 
-	// Create a web app instance for testing.
-	app, err := webapp.New(webapp.WithName("Test App"))
-	if err != nil {
-		t.Fatalf("could not create web handler: %v", err)
-	}
-
-	// Test the handler using the utility function.
+	app := AppForTest(t)
 	webhandler.HandlerTestWithCases(t, app.HelloTextHandlerGet, tests)
 }
 
@@ -54,12 +47,6 @@ func TestGetHelloHTMLMessage(t *testing.T) {
 		},
 	}
 
-	// Create a web app instance for testing.
-	app, err := webapp.New(webapp.WithName("Test App"))
-	if err != nil {
-		t.Fatalf("could not create web handler: %v", err)
-	}
-
-	// Test the handler using the utility function.
+	app := AppForTest(t)
 	webhandler.HandlerTestWithCases(t, app.HelloHTMLHandlerGet, tests)
 }

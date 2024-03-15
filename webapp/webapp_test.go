@@ -5,9 +5,13 @@ package webapp_test
 
 import (
 	"fmt"
+	"html/template"
+	"sync"
 	"testing"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/weblog"
+	"github.com/bnixon67/webapp/webutil"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -84,4 +88,43 @@ func TestNew(t *testing.T) {
 			}
 		})
 	}
+}
+
+const TestConfigFile = "testdata/test_config.json"
+
+var (
+	initOnce sync.Once
+	testApp  *webapp.WebApp
+)
+
+func AppForTest(t *testing.T) *webapp.WebApp {
+	initOnce.Do(func() {
+		cfg, err := webapp.ConfigFromJSONFile(TestConfigFile)
+		if err != nil {
+			t.Fatalf("failed to get config: %v", err)
+		}
+
+		err = weblog.Init(cfg.Log)
+		if err != nil {
+			t.Fatalf("failed to init logging: %v", err)
+		}
+
+		funcMap := template.FuncMap{
+			"ToTimeZone": webutil.ToTimeZone,
+			"Join":       webutil.Join,
+		}
+
+		tmpl, err := webutil.TemplatesWithFuncs(cfg.App.TmplPattern, funcMap)
+		if err != nil {
+			t.Fatalf("failed to init templates: %v", err)
+		}
+
+		testApp, err = webapp.New(
+			webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl))
+		if err != nil {
+			t.Fatalf("failed to create app: %v", err)
+		}
+	})
+
+	return testApp
 }

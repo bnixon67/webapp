@@ -49,25 +49,42 @@ func headersBody(t *testing.T, headers http.Header, funcMap template.FuncMap) st
 }
 
 func TestGetHeaders(t *testing.T) {
+	app := AppForTest(t)
+
 	noHeaders := http.Header{}
+	noHeadersBody := webutil.RenderTemplateForTest(
+		t, app.Tmpl, "headers.html",
+		webapp.HeadersPageData{
+			Title:   "Request Headers",
+			Headers: webapp.SortHeaders(noHeaders),
+		},
+	)
 
 	typicalHeaders := http.Header{
 		"Content-Type":    {"application/json"},
 		"X-Custom-Header": {"value"},
 		"Accept-Encoding": {"gzip"},
 	}
+	typicalHeadersBody := webutil.RenderTemplateForTest(
+		t, app.Tmpl, "headers.html",
+		webapp.HeadersPageData{
+			Title:   "Request Headers",
+			Headers: webapp.SortHeaders(typicalHeaders),
+		},
+	)
 
 	multiHeaders := http.Header{
 		"Content-Type":    {"application/json"},
 		"X-Custom-Header": {"value1", "value2"},
 		"Accept-Encoding": {"gzip"},
 	}
-
-	// Define the custom functions
-	funcMap := template.FuncMap{
-		"ToTimeZone": webutil.ToTimeZone,
-		"Join":       webutil.Join,
-	}
+	multiHeadersBody := webutil.RenderTemplateForTest(
+		t, app.Tmpl, "headers.html",
+		webapp.HeadersPageData{
+			Title:   "Request Headers",
+			Headers: webapp.SortHeaders(multiHeaders),
+		},
+	)
 
 	tests := []webhandler.TestCase{
 		{
@@ -75,21 +92,21 @@ func TestGetHeaders(t *testing.T) {
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: noHeaders,
 			WantStatus:     http.StatusOK,
-			WantBody:       headersBody(t, noHeaders, funcMap),
+			WantBody:       noHeadersBody,
 		},
 		{
 			Name:           "Valid GET Request with typical headers",
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: typicalHeaders,
 			WantStatus:     http.StatusOK,
-			WantBody:       headersBody(t, typicalHeaders, funcMap),
+			WantBody:       typicalHeadersBody,
 		},
 		{
 			Name:           "Valid GET Request with multiple header values",
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: multiHeaders,
 			WantStatus:     http.StatusOK,
-			WantBody:       headersBody(t, multiHeaders, funcMap),
+			WantBody:       multiHeadersBody,
 		},
 		{
 			Name:          "Invalid POST Request",
@@ -99,18 +116,5 @@ func TestGetHeaders(t *testing.T) {
 		},
 	}
 
-	// Initialize templates
-	tmpls, err := template.New("html").Funcs(funcMap).ParseGlob("../assets/tmpl/*.html")
-	if err != nil {
-		t.Fatalf("could not create initialize templates: %v", err)
-	}
-
-	// Create a web app instance for testing.
-	app, err := webapp.New(webapp.WithName("Test App"), webapp.WithTemplate(tmpls))
-	if err != nil {
-		t.Fatalf("could not create web handler: %v", err)
-	}
-
-	// Test the handler using the utility function.
 	webhandler.HandlerTestWithCases(t, app.HeadersHandlerGet, tests)
 }

@@ -37,12 +37,7 @@ func TestBuildHandler(t *testing.T) {
 		},
 	}
 
-	// Create a web app instance for testing.
-	app, err := webapp.New(webapp.WithName("Test App"))
-	if err != nil {
-		t.Fatalf("could not create web handler: %v", err)
-	}
+	app := AppForTest(t)
 
-	// Test the handler using the utility function.
 	webhandler.HandlerTestWithCases(t, app.BuildHandlerGet, tests)
 }
