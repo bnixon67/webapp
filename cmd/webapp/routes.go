@@ -16,10 +16,10 @@ import (
 func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 
 	// Get directory for assets, using a default if not specified in config.
-	if app.AssetsDir == "" {
-		app.AssetsDir = assets.AssetPath()
+	if app.Config.App.AssetsDir == "" {
+		app.Config.App.AssetsDir = assets.AssetPath()
 	}
-	assetsDir := app.AssetsDir
+	assetsDir := app.Config.App.AssetsDir
 
 	cssFile := filepath.Join(assetsDir, "css", "w3.css")
 	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")

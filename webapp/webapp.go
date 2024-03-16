@@ -1,7 +1,7 @@
 // Copyright 2023 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-// Package webapp provides a common functions for web applications.
+// Package webapp provides common functions and types for web applications.
 package webapp
 
 import (
@@ -16,97 +16,90 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// WebApp contains common variables used across the web application.
-// This is used in handlers or other functions to avoid global variables.
+// WebApp encapsulates common web application configurations and state,
+// including configuration settings, templates, and build information.
 type WebApp struct {
-	AppConfig                        // Embed ConfigApp.
-	Tmpl          *template.Template // Tmpl stores parsed templates.
-	BuildDateTime time.Time          // BuildDateTime is the executable's modification time.
+	//AppConfig                        // Provides embedded AppConfig.
+	Config                           // Provides embedded AppConfig.
+	Tmpl          *template.Template // Tmpl holds parsed templates.
+	BuildDateTime time.Time          // Time executable last modified.
 }
 
-// String returns a string representation of the webapp.
-func (webapp *WebApp) String() string {
-	if webapp == nil {
-		return fmt.Sprintf("%v", nil)
+// String returns a string representation of WebApp.
+func (app *WebApp) String() string {
+	if app == nil {
+		return "<nil>"
 	}
 
-	return fmt.Sprintf("%+v", *webapp)
+	return fmt.Sprintf("%+v", *app)
 }
 
-// Option is a function type used to apply configuration options to a WebApp.
-// This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
+// Option defines a function type for configuring a WebApp instance,
+// adhering to the functional options pattern.
 type Option func(*WebApp)
 
-// WithName returns an Option to set the Name of a WebApp.
+// WithName creates an Option to set the name of the WebApp.
 func WithName(name string) Option {
-	return func(webapp *WebApp) {
-		webapp.Name = name
+	return func(app *WebApp) {
+		app.Config.App.Name = name
 	}
 }
 
-// WithTemplate returns an Option to set the Tmpl of a WebApp.
+// WithTemplate creates an Option to set the template of the WebApp.
 func WithTemplate(tmpl *template.Template) Option {
-	return func(webapp *WebApp) {
-		webapp.Tmpl = tmpl
+	return func(app *WebApp) {
+		app.Tmpl = tmpl
 	}
 }
 
-// New return a new WebApp with the given options and BuildDateTime.
-// An error is returned if Name is not provided or other errors occur.
+// New creates a new WebApp instance with the provided options,
+// initializing its BuildDateTime to the executable's modification time.
+//
+// It returns an error if the name is not specified or if it encounters
+// issues determining the build time.
 func New(opts ...Option) (*WebApp, error) {
-	// Retrieve the executable's modification time.
 	dt, err := ExecutableModTime()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get build date time: %v", err)
+		return nil, fmt.Errorf("failed to get build time: %s", err)
 	}
 
-	// Create app with build date time.
 	app := &WebApp{BuildDateTime: dt}
-
-	// Apply configuration options.
 	for _, opt := range opts {
 		opt(app)
 	}
 
 	// Ensure AppName is set.
-	if app.Name == "" {
+	if app.Config.App.Name == "" {
 		return nil, errors.New("missing Name")
 	}
 
-	// Provide some debugging information.
-	if slog.Default().Enabled(nil, slog.LevelDebug) {
-		// Get names for all the templates.
-		tmplNames := strings.Join(
-			webutil.TemplateNames(app.Tmpl), ", ")
-
-		slog.Debug("created webapp",
-			slog.Group("webapp",
-				slog.String("Name", app.Name),
-				slog.String("Templates", tmplNames),
-				slog.Time("BuildDateTime", app.BuildDateTime),
-			),
-		)
-	}
+	logIfDebug(app)
 
 	return app, nil
 }
 
+// logIfDebug logs info about the WebApp instance if log level is debug.
+func logIfDebug(app *WebApp) {
+	if slog.Default().Enabled(nil, slog.LevelDebug) {
+		tmplNames := strings.Join(webutil.TemplateNames(app.Tmpl), ", ")
+		slog.Debug("WebApp creation details",
+			slog.String("name", app.Config.App.Name),
+			slog.String("templates", tmplNames),
+			slog.Time("buildDateTime", app.BuildDateTime))
+	}
+}
+
 // ExecutableModTime returns the modification time of the current executable.
 func ExecutableModTime() (time.Time, error) {
-	var nilTime time.Time
-
-	// Get path of current executable.
 	execPath, err := os.Executable()
 	if err != nil {
-		return nilTime, fmt.Errorf("failed to get exec path: %w", err)
+		return time.Time{}, fmt.Errorf("failed to get executable: %w", err)
 	}
 
-	// Get file information of the executable.
 	fileInfo, err := os.Stat(execPath)
 	if err != nil {
-		return nilTime, fmt.Errorf("failed to stat exec: %w", err)
+		return time.Time{}, fmt.Errorf("failed to stat exec: %w", err)
 	}
 
-	// Return modification time.
 	return fileInfo.ModTime(), nil
 }

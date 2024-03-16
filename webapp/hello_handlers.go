@@ -24,7 +24,7 @@ func (app *WebApp) HelloTextHandlerGet(w http.ResponseWriter, r *http.Request) {
 	webutil.SetNoCacheHeaders(w)
 
 	webutil.SetTextContentType(w)
-	fmt.Fprintln(w, "hello from", app.Name)
+	fmt.Fprintln(w, "hello from", app.Config.App.Name)
 
 	logger.Info("done")
 }

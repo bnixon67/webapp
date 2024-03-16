@@ -61,8 +61,8 @@ func TestNewApp(t *testing.T) {
 				t.Errorf("NewApp() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && h.Name != tt.wantName {
-				t.Errorf("NewApp() AppName = %v, want %v", h.Name, tt.wantName)
+			if !tt.wantErr && h.Config.App.Name != tt.wantName {
+				t.Errorf("NewApp() AppName = %v, want %v", h.Config.App.Name, tt.wantName)
 			}
 		})
 	}

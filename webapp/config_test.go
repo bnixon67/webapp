@@ -41,7 +41,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 		{
 			name:           "invalidJSON",
 			configFileName: "testdata/invalid.json",
-			wantErr:        webapp.ErrConfigDecode,
+			wantErr:        webapp.ErrConfigUnmarshal,
 			wantConfig:     emptyConfig,
 		},
 		{
@@ -82,7 +82,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config, err := webapp.ConfigFromJSONFile(tc.configFileName)
+			config, err := webapp.LoadConfigFromJSON(tc.configFileName)
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Fatalf("got err: %v, want err: %v", err, tc.wantErr)
@@ -159,7 +159,7 @@ func TestConfigIsValid(t *testing.T) {
 	cases[len(cases)-1].want = true
 
 	for _, testCase := range cases {
-		got, _ := testCase.config.Valid()
+		got, _ := testCase.config.Validate()
 		if got != testCase.want {
 			t.Errorf("got %v, want %v for c.IsValid(%+v)", got, testCase.want, testCase.config)
 		}

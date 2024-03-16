@@ -68,7 +68,7 @@ func appendIfEmpty(messages []string, value, message string) []string {
 // IsValid checks if all required Config fields are populated.
 // Returns a boolean and a slice of messages indicating the issue(s).
 func (c *Config) IsValid() (bool, []string) {
-	isValid, missing := c.Config.Valid()
+	isValid, missing := c.Config.Validate()
 
 	// Fields to check.
 	fields := map[string]string{

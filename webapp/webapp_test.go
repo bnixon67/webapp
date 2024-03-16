@@ -19,7 +19,7 @@ func TestWebAppString(t *testing.T) {
 	emptyWebApp := &webapp.WebApp{}
 
 	nameWebApp := &webapp.WebApp{}
-	nameWebApp.Name = "name"
+	nameWebApp.Config.App.Name = "name"
 
 	tests := []struct {
 		name   string
@@ -83,8 +83,8 @@ func TestNew(t *testing.T) {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && h.Name != tt.wantName {
-				t.Errorf("New() AppName = %v, want %v", h.Name, tt.wantName)
+			if !tt.wantErr && h.Config.App.Name != tt.wantName {
+				t.Errorf("New() AppName = %v, want %v", h.Config.App.Name, tt.wantName)
 			}
 		})
 	}
@@ -99,7 +99,7 @@ var (
 
 func AppForTest(t *testing.T) *webapp.WebApp {
 	initOnce.Do(func() {
-		cfg, err := webapp.ConfigFromJSONFile(TestConfigFile)
+		cfg, err := webapp.LoadConfigFromJSON(TestConfigFile)
 		if err != nil {
 			t.Fatalf("failed to get config: %v", err)
 		}

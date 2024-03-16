@@ -33,7 +33,7 @@ func main() {
 	}
 
 	// Read config.
-	cfg, err := webapp.ConfigFromJSONFile(os.Args[1])
+	cfg, err := webapp.LoadConfigFromJSON(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to get config:", err)
 		os.Exit(ExitConfig)

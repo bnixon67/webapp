@@ -13,46 +13,45 @@ import (
 	"github.com/bnixon67/webapp/webserver"
 )
 
-// AppConfig holds the web app settings.
+// AppConfig holds settings related to the web application itself.
 type AppConfig struct {
-	Name        string // Name of the web application. (required)
-	AssetsDir   string // AssetsDir is directory for web assets.
-	TmplPattern string // TmplPattern identifies template files.
+	Name        string // Required name of the web application.
+	AssetsDir   string // Directory for static web assets.
+	TmplPattern string // Glob pattern for template files.
 }
 
-// Config represents the overall application configuration.
+// Config consolidates configs, including app, server, and log settings.
 type Config struct {
-	App    AppConfig        // App configuration.
-	Server webserver.Config // Server configuration.
-	Log    weblog.Config    // Log configuration.
+	App    AppConfig        // Web application-specific configuration.
+	Server webserver.Config // HTTP server configuration.
+	Log    weblog.Config    // Logging configuration.
 }
 
+// Predefined errors for common configuration issues.
 var (
-	ErrConfigOpen   = errors.New("failed to open config file")
-	ErrConfigDecode = errors.New("failed to decode config file")
-	ErrConfigClose  = errors.New("failed to close config file")
+	ErrConfigOpen      = errors.New("failed to open config file")
+	ErrConfigUnmarshal = errors.New("failed to parse config file")
 )
 
-// ConfigFromJSONFile returns a Config with settings from a JSON file.
-func ConfigFromJSONFile(filename string) (Config, error) {
-	var config Config
-
-	file, err := os.Open(filename)
+// LoadConfigFromJSON loads app config from a specified JSON file path.
+// It returns a populated Config or error if reading or parsing file fails.
+func LoadConfigFromJSON(filepath string) (Config, error) {
+	data, err := os.ReadFile(filepath)
 	if err != nil {
-		return Config{}, fmt.Errorf("%w: %v", ErrConfigOpen, err)
+		return Config{}, fmt.Errorf("%w: %s", ErrConfigOpen, err)
 	}
-	defer file.Close()
 
-	if err := json.NewDecoder(file).Decode(&config); err != nil {
-		return Config{}, fmt.Errorf("%w: %v", ErrConfigDecode, err)
+	var config Config
+	if err := json.Unmarshal(data, &config); err != nil {
+		return Config{}, fmt.Errorf("%w: %s", ErrConfigUnmarshal, err)
 	}
 
 	return config, nil
 }
 
-// appendIfEmpty appends message to messages if value is empty, and
-// returns the updated slice.
-func appendIfEmpty(messages []string, value, message string) []string {
+// appendIfMissing adds and returns updated messages slice if message is empty.
+// It can be used to accumulate error messages for missing configuration values.
+func appendIfMissing(messages []string, value, message string) []string {
 	if value == "" {
 		messages = append(messages, message)
 	}
@@ -60,13 +59,14 @@ func appendIfEmpty(messages []string, value, message string) []string {
 	return messages
 }
 
-// Valid checks if all required Config fields are populated.
-// Returns a boolean indicating validity and a slice of missing field messages.
-func (c *Config) Valid() (bool, []string) {
+// Validate checks the Config struct for any missing required fields.
+// Returns true if required fields are present, otherwise returns false
+// with slice of missing field messages.
+func (c *Config) Validate() (bool, []string) {
 	var missing []string
 
 	// Append message for each missing field.
-	missing = appendIfEmpty(missing, c.App.Name, "missing App.Name")
+	missing = appendIfMissing(missing, c.App.Name, "App.Name is required")
 
 	return len(missing) == 0, missing
 }

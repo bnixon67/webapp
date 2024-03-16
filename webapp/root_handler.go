@@ -35,7 +35,7 @@ func (app *WebApp) RootHandlerGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := RootPageData{Title: app.Name}
+	data := RootPageData{Title: app.Config.App.Name}
 
 	err := webutil.RenderTemplate(app.Tmpl, w, RootPageName, data)
 	if err != nil {

@@ -12,10 +12,10 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// BuildDateTimeFormat can be used to format a time as "YYYY-MM-DD HH:MM:SS"
+// BuildDateTimeFormat specifies the format for displaying build date times.
 const BuildDateTimeFormat = "2006-01-02 15:04:05"
 
-// BuildHandlerGet responds with the executable modification date and time.
+// BuildHandlerGet responds to requests with the app's build date and time.
 func (app *WebApp) BuildHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
@@ -25,10 +25,10 @@ func (app *WebApp) BuildHandlerGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webutil.SetNoCacheHeaders(w)
-
 	webutil.SetTextContentType(w)
-	build := app.BuildDateTime.Format(BuildDateTimeFormat)
-	fmt.Fprintln(w, build)
 
-	logger.Info("done", slog.String("build", build))
+	buildTime := app.BuildDateTime.Format(BuildDateTimeFormat)
+	fmt.Fprintln(w, buildTime)
+
+	logger.Info("done", slog.String("buildTime", buildTime))
 }
