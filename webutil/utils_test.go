@@ -11,7 +11,40 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-func TestValidMethod(t *testing.T) {
+func TestIsMethodValid(t *testing.T) {
+	tests := []struct {
+		name          string
+		requestMethod string
+		validMethod   string
+		want          bool
+	}{
+		{"ValidMethod", "GET", "GET", true},
+		{"InvalidMethod", "POST", "GET", false},
+		{"ValidMethodCaseSensitive", "get", "GET", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.requestMethod, "http://example.com", nil)
+			w := httptest.NewRecorder()
+
+			got := webutil.IsMethodValid(w, req, tt.validMethod)
+
+			if got != tt.want {
+				t.Errorf("IsMethodValid() = %v, want %v", got, tt.want)
+			}
+
+			if !tt.want {
+				resp := w.Result()
+				if resp.StatusCode != http.StatusMethodNotAllowed {
+					t.Errorf("Expected status code %d, got %d", http.StatusMethodNotAllowed, resp.StatusCode)
+				}
+			}
+		})
+	}
+}
+
+func TestCheckAllowedMethods(t *testing.T) {
 	tests := []struct {
 		name             string
 		method           string
