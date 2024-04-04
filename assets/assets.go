@@ -11,10 +11,12 @@ import (
 )
 
 //go:embed html/hello.html
-var HelloHTML string // simple Hello HTML page
+var HelloHTML string // Embedded HTML page for a simple greeting.
 
-// AssetPath returns the directory path of the file that calls this function.
-// If the file's path cannot be determined, it returns an empty string.
+// AssetPath returns the directory of the file that calls this function.
+// It's useful for determining the path context in runtime, especially for
+// locating assets relative to executing code.  Returns an empty string if
+// the caller's path cannot be determined.
 func AssetPath() string {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
