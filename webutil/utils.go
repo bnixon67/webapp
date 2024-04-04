@@ -74,13 +74,15 @@ func SetTextContentType(w http.ResponseWriter) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 }
 
-func RealRemoteAddr(r *http.Request) string {
-	realIP := r.Header.Get("X-Real-IP")
-	if realIP == "" {
-		realIP = r.RemoteAddr
+// ClientIP retrieves the client's IP address from the request. It prioritizes
+// the X-Real-IP header value if present; otherwise, it falls back to the
+// request's RemoteAddr.
+func ClientIP(r *http.Request) string {
+	clientIP := r.Header.Get("X-Real-IP")
+	if clientIP == "" {
+		clientIP = r.RemoteAddr
 	}
-
-	return realIP
+	return clientIP
 }
 
 // ServeFileHandler returns a HandlerFunc to serve the specified file.

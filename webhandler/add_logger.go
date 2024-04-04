@@ -28,7 +28,7 @@ func RequestLogger(r *http.Request) *slog.Logger {
 	attrValues := []interface{}{
 		slog.String("method", r.Method),
 		slog.String("url", r.URL.String()),
-		slog.String("ip", webutil.RealRemoteAddr(r)),
+		slog.String("ip", webutil.ClientIP(r)),
 	}
 
 	// If request ID is not empty, add it to the log attributes.
