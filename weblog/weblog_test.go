@@ -92,7 +92,7 @@ func TestInitFromConfig(t *testing.T) {
 	}
 }
 
-func TestLevel(t *testing.T) {
+func TestParseLogLevel(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -132,7 +132,7 @@ func TestLevel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := weblog.ParseLevel(tt.input)
+			got, err := weblog.ParseLogLevel(tt.input)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Level() got = %v, want %v", got, tt.want)
 			}

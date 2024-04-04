@@ -18,9 +18,9 @@ import (
 var (
 	ErrInvalidLogType  = errors.New("invalid log type")
 	ErrInvalidLogLevel = errors.New("invalid log level")
-	ErrOpenLogFile     = errors.New("open log file failed")
+	ErrOpenLogFile     = errors.New("failed to open log file")
 
-	levelMap = map[string]slog.Level{
+	logLevelMap = map[string]slog.Level{
 		"DEBUG": slog.LevelDebug,
 		"INFO":  slog.LevelInfo,
 		"WARN":  slog.LevelWarn,
@@ -36,31 +36,54 @@ type Config struct {
 	AddSource bool   // If true, includes source code position in logs.
 }
 
+func isValidLogType(logType string) bool {
+	switch logType {
+	case "", "json", "text":
+		return true
+	default:
+		return false
+	}
+}
+
+// ParseLogLevel converts a log level string to its corresponding slog.Level.
+// An empty string returns the default value of slog.Level with no error.
+// If the level string is invalid, it returns an error.
+func ParseLogLevel(level string) (slog.Level, error) {
+	var defaultLevel slog.Level
+
+	if level == "" {
+		level = defaultLevel.String()
+	}
+
+	parsedLevel, exists := logLevelMap[strings.ToUpper(level)]
+	if !exists {
+		return defaultLevel, fmt.Errorf("%w: %q, valid levels are %q", ErrInvalidLogLevel, level, Levels())
+	}
+
+	return parsedLevel, nil
+}
+
 // Init validates config and initializes the default slog logger.
 func Init(config Config) error {
-	if err := validateType(config.Type); err != nil {
-		return err
+	if !isValidLogType(config.Type) {
+		return fmt.Errorf("%w: %q", ErrInvalidLogType, config.Type)
 	}
 
-	if err := validateLevel(config.Level); err != nil {
-		return err
-	}
-
-	writer, err := writer(config.Filename)
+	level, err := ParseLogLevel(config.Level)
 	if err != nil {
 		return err
 	}
 
-	level, err := ParseLevel(config.Level)
+	logWriter, err := writer(config.Filename)
 	if err != nil {
 		return err
 	}
 
-	initLogger(writer, config.Type, level, config.AddSource)
+	setupLogger(logWriter, config.Type, level, config.AddSource)
 
 	slog.Debug("initialized logger",
 		slog.Group("config",
-			slog.String("Filename", filename(writer)),
+			slog.String("Filename", filename(logWriter)),
 			slog.String("LogType", config.Type),
 			slog.String("Level", level.String()),
 			slog.Bool("AddSource", config.AddSource),
@@ -70,84 +93,42 @@ func Init(config Config) error {
 	return nil
 }
 
-// initLogger initializes the default slog logger.
-func initLogger(w io.Writer, logType string, level slog.Level, addSource bool) {
-	handlerOptions := &slog.HandlerOptions{
+func chooseLogHandler(writer io.Writer, logType string, options *slog.HandlerOptions) slog.Handler {
+	if logType == "json" {
+		return slog.NewJSONHandler(writer, options)
+	}
+	return slog.NewTextHandler(writer, options)
+}
+
+func setupLogger(writer io.Writer, logType string, level slog.Level, addSource bool) {
+	options := &slog.HandlerOptions{
 		AddSource: addSource,
 		Level:     level,
 	}
 
-	var handler slog.Handler
-	if logType == "json" {
-		handler = slog.NewJSONHandler(w, handlerOptions)
-	} else { // default to text
-		handler = slog.NewTextHandler(w, handlerOptions)
-	}
-
+	handler := chooseLogHandler(writer, logType, options)
 	slog.SetDefault(slog.New(handler))
 }
 
-// ParseLevel converts a string to its corresponding slog.Level.
-// If s is empty, the slog.Level zero value is returned.
-// If s is invalid, an error is returned.
-func ParseLevel(s string) (slog.Level, error) {
-	var defaultLevel slog.Level
-
-	if s == "" {
-		s = defaultLevel.String()
-	}
-
-	level, ok := levelMap[strings.ToUpper(s)]
-	if !ok {
-		return defaultLevel, fmt.Errorf("%w: %q, valid levels are %q", ErrInvalidLogLevel, s, Levels())
-	}
-
-	return level, nil
-}
-
-// Levels generates a sorted string slice of valid log levels.
-// The levels are sorted by their severity as defined in slog.Level.
+// Levels generates a sorted list of valid log levels from the logLevelMap.
 func Levels() []string {
-	// Pre-allocate the slice with the exact size needed.
-	levels := make([]string, 0, len(levelMap))
-	for level := range levelMap {
+	levels := make([]string, 0, len(logLevelMap))
+	for level := range logLevelMap {
 		levels = append(levels, level)
 	}
 
 	// Sort the slice based on the severity defined in LevelMap.
 	sort.Slice(levels, func(i, j int) bool {
-		return levelMap[levels[i]] < levelMap[levels[j]]
+		return logLevelMap[levels[i]] < logLevelMap[levels[j]]
 	})
 
 	return levels
 }
 
-// validateType checks if logType is valid. An empty type is valid.
-func validateType(logType string) error {
-	if logType == "" {
-		return nil
-	}
-
-	validTypes := []string{"json", "text"}
-	for _, v := range validTypes {
-		if logType == v {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("%w: %q, valid types are %q", ErrInvalidLogType, logType, validTypes)
-}
-
-// validateLevel checks if level is valid.
-func validateLevel(level string) error {
-	_, err := ParseLevel(level)
-	return err
-}
-
 // writer opens and returns a file for the provided name.
 // If name is empty, os.Stderr is used.
-func writer(name string) (io.Writer, error) {
-	if name == "" {
+func writer(filename string) (io.Writer, error) {
+	if filename == "" {
 		return os.Stderr, nil
 	}
 
@@ -157,7 +138,7 @@ func writer(name string) (io.Writer, error) {
 	// Sets permission to read/writeable only by owner.
 	const perm = 0o600
 
-	file, err := os.OpenFile(name, flag, perm)
+	file, err := os.OpenFile(filename, flag, perm)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrOpenLogFile, err)
 	}
