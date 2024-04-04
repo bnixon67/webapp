@@ -18,7 +18,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}

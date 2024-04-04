@@ -55,7 +55,7 @@ func TestValidMethod(t *testing.T) {
 			}
 
 			rec := httptest.NewRecorder()
-			isValid := webutil.ValidMethod(rec, req, tt.allowedMethods...)
+			isValid := webutil.CheckAllowedMethods(rec, req, tt.allowedMethods...)
 
 			if isValid != tt.expectValid {
 				t.Errorf("Expected valid: %v, got: %v", tt.expectValid, isValid)

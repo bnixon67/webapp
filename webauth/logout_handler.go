@@ -22,7 +22,7 @@ func (app *AuthApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}

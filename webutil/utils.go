@@ -13,10 +13,10 @@ import (
 	"strings"
 )
 
-// IsMethodValid checks if the request's method matches the specified
-// method. It return true if the method matches; otherwise, it responds with
-// StatusMethodNotAllowed (405) and returns false. The caller is responsible
-// for not proceeding with further writes to w if false is returned.
+// IsMethodValid verifies if the HTTP request method matches the specified
+// method. It returns true if they match. Otherwise, it sends a 405 Method
+// Not Allowed response and returns false. The caller should stop further
+// processing if false is returned.
 func IsMethodValid(w http.ResponseWriter, r *http.Request, method string) bool {
 	if r.Method != method {
 		RespondWithError(w, http.StatusMethodNotAllowed)
@@ -25,38 +25,28 @@ func IsMethodValid(w http.ResponseWriter, r *http.Request, method string) bool {
 	return true
 }
 
-// ValidMethod checks the HTTP method of the request against allowed methods.
-//
-// Returns true if the method is in allowed methods list, false otherwise.
-//
-// It adds the OPTIONS method, so clients can determine which methods are valid.
-//
-// If the method is not allowed,
-//   - It sets the 'Allow' header wth the allowed methods.
-//   - For methods not allowed, it responds with StatusMethodNotAllowed (405).
-//   - For OPTIONS, it respondes with a StatusNoContent (204).
-//
-// Note: When false is returned, it does not otherwise end the request;
-// the caller should ensure no further writes are done to w.
-func ValidMethod(w http.ResponseWriter, r *http.Request, allowed ...string) bool {
-	// Check if the request's method is in the list of allowed methods.
+// CheckAllowedMethods validates the request's method against a list of
+// allowed methods. It automatically supports the OPTIONS method. If the
+// method is allowed, it returns true. If the method is not allowed, it sets
+// the 'Allow' header, responds appropriately, and returns false. The caller
+// is advised to halt further processing if false is returned.
+func CheckAllowedMethods(w http.ResponseWriter, r *http.Request, allowed ...string) bool {
 	if slices.Contains(allowed, r.Method) {
 		return true
 	}
 
-	// Append OPTIONS method to allowed methods to adhere to HTTP standard.
+	// Append OPTIONS to list of allowed methods for compliance.
 	allowed = append(allowed, http.MethodOptions)
 
-	// Set the 'Allow' header to inform client about allowed methods.
+	// Inform the client about the allowed methods.
 	w.Header().Set("Allow", strings.Join(allowed, ", "))
 
-	// If request's method is OPTIONS, respond with list of allowed methods.
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusNoContent)
 		return false
 	}
 
-	// Request's method is not allowed and not OPTIONS.
+	// Method is not allowed and not OPTIONS.
 	txt := r.Method + " " + http.StatusText(http.StatusMethodNotAllowed)
 	http.Error(w, txt, http.StatusMethodNotAllowed)
 	return false

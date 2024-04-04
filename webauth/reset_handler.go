@@ -26,7 +26,7 @@ func (app *AuthApp) ResetHandler(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
+	if !webutil.CheckAllowedMethods(w, r, http.MethodGet, http.MethodPost) {
 		logger.Error("invalid method")
 		return
 	}
