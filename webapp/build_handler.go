@@ -12,10 +12,10 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// BuildDateTimeFormat specifies the format for displaying build date times.
+// BuildDateTimeFormat defines the display format for build dates.
 const BuildDateTimeFormat = "2006-01-02 15:04:05"
 
-// BuildHandlerGet responds to requests with the app's build date and time.
+// BuildHandlerGet responds with the application's build date and time.
 func (app *WebApp) BuildHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
