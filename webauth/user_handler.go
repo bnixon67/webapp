@@ -24,7 +24,7 @@ func (app *AuthApp) UserGetHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the HTTP method is valid.
 	if r.Method != http.MethodGet {
-		webutil.HttpError(w, http.StatusMethodNotAllowed)
+		webutil.RespondWithError(w, http.StatusMethodNotAllowed)
 		logger.Error("invalid method")
 		return
 	}
@@ -32,7 +32,7 @@ func (app *AuthApp) UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Attempt to get the user from the request.
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		logger.Error("failed to get user from request", "err", err)
 		return
 	}

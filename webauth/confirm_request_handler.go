@@ -83,7 +83,7 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil && !errors.Is(err, ErrUserNotFound) {
 		logger.Error("failed to get username for email",
 			"err", err, "email", email)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 	if username == "" {
@@ -98,14 +98,14 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("failed to create confirm email token",
 			"err", err, "username", username)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
 	err = sendEmailToConfirm(username, email, token, app.Cfg)
 	if err != nil {
 		logger.Error("unable to send email", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 

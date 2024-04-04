@@ -43,7 +43,7 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 				"retry", retryStr,
 				"error", err,
 			)
-			webutil.HttpError(w, http.StatusUnprocessableEntity)
+			webutil.RespondWithError(w, http.StatusUnprocessableEntity)
 			return
 		}
 
@@ -58,7 +58,7 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 			"err", err,
 			"message", msg,
 		)
-		webutil.HttpError(w, http.StatusUnprocessableEntity)
+		webutil.RespondWithError(w, http.StatusUnprocessableEntity)
 		return
 	}
 

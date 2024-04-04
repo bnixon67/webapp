@@ -5,6 +5,7 @@
 package webutil
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,7 +19,7 @@ import (
 // for not proceeding with further writes to w if false is returned.
 func IsMethodValid(w http.ResponseWriter, r *http.Request, method string) bool {
 	if r.Method != method {
-		HttpError(w, http.StatusMethodNotAllowed)
+		RespondWithError(w, http.StatusMethodNotAllowed)
 		return false
 	}
 	return true
@@ -101,7 +102,9 @@ func ServeFileHandler(filePath string) http.HandlerFunc {
 	}
 }
 
-// HttpError updates response with error code and a default error message.
-func HttpError(w http.ResponseWriter, code int) {
-	http.Error(w, "Error: "+http.StatusText(code), code)
+// RespondWithError sends an HTTP response with the specified error code and
+// a corresponding error message.
+func RespondWithError(w http.ResponseWriter, code int) {
+	message := fmt.Sprintf("Error: %s", http.StatusText(code))
+	http.Error(w, message, code)
 }

@@ -37,7 +37,7 @@ func (s *Server) EventStreamHandler(w http.ResponseWriter, r *http.Request) {
 	// Only listen for registered events.
 	if !s.EventExists(event) {
 		slog.Error("event does not exist", "event", event)
-		webutil.HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 

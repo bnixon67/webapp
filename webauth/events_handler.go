@@ -31,14 +31,14 @@ func (app *AuthApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
 	events, err := app.DB.GetEvents()
 	if err != nil {
 		logger.Error("failed to get events", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -66,20 +66,20 @@ func (app *AuthApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
 	if !user.IsAdmin {
 		logger.Error("user not authorized", "user", user)
-		webutil.HttpError(w, http.StatusUnauthorized)
+		webutil.RespondWithError(w, http.StatusUnauthorized)
 		return
 	}
 
 	events, err := app.DB.GetEvents()
 	if err != nil {
 		logger.Error("failed to get events", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -90,7 +90,7 @@ func (app *AuthApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("failed to convert struct to CSV",
 			"err", err, "events", events)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 }

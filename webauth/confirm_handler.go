@@ -56,7 +56,7 @@ func (app *AuthApp) respondWithError(w http.ResponseWriter, logger *slog.Logger,
 
 	msg, ok := tokenErrToMsg[err]
 	if !ok {
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 

@@ -91,7 +91,7 @@ func (app *AuthApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	userExists, err := app.DB.UserExists(username)
 	if err != nil {
 		logger.Error("UserExists failed", "err", err)
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 	if userExists {
@@ -106,7 +106,7 @@ func (app *AuthApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	emailExists, err := app.DB.EmailExists(email)
 	if err != nil {
 		logger.Error("EmailExists failed")
-		webutil.HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 	if emailExists {
