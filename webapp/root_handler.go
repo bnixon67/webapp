@@ -23,7 +23,7 @@ type RootPageData struct {
 func (app *WebApp) RootHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFunc(r)
 
-	if !webutil.EnforceMethod(w, r, http.MethodGet) {
+	if !webutil.IsMethodValid(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}

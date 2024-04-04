@@ -12,13 +12,11 @@ import (
 	"strings"
 )
 
-// EnforceMethod ensures the request matches the specified HTTP method.
-// Returns true if the method matches.
-// Returns false if not matched and responds with StatusMethodNotAllowed (405).
-//
-// Note: When false is returned, it does not otherwise end the request;
-// the caller should ensure no further writes are done to w.
-func EnforceMethod(w http.ResponseWriter, r *http.Request, method string) bool {
+// IsMethodValid checks if the request's method matches the specified
+// method. It return true if the method matches; otherwise, it responds with
+// StatusMethodNotAllowed (405) and returns false. The caller is responsible
+// for not proceeding with further writes to w if false is returned.
+func IsMethodValid(w http.ResponseWriter, r *http.Request, method string) bool {
 	if r.Method != method {
 		HttpError(w, http.StatusMethodNotAllowed)
 		return false
