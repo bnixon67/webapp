@@ -1,0 +1,31 @@
+Add support for w3.css color themes.
+
+Add support for MFA.
+- https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html
+
+Convert from bcrypt to argon2.
+- https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+
+Ensure forgot password is secure.
+- https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html
+
+Ensure db is secure.
+- https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html
+
+Ensure authn is secure.
+- https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+
+Ensure session management is secure.
+- https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+Review logging and events.
+- https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Logging_Vocabulary_Cheat_Sheet.html
+
+Add support for WebAuthn, e.g. passkeys
+- https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API
+
+Consider adding rate limiting where needed.
+
+Review db timeouts and cancellations.
+- https://www.alexedwards.net/blog/how-to-manage-database-timeouts-and-cancellations-in-go
