@@ -85,17 +85,19 @@ func ClientIP(r *http.Request) string {
 	return clientIP
 }
 
-// ServeFileHandler returns a HandlerFunc to serve the specified file.
-func ServeFileHandler(file string) http.HandlerFunc {
-	// check if file exists and is accessible
-	_, err := os.Stat(file)
+// ServeFileHandler creates an HTTP handler function that serves a specified
+// file. It verifies the file's existence and accessibility before creating
+// the handler. Returns nil if the file does not exist or is not accessible.
+func ServeFileHandler(filePath string) http.HandlerFunc {
+	// Check if the file exists and is accessible
+	_, err := os.Stat(filePath)
 	if err != nil {
-		slog.Error("does not exist", "file", file)
+		slog.Error("does not exist or not accessible", "file", filePath)
 		return nil
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, file)
+		http.ServeFile(w, r, filePath)
 	}
 }
 
