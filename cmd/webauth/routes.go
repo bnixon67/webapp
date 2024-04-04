@@ -16,7 +16,7 @@ func AddRoutes(mux *http.ServeMux, app *webauth.AuthApp) {
 	icoFile := filepath.Join(assetDir, "ico", "favicon.ico")
 
 	mux.Handle("/",
-		http.RedirectHandler("/user", http.StatusMovedPermanently))
+		http.RedirectHandler("/user", http.StatusFound))
 	mux.HandleFunc("/w3.css", webutil.ServeFileHandler(cssFile))
 	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler(icoFile))
 	mux.HandleFunc("GET /user", app.UserGetHandler)
@@ -33,6 +33,10 @@ func AddRoutes(mux *http.ServeMux, app *webauth.AuthApp) {
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
 	mux.HandleFunc("GET /login", app.LoginGetHandler)
 	mux.HandleFunc("POST /login", app.LoginPostHandler)
+
+	// https://www.w3.org/TR/change-password-url/
+	mux.Handle("/.well-known/change-password",
+		http.RedirectHandler("/forgot", http.StatusFound))
 }
 
 func AddMiddleware(h http.Handler) http.Handler {
