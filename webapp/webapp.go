@@ -19,7 +19,6 @@ import (
 // WebApp encapsulates common web application configurations and state,
 // including configuration settings, templates, and build information.
 type WebApp struct {
-	//AppConfig                        // Provides embedded AppConfig.
 	Config                           // Provides embedded AppConfig.
 	Tmpl          *template.Template // Tmpl holds parsed templates.
 	BuildDateTime time.Time          // Time executable last modified.
