@@ -97,7 +97,7 @@ type RedactedConfig Config
 
 // redact creates a redacted copy of Config to hide sensitive data.
 func (c *Config) redact() RedactedConfig {
-	r := RedactedConfig(c)
+	r := RedactedConfig(*c)
 	r.SQL.DataSourceName = "[REDACTED]"
 	return r
 }
