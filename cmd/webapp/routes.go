@@ -30,7 +30,7 @@ func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 	mux.HandleFunc("GET /hellohtml", app.HelloHTMLHandlerGet)
 	mux.HandleFunc("GET /build", app.BuildHandlerGet)
 	mux.HandleFunc("GET /headers", app.HeadersHandlerGet)
-	mux.HandleFunc("GET /remote", webhandler.RemoteHandler)
+	mux.HandleFunc("GET /remote", webhandler.RemoteGetHandler)
 	mux.HandleFunc("GET /request", webhandler.RequestHandler)
 	mux.HandleFunc("GET /", app.RootHandlerGet)
 }

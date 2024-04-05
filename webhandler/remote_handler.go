@@ -11,8 +11,10 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// GetGetRemoteAddr responds with RemoteAddr and common headers for the actual RemoteAddr if a proxy, load balancer, or similar is used to route the request.
-func RemoteHandler(w http.ResponseWriter, r *http.Request) {
+// RemoteGetHandler responds with RemoteAddr and common headers for the
+// actual RemoteAddr if a proxy, load balancer, or similar is used to route
+// the request.
+func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
 	logger := LoggerFromContext(r.Context()).With(slog.String("func", FuncName()))
 
