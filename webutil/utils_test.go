@@ -25,7 +25,7 @@ func TestIsMethodValid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.requestMethod, "http://example.com", nil)
+			req := httptest.NewRequest(tt.requestMethod, "https://example.com", nil)
 			w := httptest.NewRecorder()
 
 			got := webutil.IsMethodValid(w, req, tt.validMethod)
