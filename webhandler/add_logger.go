@@ -11,11 +11,11 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// loggerKeyType is used to avoid key collisions with other context values.
-type loggerKeyType struct{}
+// LoggerKeyType is used to avoid key collisions with other context values.
+type LoggerKeyType struct{}
 
-// loggerKey is the key to store and retrieve the logger from the context.
-var loggerKey = loggerKeyType{}
+// LoggerKey is the key to store and retrieve the logger from the context.
+var LoggerKey = LoggerKeyType{}
 
 // RequestLogger creates and returns a logger with request-specific details.
 // This function can be a substitute to AddLogger middleware.
@@ -43,7 +43,7 @@ func RequestLoggerWithFunc(r *http.Request) *slog.Logger {
 func AddLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := RequestLogger(r)
-		ctx := context.WithValue(r.Context(), loggerKey, logger)
+		ctx := context.WithValue(r.Context(), LoggerKey, logger)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -55,7 +55,7 @@ func LoggerFromContext(ctx context.Context) *slog.Logger {
 		return slog.Default()
 	}
 
-	logger, ok := ctx.Value(loggerKey).(*slog.Logger)
+	logger, ok := ctx.Value(LoggerKey).(*slog.Logger)
 	if !ok {
 		return slog.Default()
 	}

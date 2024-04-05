@@ -75,11 +75,11 @@ func generateRequestID(counter *uint32) string {
 	return fmt.Sprintf("%s%08X", reqIDPrefix, atomic.AddUint32(counter, 1))
 }
 
-// reqIDType is a unique key type to avoid collisions with other context values.
-type reqIDType struct{}
+// ReqIDType is a unique key type to avoid collisions with other context values.
+type ReqIDType struct{}
 
-// reqIDKey is a key for storing and retrieving the request ID from the context.
-var reqIDKey = reqIDType{}
+// ReqIDKey is a key for storing and retrieving the request ID from the context.
+var ReqIDKey = ReqIDType{}
 
 // AddRequestID is middleware that adds a unique request ID for each request to the request's context and a X-Request-ID header to the response.
 func AddRequestID(next http.Handler) http.Handler {
@@ -90,7 +90,7 @@ func AddRequestID(next http.Handler) http.Handler {
 		reqID := generateRequestID(&counter)
 
 		// Add the request ID to the request's context.
-		ctx := context.WithValue(r.Context(), reqIDKey, reqID)
+		ctx := context.WithValue(r.Context(), ReqIDKey, reqID)
 
 		// Add the request ID to headers.
 		w.Header().Set("X-Request-ID", reqID)
@@ -114,7 +114,7 @@ func RequestID(ctx context.Context) string {
 	}
 
 	// Attempt to retrieve the request ID from the context.
-	reqID, ok := ctx.Value(reqIDKey).(string)
+	reqID, ok := ctx.Value(ReqIDKey).(string)
 
 	// If the request ID is not found in the context, return an empty string.
 	if !ok {
