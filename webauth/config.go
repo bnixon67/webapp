@@ -96,19 +96,19 @@ func (c *Config) IsValid() (bool, []string) {
 type RedactedConfig Config
 
 // redact creates a redacted copy of Config to hide sensitive data.
-func (c Config) redact() RedactedConfig {
+func (c *Config) redact() RedactedConfig {
 	r := RedactedConfig(c)
 	r.SQL.DataSourceName = "[REDACTED]"
 	return r
 }
 
 // MarshalJSON customizes JSON marshalling to redact sensitive Config data.
-func (c Config) MarshalJSON() ([]byte, error) {
+func (c *Config) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c.redact())
 }
 
 // String returns string representation of Config with sensitive data redacted.
-func (c Config) String() string {
+func (c *Config) String() string {
 	return fmt.Sprintf("%+v", c.redact())
 }
 
