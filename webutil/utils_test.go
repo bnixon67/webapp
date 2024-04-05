@@ -82,7 +82,7 @@ func TestCheckAllowedMethods(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest(tt.method, "http://example.com/foo", http.NoBody)
+			req, err := http.NewRequest(tt.method, "https://example.com/foo", http.NoBody)
 			if err != nil {
 				t.Fatalf("Could not create request: %v", err)
 			}
