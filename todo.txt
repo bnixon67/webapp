@@ -29,3 +29,6 @@ Consider adding rate limiting where needed.
 
 Review db timeouts and cancellations.
 - https://www.alexedwards.net/blog/how-to-manage-database-timeouts-and-cancellations-in-go
+
+Don't set the default logger, instead use a custom logger
+- allows for easier testing
