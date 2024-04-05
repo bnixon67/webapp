@@ -61,6 +61,4 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		webutil.RespondWithError(w, http.StatusUnprocessableEntity)
 		return
 	}
-
-	return
 }
