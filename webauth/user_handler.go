@@ -17,7 +17,7 @@ type UserPageData struct {
 	User    User
 }
 
-// UserHandler shows user information.
+// UserGetHandler shows user information.
 func (app *AuthApp) UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFunc(r)
