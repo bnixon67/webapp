@@ -59,10 +59,20 @@ func SetNoCacheHeaders(w http.ResponseWriter) {
 	w.Header().Set("Expires", "0")
 }
 
-// SetTextContentType sets headers for client to interpret response as plain text.
-func SetTextContentType(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+// SetContentType sets headers for client to interpret response as contentType.
+func SetContentType(w http.ResponseWriter, contentType string) {
+	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+}
+
+// SetContentTypeText sets headers for client to interpret response as plain text.
+func SetContentTypeText(w http.ResponseWriter) {
+	SetContentType(w, "text/plain;charset=utf-8")
+}
+
+// SetContentTypeHTML sets headers for client to interpret response as HTML.
+func SetContentTypeHTML(w http.ResponseWriter) {
+	SetContentType(w, "text/html;charset=utf-8")
 }
 
 // ClientIP retrieves the client's IP address from the request. It prioritizes

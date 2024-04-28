@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package webapp
@@ -61,7 +61,8 @@ func (app *WebApp) HeadersHandlerGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sortedHeaders := SortHeaders(r.Header) // sort for consistent ordering
+	// Sort headers for consistent ordering.
+	sortedHeaders := SortHeaders(r.Header)
 
 	data := HeadersPageData{
 		Title:   "Request Headers",

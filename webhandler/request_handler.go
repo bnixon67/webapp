@@ -35,7 +35,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response", slog.Any("request", string(b)))
 
 	// Set the content type to plain text.
-	webutil.SetTextContentType(w)
+	webutil.SetContentTypeText(w)
 
 	// Set no-cache headers to prevent caching.
 	webutil.SetNoCacheHeaders(w)

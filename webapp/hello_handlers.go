@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package webapp
@@ -22,9 +22,13 @@ func (app *WebApp) HelloTextHandlerGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webutil.SetNoCacheHeaders(w)
+	webutil.SetContentTypeText(w)
 
-	webutil.SetTextContentType(w)
-	fmt.Fprintln(w, "hello from", app.Config.App.Name)
+	_, err := fmt.Fprintln(w, "hello from", app.Config.App.Name)
+	if err != nil {
+		logger.Error("failed to write response", "err", err)
+		return
+	}
 
 	logger.Info("done")
 }
@@ -39,9 +43,14 @@ func (app *WebApp) HelloHTMLHandlerGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webutil.SetNoCacheHeaders(w)
+	webutil.SetContentTypeHTML(w)
 
 	// Write the HTML content to the response from the assets package.
-	fmt.Fprint(w, assets.HelloHTML)
+	_, err := fmt.Fprint(w, assets.HelloHTML)
+	if err != nil {
+		logger.Error("failed to write response", "err", err)
+		return
+	}
 
 	logger.Info("done")
 }

@@ -27,7 +27,7 @@ func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response")
 
 	// Set the content type of the response to text.
-	webutil.SetTextContentType(w)
+	webutil.SetContentTypeText(w)
 
 	// Set no-cache headers to prevent caching of the response.
 	webutil.SetNoCacheHeaders(w)
