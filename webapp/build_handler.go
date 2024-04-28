@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package webapp
@@ -25,7 +25,7 @@ func (app *WebApp) BuildHandlerGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webutil.SetNoCacheHeaders(w)
-	webutil.SetTextContentType(w)
+	webutil.SetContentTypeText(w)
 
 	buildTime := app.BuildDateTime.Format(BuildDateTimeFormat)
 	fmt.Fprintln(w, buildTime)
