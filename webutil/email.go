@@ -14,10 +14,10 @@ import (
 
 // SMTPConfig holds SMTP server settings for email functionality.
 type SMTPConfig struct {
-	Host     string // Host address.
-	Port     string // Port number.
-	User     string // Server username.
-	Password string // Server password.
+	Host     string `required:"true"` // Host address.
+	Port     string `required:"true"` // Port number.
+	User     string `required:"true"` // Server username.
+	Password string `required:"true"` // Server password.
 }
 
 var (

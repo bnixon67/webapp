@@ -159,7 +159,10 @@ func TestConfigIsValid(t *testing.T) {
 	cases[len(cases)-1].want = true
 
 	for _, testCase := range cases {
-		got, _ := testCase.config.Validate()
+		got, _, err := testCase.config.IsValid()
+		if err != nil {
+			t.Fatalf("got error %v, want %v for c.IsValid(%+v)", err, nil, testCase.config)
+		}
 		if got != testCase.want {
 			t.Errorf("got %v, want %v for c.IsValid(%+v)", got, testCase.want, testCase.config)
 		}

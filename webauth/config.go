@@ -9,20 +9,21 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bnixon67/required"
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webutil"
 )
 
 // ConfigAuth holds settings specific to the auth app.
 type ConfigAuth struct {
-	BaseURL      string // Base URL of the application.
-	LoginExpires string // Duration string for login expiry.
+	BaseURL      string `required:"true"` // Base URL of the application.
+	LoginExpires string `required:"true"` // Duration string for expiry.
 }
 
 // ConfigSQL hold SQL database connection settings.
 type ConfigSQL struct {
-	DriverName     string // Database driver name.
-	DataSourceName string // Database connection string.
+	DriverName     string `required:"true"` // Database driver name.
+	DataSourceName string `required:"true"` // Database connection string.
 }
 
 // Config represents the overall application configuration.
@@ -67,29 +68,13 @@ func appendIfEmpty(messages []string, value, message string) []string {
 
 // IsValid checks if all required Config fields are populated.
 // Returns a boolean and a slice of messages indicating the issue(s).
-func (c *Config) IsValid() (bool, []string) {
-	isValid, missing := c.Config.Validate()
-
-	// Fields to check.
-	fields := map[string]string{
-		"BaseURL":            c.Auth.BaseURL,
-		"LoginExpires":       c.Auth.LoginExpires,
-		"Server.Host":        c.Server.Host,
-		"Server.Port":        c.Server.Port,
-		"SQL.DriverName":     c.SQL.DriverName,
-		"SQL.DataSourceName": c.SQL.DataSourceName,
-		"SMTP.Host":          c.SMTP.Host,
-		"SMTP.Port":          c.SMTP.Port,
-		"SMTP.User":          c.SMTP.User,
-		"SMTP.Password":      c.SMTP.Password,
+func (c *Config) IsValid() (bool, []string, error) {
+	missingFields, err := required.MissingFields(c)
+	if err != nil {
+		return false, []string{}, err
 	}
 
-	// Append errors for each missing mandatory field.
-	for key, value := range fields {
-		missing = appendIfEmpty(missing, value, "missing "+key)
-	}
-
-	return isValid && len(missing) == 0, missing
+	return len(missingFields) == 0, missingFields, nil
 }
 
 // RedactedConfig provides a redacted copy of Config for secure logging.

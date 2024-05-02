@@ -57,6 +57,17 @@ func main() {
 		os.Exit(ExitConfig)
 	}
 
+	// Validate config.
+	isValid, missing, err := cfg.IsValid()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to validate config:", err)
+		os.Exit(ExitConfig)
+	}
+	if !isValid {
+		fmt.Fprintln(os.Stderr, "Invalid config. Missing", missing)
+		os.Exit(ExitConfig)
+	}
+
 	// Initialize logging, templates, database.
 	tmpl, db, err := Init(cfg)
 	if err != nil {

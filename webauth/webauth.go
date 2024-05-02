@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	"github.com/bnixon67/webapp/webapp"
@@ -80,10 +79,12 @@ func NewApp(options ...interface{}) (*AuthApp, error) {
 	}
 
 	// Validate configuration.
-	isValid, missing := authApp.Cfg.IsValid()
+	isValid, missing, err := authApp.Cfg.IsValid()
+	if err != nil {
+		return nil, err
+	}
 	if !isValid {
-		return nil, fmt.Errorf("%w: %s",
-			ErrInvalidConfig, strings.Join(missing, ", "))
+		return nil, fmt.Errorf("%w: %v", ErrInvalidConfig, missing)
 	}
 
 	// Validate login expiration duration.

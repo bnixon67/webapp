@@ -9,13 +9,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bnixon67/required"
 	"github.com/bnixon67/webapp/weblog"
 	"github.com/bnixon67/webapp/webserver"
 )
 
 // AppConfig holds settings related to the web application itself.
 type AppConfig struct {
-	Name        string // Required name of the web application.
+	Name        string `required:"true"` // Name of the web application.
 	AssetsDir   string // Directory for static web assets.
 	TmplPattern string // Glob pattern for template files.
 }
@@ -49,24 +50,14 @@ func LoadConfigFromJSON(filepath string) (Config, error) {
 	return config, nil
 }
 
-// appendIfMissing adds and returns updated messages slice if message is empty.
-// It can be used to accumulate error messages for missing configuration values.
-func appendIfMissing(messages []string, value, message string) []string {
-	if value == "" {
-		messages = append(messages, message)
-	}
-
-	return messages
-}
-
-// Validate checks the Config struct for any missing required fields.
+// IsValid checks the Config struct for any missing required fields.
 // Returns true if required fields are present, otherwise returns false
 // with slice of missing field messages.
-func (c *Config) Validate() (bool, []string) {
-	var missing []string
+func (c *Config) IsValid() (bool, []string, error) {
+	missingFields, err := required.MissingFields(c)
+	if err != nil {
+		return false, []string{}, err
+	}
 
-	// Append message for each missing field.
-	missing = appendIfMissing(missing, c.App.Name, "App.Name is required")
-
-	return len(missing) == 0, missing
+	return len(missingFields) == 0, missingFields, nil
 }

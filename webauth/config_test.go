@@ -99,7 +99,7 @@ func TestConfigIsValid(t *testing.T) {
 	var cases []tcase
 
 	required := []string{
-		"App.Name",
+		"Config.App.Name",
 		"Auth.BaseURL",
 		"Auth.LoginExpires",
 		"SQL.DriverName",
@@ -146,7 +146,10 @@ func TestConfigIsValid(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		got, _ := testCase.config.IsValid()
+		got, _, err := testCase.config.IsValid()
+		if err != nil {
+			t.Errorf("got error %v, want %v, for c.IsValid(%+v)", err, nil, testCase.config)
+		}
 		if got != testCase.expected {
 			t.Errorf("c.IsValid(%+v) = %v; expected %v", testCase.config, got, testCase.expected)
 		}
