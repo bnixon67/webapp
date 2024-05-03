@@ -25,7 +25,7 @@ type ConfirmData struct {
 func (app *AuthApp) ConfirmHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	if !webutil.IsMethodValid(w, r, http.MethodGet) {
+	if !webutil.IsMethod(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
@@ -67,7 +67,7 @@ func (app *AuthApp) respondWithError(w http.ResponseWriter, logger *slog.Logger,
 func (app *AuthApp) ConfirmHandlerPost(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	if !webutil.IsMethodValid(w, r, http.MethodPost) {
+	if !webutil.IsMethod(w, r, http.MethodPost) {
 		logger.Error("invalid method")
 		return
 	}

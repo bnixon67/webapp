@@ -13,11 +13,11 @@ import (
 	"strings"
 )
 
-// IsMethodValid verifies if the HTTP request method matches the specified
+// IsMethod verifies if the HTTP request method matches the specified
 // method. It returns true if they match. Otherwise, it sends a 405 Method
 // Not Allowed response and returns false. The caller should stop further
 // processing if false is returned.
-func IsMethodValid(w http.ResponseWriter, r *http.Request, method string) bool {
+func IsMethod(w http.ResponseWriter, r *http.Request, method string) bool {
 	if r.Method != method {
 		RespondWithError(w, http.StatusMethodNotAllowed)
 		return false
