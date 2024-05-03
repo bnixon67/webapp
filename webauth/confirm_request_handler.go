@@ -109,7 +109,7 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = webutil.RenderTemplate(app.Tmpl, w, "confirm_request_sent.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "confirm_request_sent.html",
 		ConfirmRequestPageData{
 			CommonData: CommonData{Title: app.Cfg.App.Name},
 			EmailFrom:  app.Cfg.SMTP.User,

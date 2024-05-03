@@ -28,7 +28,7 @@ func TestIsMethodValid(t *testing.T) {
 			req := httptest.NewRequest(tt.requestMethod, "https://example.com", nil)
 			w := httptest.NewRecorder()
 
-			got := webutil.IsMethod(w, req, tt.validMethod)
+			got := webutil.IsMethodOrError(w, req, tt.validMethod)
 
 			if got != tt.want {
 				t.Errorf("IsMethodValid() = %v, want %v", got, tt.want)

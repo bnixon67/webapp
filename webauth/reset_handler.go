@@ -33,7 +33,7 @@ func (app *AuthApp) ResetHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		err := webutil.RenderTemplate(app.Tmpl, w, "reset.html",
+		err := webutil.RenderTemplateOrError(app.Tmpl, w, "reset.html",
 			ResetPageData{
 				Title:      app.Cfg.App.Name,
 				ResetToken: r.URL.Query().Get("rtoken"),
@@ -70,7 +70,7 @@ func (app *AuthApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileNa
 				"password2 empty", password2 == "",
 			),
 		)
-		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
+		err := webutil.RenderTemplateOrError(app.Tmpl, w, tmplFileName,
 			ResetPageData{
 				Title:      app.Cfg.App.Name,
 				Message:    msg,
@@ -88,7 +88,7 @@ func (app *AuthApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileNa
 	if password1 != password2 {
 		msg := MsgPasswordsDifferent
 		logger.Warn("passwords don't match")
-		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
+		err := webutil.RenderTemplateOrError(app.Tmpl, w, tmplFileName,
 			ResetPageData{
 				Title:      app.Cfg.App.Name,
 				Message:    msg,
@@ -110,7 +110,7 @@ func (app *AuthApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileNa
 		if err == ErrResetPasswordTokenExpired {
 			msg = "Request password request expired. Please request again."
 		}
-		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
+		err := webutil.RenderTemplateOrError(app.Tmpl, w, tmplFileName,
 			ResetPageData{
 				Title:      app.Cfg.App.Name,
 				Message:    msg,
@@ -129,7 +129,7 @@ func (app *AuthApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileNa
 		msg := "Cannot hash password"
 		logger.Error("failed bcrypt.GenerateFromPassword",
 			"username", username, "err", err)
-		err := webutil.RenderTemplate(app.Tmpl, w, tmplFileName,
+		err := webutil.RenderTemplateOrError(app.Tmpl, w, tmplFileName,
 			ResetPageData{Title: app.Cfg.App.Name, Message: msg})
 		if err != nil {
 			logger.Error("unable to RenderTemplate", "err", err)

@@ -38,7 +38,7 @@ func (app *AuthApp) UserGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Render the template with the data.
-	err = webutil.RenderTemplate(app.Tmpl, w, "user.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "user.html",
 		UserPageData{Message: "", User: user, Title: app.Cfg.App.Name})
 	if err != nil {
 		logger.Error("failed to render template", "err", err)

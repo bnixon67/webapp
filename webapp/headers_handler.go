@@ -56,7 +56,7 @@ func SortHeaders(httpHeader http.Header) []HeaderPair {
 func (app *WebApp) HeadersHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	if !webutil.IsMethod(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
@@ -69,7 +69,7 @@ func (app *WebApp) HeadersHandlerGet(w http.ResponseWriter, r *http.Request) {
 		Headers: sortedHeaders,
 	}
 
-	err := webutil.RenderTemplate(app.Tmpl, w, HeadersPageName, data)
+	err := webutil.RenderTemplateOrError(app.Tmpl, w, HeadersPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return

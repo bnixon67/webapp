@@ -11,24 +11,24 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// RootPageName is the name of the HTTP template to execute.
+// RootPageName specifies the template file for the root page.
 const RootPageName = "root.html"
 
-// RootPageData holds the data passed to the HTML template.
+// RootPageData encapsulates data to be passed to the root page template.
 type RootPageData struct {
 	Title string // Title of the page.
 }
 
-// RootHandlerGet handles the root ("/") route.
+// RootHandlerGet handles GET requests to the root ("/") route.
 func (app *WebApp) RootHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	if !webutil.IsMethod(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Check for valid URL path.
+	// Ensure the request is to the exact root path.
 	if r.URL.Path != "/" {
 		logger.Error("invalid path")
 		http.NotFound(w, r)
@@ -37,7 +37,7 @@ func (app *WebApp) RootHandlerGet(w http.ResponseWriter, r *http.Request) {
 
 	data := RootPageData{Title: app.Config.App.Name}
 
-	err := webutil.RenderTemplate(app.Tmpl, w, RootPageName, data)
+	err := webutil.RenderTemplateOrError(app.Tmpl, w, RootPageName, data)
 	if err != nil {
 		logger.Error("failed to RenderTemplate", "err", err)
 		return

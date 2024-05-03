@@ -47,13 +47,13 @@ func TemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*template.Tem
 
 const MsgTemplateError = "The server is unable to display this page."
 
-// RenderTemplate executes the named template with the given data and writes
+// RenderTemplateOrError executes the named template with the given data and writes
 // the result to the provided HTTP response writer.
 //
 // If an error occurs, sets HTTP response status to 500 and returns the error.
 //
 // The caller must ensure no further writes are done for a non-nil error.
-func RenderTemplate(t *template.Template, w http.ResponseWriter, name string, data interface{}) error {
+func RenderTemplateOrError(t *template.Template, w http.ResponseWriter, name string, data interface{}) error {
 	// handle nil template
 	if t == nil {
 		http.Error(w, MsgTemplateError, http.StatusInternalServerError)

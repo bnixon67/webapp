@@ -23,7 +23,7 @@ type LoginPageData struct {
 func (app *AuthApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	if !webutil.IsMethod(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
@@ -73,7 +73,7 @@ func ParseLoginForm(r *http.Request) LoginForm {
 func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	if !webutil.IsMethod(w, r, http.MethodPost) {
+	if !webutil.IsMethodOrError(w, r, http.MethodPost) {
 		logger.Error("invalid method")
 		return
 	}
