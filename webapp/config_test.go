@@ -41,7 +41,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 		{
 			name:           "invalidJSON",
 			configFileName: "testdata/invalid.json",
-			wantErr:        webapp.ErrConfigUnmarshal,
+			wantErr:        webapp.ErrConfigParse,
 			wantConfig:     emptyConfig,
 		},
 		{

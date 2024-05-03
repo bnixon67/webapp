@@ -30,8 +30,8 @@ type Config struct {
 
 // Predefined errors for common configuration issues.
 var (
-	ErrConfigOpen      = errors.New("failed to open config file")
-	ErrConfigUnmarshal = errors.New("failed to parse config file")
+	ErrConfigOpen  = errors.New("failed to open config file")
+	ErrConfigParse = errors.New("failed to parse config file")
 )
 
 // LoadConfigFromJSON loads app config from a specified JSON file path.
@@ -44,7 +44,7 @@ func LoadConfigFromJSON(filepath string) (Config, error) {
 
 	var config Config
 	if err := json.Unmarshal(data, &config); err != nil {
-		return Config{}, fmt.Errorf("%w: %s", ErrConfigUnmarshal, err)
+		return Config{}, fmt.Errorf("%w: %s", ErrConfigParse, err)
 	}
 
 	return config, nil
