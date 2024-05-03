@@ -50,14 +50,14 @@ func LoadConfigFromJSON(filepath string) (Config, error) {
 	return config, nil
 }
 
-// IsValid checks the Config struct for any missing required fields.
-// Returns true if required fields are present, otherwise returns false
-// with slice of missing field messages.
-func (c *Config) IsValid() (bool, []string, error) {
+// MissingFields identifies which required fields are absent in Config.
+// It returns a slice of missing fields. If an error occurs during the check,
+// an empty slice and the error are returned.
+func (c *Config) MissingFields() ([]string, error) {
 	missingFields, err := required.MissingFields(c)
 	if err != nil {
-		return false, []string{}, err
+		return []string{}, err
 	}
 
-	return len(missingFields) == 0, missingFields, nil
+	return missingFields, nil
 }

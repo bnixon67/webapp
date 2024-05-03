@@ -40,13 +40,13 @@ func main() {
 	}
 
 	// Validate config.
-	isValid, missing, err := cfg.IsValid()
+	missingFields, err := cfg.MissingFields()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to validate config:", err)
 		os.Exit(ExitConfig)
 	}
-	if !isValid {
-		fmt.Fprintln(os.Stderr, "Invalid config. Missing", missing)
+	if len(missingFields) != 0 {
+		fmt.Fprintln(os.Stderr, "Missing fields in config:", missingFields)
 		os.Exit(ExitConfig)
 	}
 

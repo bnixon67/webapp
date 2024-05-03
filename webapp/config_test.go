@@ -159,12 +159,12 @@ func TestConfigIsValid(t *testing.T) {
 	cases[len(cases)-1].want = true
 
 	for _, testCase := range cases {
-		got, _, err := testCase.config.IsValid()
+		got, err := testCase.config.MissingFields()
 		if err != nil {
-			t.Fatalf("got error %v, want %v for c.IsValid(%+v)", err, nil, testCase.config)
+			t.Fatalf("got error %v, want %v for c.MissingFields(%+v)", err, nil, testCase.config)
 		}
-		if got != testCase.want {
-			t.Errorf("got %v, want %v for c.IsValid(%+v)", got, testCase.want, testCase.config)
+		if (len(got) == 0) != testCase.want {
+			t.Errorf("got %v, want %v for c.MissingFields(%+v)", got, testCase.want, testCase.config)
 		}
 	}
 }
