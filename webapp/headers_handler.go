@@ -27,24 +27,24 @@ type HeadersPageData struct {
 	Headers []HeaderPair // Sorted list of the request headers.
 }
 
-// SortHeaders returns a slice of header pairs sorted by header keys.
+// SortHeaders uses httpHeader to create a sorted list of HeaderPair structs.
+// The headers are sorted alphabetically by key. If httpHeader is empty,
+// it returns nil.
 func SortHeaders(httpHeader http.Header) []HeaderPair {
 	if len(httpHeader) == 0 {
 		return nil
 	}
 
-	// Pre-allocate slice.
-	headerList := make([]HeaderPair, len(httpHeader))
+	// Create a slice to store header pairs.
+	headerList := make([]HeaderPair, 0, len(httpHeader))
 
-	// Fill the slice with header pairs, flattening multiple values.
-	i := 0
+	// Populate the slice with header key-value pairs.
 	for key, values := range httpHeader {
-		headerList[i].Key = key
-		headerList[i].Values = values
-		i++
+		headerList = append(headerList,
+			HeaderPair{Key: key, Values: values})
 	}
 
-	// Sort the slice of headers by key name.
+	// Sort the slice of headers by key.
 	sort.Slice(headerList, func(i, j int) bool {
 		return headerList[i].Key < headerList[j].Key
 	})
