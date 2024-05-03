@@ -33,8 +33,8 @@ func RequestLogger(r *http.Request) *slog.Logger {
 	return slog.With(slog.Group("request", attributes...))
 }
 
-// RequestLoggerWithFunc enhances RequestLogger with the function name.
-func RequestLoggerWithFunc(r *http.Request) *slog.Logger {
+// RequestLoggerWithFuncName enhances RequestLogger with the function name.
+func RequestLoggerWithFuncName(r *http.Request) *slog.Logger {
 	return RequestLogger(r).With(slog.String("func", FuncNameParent()))
 }
 

@@ -19,7 +19,7 @@ type LogoutPageData struct {
 // LogoutHandler handles /logout requests.
 func (app *AuthApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.RequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
