@@ -54,10 +54,5 @@ func LoadConfigFromJSON(filepath string) (Config, error) {
 // It returns a slice of missing fields. If an error occurs during the check,
 // an empty slice and the error are returned.
 func (c *Config) MissingFields() ([]string, error) {
-	missingFields, err := required.MissingFields(c)
-	if err != nil {
-		return []string{}, err
-	}
-
-	return missingFields, nil
+	return required.MissingFields(c)
 }
