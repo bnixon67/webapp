@@ -79,12 +79,12 @@ func NewApp(options ...interface{}) (*AuthApp, error) {
 	}
 
 	// Validate configuration.
-	isValid, missing, err := authApp.Cfg.IsValid()
+	missingFields, err := authApp.Cfg.MissingFields()
 	if err != nil {
 		return nil, err
 	}
-	if !isValid {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidConfig, missing)
+	if len(missingFields) != 0 {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidConfig, missingFields)
 	}
 
 	// Validate login expiration duration.

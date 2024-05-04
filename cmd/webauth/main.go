@@ -51,25 +51,26 @@ func main() {
 	}
 
 	// Read config.
-	cfg, err := webauth.ConfigFromJSONFile(os.Args[1])
+	cfg, err := webauth.LoadConfigFromJSON(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(ExitConfig)
 	}
 
 	// Validate config.
-	isValid, missing, err := cfg.IsValid()
+	missingFields, err := cfg.MissingFields()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to validate config:", err)
 		os.Exit(ExitConfig)
 	}
-	if !isValid {
-		fmt.Fprintln(os.Stderr, "Invalid config. Missing", missing)
+	if len(missingFields) != 0 {
+		fmt.Fprintln(os.Stderr, "Missing fields in config", missingFields)
 		os.Exit(ExitConfig)
 	}
+	slog.Info("config", "cfg", cfg)
 
 	// Initialize logging, templates, database.
-	tmpl, db, err := Init(cfg)
+	tmpl, db, err := Init(*cfg)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(ExitInit)
@@ -78,7 +79,7 @@ func main() {
 	// Create the app.
 	app, err := webauth.NewApp(
 		webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl),
-		webauth.WithConfig(cfg), webauth.WithDB(db),
+		webauth.WithConfig(*cfg), webauth.WithDB(db),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to create app:", err)

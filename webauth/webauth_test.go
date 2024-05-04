@@ -18,7 +18,7 @@ import (
 const TestConfigFile = "testdata/test_config.json"
 
 func TestNewApp(t *testing.T) {
-	cfg, err := webauth.ConfigFromJSONFile(TestConfigFile)
+	cfg, err := webauth.LoadConfigFromJSON(TestConfigFile)
 	if err != nil {
 		t.Fatalf("failed to created config: %v", err)
 	}
@@ -33,7 +33,7 @@ func TestNewApp(t *testing.T) {
 			name: "With AppName",
 			opts: []interface{}{
 				webapp.WithName("TestApp"),
-				webauth.WithConfig(cfg),
+				webauth.WithConfig(*cfg),
 			},
 			wantName: "TestApp",
 			wantErr:  false,
@@ -42,7 +42,7 @@ func TestNewApp(t *testing.T) {
 			name: "With AppName and Foo",
 			opts: []interface{}{
 				webapp.WithName("TestApp"),
-				webauth.WithConfig(cfg),
+				webauth.WithConfig(*cfg),
 			},
 			wantName: "TestApp",
 			wantErr:  false,
@@ -75,7 +75,7 @@ var app *webauth.AuthApp //nolint
 func AppForTest(t *testing.T) *webauth.AuthApp {
 	if app == nil {
 		// Read config.
-		cfg, err := webauth.ConfigFromJSONFile(TestConfigFile)
+		cfg, err := webauth.LoadConfigFromJSON(TestConfigFile)
 		if err != nil {
 			t.Fatalf("failed to created config: %v", err)
 		}
@@ -106,7 +106,7 @@ func AppForTest(t *testing.T) *webauth.AuthApp {
 		app, err = webauth.NewApp(
 			webapp.WithTemplate(tmpl),
 			webapp.WithName(cfg.App.Name),
-			webauth.WithConfig(cfg),
+			webauth.WithConfig(*cfg),
 			webauth.WithDB(db),
 		)
 		if err != nil {

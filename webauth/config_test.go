@@ -15,36 +15,42 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestConfigFromJSONFile(t *testing.T) {
+func TestLoadConfigFromJSON(t *testing.T) {
 	testCases := []struct {
 		name           string
 		configFileName string
 		wantErr        error
-		wantConfig     webauth.Config
+		wantConfig     *webauth.Config
 	}{
 		{
 			name:           "emptyFileName",
 			configFileName: "",
 			wantErr:        webauth.ErrConfigRead,
-			wantConfig:     webauth.Config{},
+			wantConfig:     nil,
+		},
+		{
+			name:           "invalidPath",
+			configFileName: "/this/is/an/invalid/path",
+			wantErr:        webauth.ErrConfigRead,
+			wantConfig:     nil,
 		},
 		{
 			name:           "emptyJSON",
 			configFileName: "testdata/empty.json",
 			wantErr:        nil,
-			wantConfig:     webauth.Config{},
+			wantConfig:     &webauth.Config{},
 		},
 		{
 			name:           "invalidJSON",
 			configFileName: "testdata/invalid.json",
-			wantErr:        webauth.ErrConfigUnmarshal,
-			wantConfig:     webauth.Config{},
+			wantErr:        webauth.ErrConfigParse,
+			wantConfig:     nil,
 		},
 		{
 			name:           "validJSON",
 			configFileName: "testdata/valid.json",
 			wantErr:        nil,
-			wantConfig: webauth.Config{
+			wantConfig: &webauth.Config{
 				Auth: webauth.ConfigAuth{
 					BaseURL:      "test URL",
 					LoginExpires: "42h",
@@ -65,7 +71,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config, err := webauth.ConfigFromJSONFile(tc.configFileName)
+			config, err := webauth.LoadConfigFromJSON(tc.configFileName)
 
 			if tc.wantErr != nil && !errors.Is(err, tc.wantErr) || err != nil && tc.wantErr == nil {
 				t.Fatalf("want error: %v, got: %v", tc.wantErr, err)
@@ -146,10 +152,11 @@ func TestConfigIsValid(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		got, _, err := testCase.config.IsValid()
+		missingFields, err := testCase.config.MissingFields()
 		if err != nil {
 			t.Errorf("got error %v, want %v, for c.IsValid(%+v)", err, nil, testCase.config)
 		}
+		got := len(missingFields) == 0
 		if got != testCase.expected {
 			t.Errorf("c.IsValid(%+v) = %v; expected %v", testCase.config, got, testCase.expected)
 		}

@@ -30,24 +30,24 @@ type Config struct {
 
 // Predefined errors for common configuration issues.
 var (
-	ErrConfigOpen  = errors.New("failed to open config file")
+	ErrConfigRead  = errors.New("failed to read config file")
 	ErrConfigParse = errors.New("failed to parse config file")
 )
 
 // LoadConfigFromJSON loads app config from a specified JSON file path.
 // It returns a populated Config or error if reading or parsing file fails.
-func LoadConfigFromJSON(filepath string) (Config, error) {
+func LoadConfigFromJSON(filepath string) (*Config, error) {
 	data, err := os.ReadFile(filepath)
 	if err != nil {
-		return Config{}, fmt.Errorf("%w: %s", ErrConfigOpen, err)
+		return nil, fmt.Errorf("%w: %s", ErrConfigRead, err)
 	}
 
 	var config Config
 	if err := json.Unmarshal(data, &config); err != nil {
-		return Config{}, fmt.Errorf("%w: %s", ErrConfigParse, err)
+		return nil, fmt.Errorf("%w: %s", ErrConfigParse, err)
 	}
 
-	return config, nil
+	return &config, nil
 }
 
 // MissingFields identifies which required fields are absent in Config.

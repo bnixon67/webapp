@@ -35,46 +35,30 @@ type Config struct {
 }
 
 var (
-	ErrConfigRead      = errors.New("failed to read config file")
-	ErrConfigUnmarshal = errors.New("failed to unmarshal config file")
+	ErrConfigRead  = errors.New("failed to read config file")
+	ErrConfigParse = errors.New("failed to parse config file")
 )
 
-// ConfigFromJSONFile loads configuration settings from a JSON file.
-func ConfigFromJSONFile(filename string) (Config, error) {
-	// Read the entire file.
-	data, err := os.ReadFile(filename)
+// LoadConfigFromJSON loads configuration settings from a JSON file.
+func LoadConfigFromJSON(filepath string) (*Config, error) {
+	data, err := os.ReadFile(filepath)
 	if err != nil {
-		return Config{}, fmt.Errorf("%w: %v", ErrConfigRead, err)
+		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
 
-	// Decode JSON data into Config struct.
-	var c Config
-	if err := json.Unmarshal(data, &c); err != nil {
-		return Config{}, fmt.Errorf("%w: %v", ErrConfigUnmarshal, err)
+	var config Config
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrConfigParse, err)
 	}
 
-	return c, nil
+	return &config, nil
 }
 
-// appendIfEmpty appends message to messages if value is empty, and
-// returns the updated slice.
-func appendIfEmpty(messages []string, value, message string) []string {
-	if value == "" {
-		return append(messages, message)
-	}
-
-	return messages
-}
-
-// IsValid checks if all required Config fields are populated.
-// Returns a boolean and a slice of messages indicating the issue(s).
-func (c *Config) IsValid() (bool, []string, error) {
-	missingFields, err := required.MissingFields(c)
-	if err != nil {
-		return false, []string{}, err
-	}
-
-	return len(missingFields) == 0, missingFields, nil
+// MissingFields identifies which required fields are absent in Config.
+// It returns a slice of missing fields. If an error occurs during the check,
+// an empty slice and the error are returned.
+func (c *Config) MissingFields() ([]string, error) {
+	return required.MissingFields(c)
 }
 
 // RedactedConfig provides a redacted copy of Config for secure logging.

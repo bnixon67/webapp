@@ -18,37 +18,41 @@ import (
 
 // TestConfigFromJSONFile tests the ConfigFromJSONFile function.
 func TestConfigFromJSONFile(t *testing.T) {
-	var emptyConfig webapp.Config
-
 	testCases := []struct {
 		name           string
 		configFileName string
 		wantErr        error
-		wantConfig     webapp.Config
+		wantConfig     *webapp.Config
 	}{
 		{
 			name:           "emptyFileName",
 			configFileName: "",
-			wantErr:        webapp.ErrConfigOpen,
-			wantConfig:     emptyConfig,
+			wantErr:        webapp.ErrConfigRead,
+			wantConfig:     nil,
+		},
+		{
+			name:           "invalidPath",
+			configFileName: "/this/is/an/invalid/path",
+			wantErr:        webapp.ErrConfigRead,
+			wantConfig:     nil,
 		},
 		{
 			name:           "emptyJSON",
 			configFileName: "testdata/empty.json",
 			wantErr:        nil,
-			wantConfig:     emptyConfig,
+			wantConfig:     &webapp.Config{},
 		},
 		{
 			name:           "invalidJSON",
 			configFileName: "testdata/invalid.json",
 			wantErr:        webapp.ErrConfigParse,
-			wantConfig:     emptyConfig,
+			wantConfig:     nil,
 		},
 		{
 			name:           "validJSON",
 			configFileName: "testdata/valid.json",
 			wantErr:        nil,
-			wantConfig: webapp.Config{
+			wantConfig: &webapp.Config{
 				App: webapp.AppConfig{
 					Name: "Test Name",
 				},
@@ -58,7 +62,7 @@ func TestConfigFromJSONFile(t *testing.T) {
 			name:           "allJSON",
 			configFileName: "testdata/all.json",
 			wantErr:        nil,
-			wantConfig: webapp.Config{
+			wantConfig: &webapp.Config{
 				App: webapp.AppConfig{
 					Name:        "Test Name",
 					AssetsDir:   "directory",
