@@ -173,16 +173,23 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
+	empty := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":""},"SMTP":{"Host":"","Port":"","User":"","Password":""}}`
+
 	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
 
 	testCases := []struct {
 		name  string
-		input webauth.Config
+		input *webauth.Config
 		want  string
 	}{
 		{
-			name:  "test",
-			input: input,
+			name:  "testNil",
+			input: nil,
+			want:  string(empty),
+		},
+		{
+			name:  "testRedact",
+			input: &input,
 			want:  string(want),
 		},
 	}
@@ -203,12 +210,17 @@ func TestConfigMarshalJSON(t *testing.T) {
 func TestConfigString(t *testing.T) {
 	testCases := []struct {
 		name  string
-		input webauth.Config
+		input *webauth.Config
 		want  string
 	}{
 		{
-			name: "test",
-			input: webauth.Config{
+			name:  "testNil",
+			input: nil,
+			want:  `<nil>`,
+		},
+		{
+			name: "testRedact",
+			input: &webauth.Config{
 				SQL: webauth.ConfigSQL{
 					DataSourceName: "user:password@localhost/db",
 				},
