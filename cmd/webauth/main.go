@@ -67,7 +67,6 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Missing fields in config", missingFields)
 		os.Exit(ExitConfig)
 	}
-	slog.Info("config", "cfg", cfg)
 
 	// Initialize logging, templates, database.
 	tmpl, db, err := Init(*cfg)
@@ -75,6 +74,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(ExitInit)
 	}
+
+	slog.Info("config", "cfg", cfg)
 
 	// Create the app.
 	app, err := webauth.NewApp(

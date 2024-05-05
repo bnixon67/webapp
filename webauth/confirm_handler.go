@@ -21,7 +21,14 @@ type ConfirmData struct {
 	ConfirmToken string
 }
 
-// ConfirmHandlerGet handles confirm GET requests.
+// ConfirmHandlerGet processes GET requests for the email confirmation page.
+//
+// This function retrieves the 'ctoken' (confirmation token) from the query
+// parameters of the request URL. If a 'ctoken' is present, it is displayed to
+// the user on the confirmation page. Users may also manually enter a 'ctoken'.
+//
+// Submission of the token is via a POST request, which is handled by
+// ConfirmHandlerPost, which completes the email confirmation process.
 func (app *AuthApp) ConfirmHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
@@ -30,7 +37,6 @@ func (app *AuthApp) ConfirmHandlerGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get confirm token.
 	ctoken := r.URL.Query().Get("ctoken")
 
 	data := ConfirmData{ConfirmToken: ctoken}
@@ -41,8 +47,8 @@ func (app *AuthApp) ConfirmHandlerGet(w http.ResponseWriter, r *http.Request) {
 
 const (
 	MsgMissingConfirmToken = "Please provide a token."
-	MsgInvalidConfirmToken = "Token is invalid. Request a new token below."
-	MsgExpiredConfirmToken = "Token is expired. Request a new token below."
+	MsgInvalidConfirmToken = "Token is invalid. Request a new token."
+	MsgExpiredConfirmToken = "Token is expired. Request a new token."
 )
 
 var tokenErrToMsg = map[error]string{
@@ -63,7 +69,11 @@ func (app *AuthApp) respondWithError(w http.ResponseWriter, logger *slog.Logger,
 	app.RenderPage(w, logger, ConfirmTmpl, &ConfirmData{Message: msg})
 }
 
-// ConfirmHandlerPost handles confirm POST requests.
+// ConfirmHandlerPost processes POST requests for user email confirmation.
+//
+// It extracts the 'ctoken' (confirmation token) from the form data to verify
+// and confirm the associated user. If the token is valid, the user's status
+// is updated to confirmed.
 func (app *AuthApp) ConfirmHandlerPost(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
@@ -89,8 +99,5 @@ func (app *AuthApp) ConfirmHandlerPost(w http.ResponseWriter, r *http.Request) {
 	logger.Info("user confirmed", "username", username)
 	app.DB.WriteEvent(EventConfirmed, true, username, "success")
 
-	// Redirect to login page.
-	// TODO: allow a path for redirect instead of just login.
-	// TODO: show a confirmation page before the redirect.
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/confirmed", http.StatusSeeOther)
 }

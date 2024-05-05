@@ -24,34 +24,20 @@ const (
 // ConfirmRequestPageData contains data to render the confirm request template.
 type ConfirmRequestPageData struct {
 	CommonData
-	Message   string // An message to display to the user.
-	EmailFrom string // The email address that sends the confirm message.
+	Message string // An message to display to the user.
 }
 
-// ConfirmRequestHandler handles a request to request a email confirmation.
-func (app *AuthApp) ConfirmRequestHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
+// ConfirmRequestHandlerGet processes GET requests for the confirmation request
+// page. It allows a user to enter their email to request a confirmation
+// token. Submission of the request with an email is via a POST request,
+// which is handled by ConfirmRequestHandlerPost.
+func (app *AuthApp) ConfirmRequestHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.CheckAllowedMethods(w, r, http.MethodGet, http.MethodPost) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
-
-	// Route to the appropriate handler based on the HTTP method.
-	switch r.Method {
-	case http.MethodGet:
-		app.confirmRequestGet(w, r)
-	case http.MethodPost:
-		app.confirmRequestPost(w, r)
-	}
-}
-
-// confirmRequestGet serves the page to initiate a confirm email request.
-func (app *AuthApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info and function name.
-	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	data := ConfirmRequestPageData{}
 	app.RenderPage(w, logger, "confirm_request.html", &data)
@@ -59,18 +45,20 @@ func (app *AuthApp) confirmRequestGet(w http.ResponseWriter, r *http.Request) {
 	logger.Info("done")
 }
 
-// confirmRequestPost processes a confirm email request.
-func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
-	// Extract form values.
-	email := strings.TrimSpace(r.PostFormValue("email"))
-
-	// Get logger with request info and function name and add form values.
+// ConfirmRequestHandlerPost processes POST rquests that emails a user a
+// confirmation token. It extracts the 'email" from the form data to create
+// the token and then email to the user.
+func (app *AuthApp) ConfirmRequestHandlerPost(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
-	logger = logger.With(
-		slog.String("email", email),
-	)
 
-	// Validate form values.
+	if !webutil.IsMethodOrError(w, r, http.MethodPost) {
+		logger.Error("invalid method")
+		return
+	}
+
+	email := strings.TrimSpace(r.PostFormValue("email"))
+	logger = logger.With(slog.String("email", email))
+
 	if email == "" {
 		logger.Warn("email is empty")
 		data := ConfirmRequestPageData{Message: MsgMissingEmail}
@@ -78,7 +66,6 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get username for email provided on the form.
 	username, err := app.DB.UsernameForEmail(email)
 	if err != nil && !errors.Is(err, ErrUserNotFound) {
 		logger.Error("failed to get username for email",
@@ -93,7 +80,6 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 		// that the provided email address is not registered.
 	}
 
-	// Create and save a confirm email token.
 	token, err := app.DB.CreateConfirmEmailToken(username)
 	if err != nil {
 		slog.Error("failed to create confirm email token",
@@ -109,15 +95,7 @@ func (app *AuthApp) confirmRequestPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = webutil.RenderTemplateOrError(app.Tmpl, w, "confirm_request_sent.html",
-		ConfirmRequestPageData{
-			CommonData: CommonData{Title: app.Cfg.App.Name},
-			EmailFrom:  app.Cfg.SMTP.User,
-		})
-	if err != nil {
-		logger.Error("failed to render template", "err", err)
-		return
-	}
+	http.Redirect(w, r, "/confirm_request_sent", http.StatusSeeOther)
 
 	logger.Info("done")
 }

@@ -88,5 +88,3 @@ func (c *Config) String() string {
 
 	return fmt.Sprintf("%+v", c.redact())
 }
-
-// TODO: slog.LogValuer for Config

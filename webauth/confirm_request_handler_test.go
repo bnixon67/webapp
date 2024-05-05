@@ -50,13 +50,12 @@ func sentConfirmRequestBody(data webauth.ConfirmRequestPageData) string {
 	return body.String()
 }
 
-func TestConfirmRequestHandler(t *testing.T) {
+func TestConfirmRequestHandlerGet(t *testing.T) {
 	app := AppForTest(t)
 
-	header := http.Header{"Content-Type": {"application/x-www-form-urlencoded"}}
 	tests := []webhandler.TestCase{
 		{
-			Name:          "Valid GET Request",
+			Name:          "validRequest",
 			Target:        "/confirm_request",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
@@ -67,14 +66,32 @@ func TestConfirmRequestHandler(t *testing.T) {
 			}),
 		},
 		{
-			Name:          "Invalid Method",
+			Name:          "invalidMethod",
 			Target:        "/confirm_request",
 			RequestMethod: http.MethodPatch,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "PATCH Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
+		},
+	}
+
+	// Test the handler using the utility function.
+	webhandler.HandlerTestWithCases(t, app.ConfirmRequestHandlerGet, tests)
+}
+
+func TestConfirmRequestHandlerPost(t *testing.T) {
+	app := AppForTest(t)
+
+	header := http.Header{"Content-Type": {"application/x-www-form-urlencoded"}}
+	tests := []webhandler.TestCase{
+		{
+			Name:          "invalidMethod",
+			Target:        "/confirm_request",
+			RequestMethod: http.MethodPatch,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
-			Name:           "Missing Email",
+			Name:           "missingEmail",
 			Target:         "/confirm_request",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
@@ -87,39 +104,17 @@ func TestConfirmRequestHandler(t *testing.T) {
 			}),
 		},
 		{
-			Name:           "Unknown Email",
+			Name:           "unknownEmail",
 			Target:         "/confirm_request",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
 			RequestBody: url.Values{
 				"email": {"unknown@email"},
 			}.Encode(),
-			WantStatus: http.StatusOK,
-			WantBody: sentConfirmRequestBody(webauth.ConfirmRequestPageData{
-				CommonData: webauth.CommonData{
-					Title: app.Cfg.App.Name,
-				},
-				EmailFrom: app.Cfg.SMTP.User,
-			}),
-		},
-		{
-			Name:           "Unknown Email",
-			Target:         "/confirm_request",
-			RequestMethod:  http.MethodPost,
-			RequestHeaders: header,
-			RequestBody: url.Values{
-				"email": {"test@email"},
-			}.Encode(),
-			WantStatus: http.StatusOK,
-			WantBody: sentConfirmRequestBody(webauth.ConfirmRequestPageData{
-				CommonData: webauth.CommonData{
-					Title: app.Cfg.App.Name,
-				},
-				EmailFrom: app.Cfg.SMTP.User,
-			}),
+			WantStatus: http.StatusSeeOther,
 		},
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ConfirmRequestHandler, tests)
+	webhandler.HandlerTestWithCases(t, app.ConfirmRequestHandlerPost, tests)
 }

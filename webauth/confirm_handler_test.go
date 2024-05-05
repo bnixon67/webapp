@@ -17,34 +17,12 @@ import (
 )
 
 func confirmBody(data webauth.ConfirmData) string {
-	// Get path to template file.
 	assetDir := assets.AssetPath()
 	tmplFile := filepath.Join(assetDir, "tmpl", webauth.ConfirmTmpl)
 
-	// Parse the HTML template from a file.
 	tmpl := template.Must(template.ParseFiles(tmplFile))
 
-	// Create a buffer to store the rendered HTML.
 	var body bytes.Buffer
-
-	// Execute the template with the data and write result to the buffer.
-	tmpl.Execute(&body, data)
-
-	return body.String()
-}
-
-func sentConfirmBody(data webauth.ConfirmData) string {
-	// Get path to template file.
-	assetDir := assets.AssetPath()
-	tmplFile := filepath.Join(assetDir, "tmpl", "confirm_request.html")
-
-	// Parse the HTML template from a file.
-	tmpl := template.Must(template.ParseFiles(tmplFile))
-
-	// Create a buffer to store the rendered HTML.
-	var body bytes.Buffer
-
-	// Execute the template with the data and write the result to the buffer.
 	tmpl.Execute(&body, data)
 
 	return body.String()
@@ -55,7 +33,7 @@ func TestConfirmHandlerGet(t *testing.T) {
 
 	tests := []webhandler.TestCase{
 		{
-			Name:          "Valid GET Request",
+			Name:          "validRequest",
 			Target:        "/confirm",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
@@ -66,7 +44,7 @@ func TestConfirmHandlerGet(t *testing.T) {
 			}),
 		},
 		{
-			Name:          "Invalid Method",
+			Name:          "invalidMethod",
 			Target:        "/confirm",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
@@ -74,7 +52,6 @@ func TestConfirmHandlerGet(t *testing.T) {
 		},
 	}
 
-	// Test the handler using the utility function.
 	webhandler.HandlerTestWithCases(t, app.ConfirmHandlerGet, tests)
 }
 
@@ -111,14 +88,14 @@ func TestConfirmHandlerPost(t *testing.T) {
 
 	tests := []webhandler.TestCase{
 		{
-			Name:          "Invalid Method",
+			Name:          "invalidMethod",
 			Target:        "/confirm",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusMethodNotAllowed,
 			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
-			Name:           "Missing Token",
+			Name:           "missingToken",
 			Target:         "/confirm",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
@@ -132,7 +109,7 @@ func TestConfirmHandlerPost(t *testing.T) {
 			}),
 		},
 		{
-			Name:           "Invalid Token",
+			Name:           "invalidToken",
 			Target:         "/confirm",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
@@ -146,7 +123,7 @@ func TestConfirmHandlerPost(t *testing.T) {
 			}),
 		},
 		{
-			Name:           "Expired Token",
+			Name:           "expiredToken",
 			Target:         "/confirm",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
@@ -160,7 +137,7 @@ func TestConfirmHandlerPost(t *testing.T) {
 			}),
 		},
 		{
-			Name:           "Unconfirmed User",
+			Name:           "unconfirmedUser",
 			Target:         "/confirm",
 			RequestMethod:  http.MethodPost,
 			RequestHeaders: header,
@@ -169,6 +146,5 @@ func TestConfirmHandlerPost(t *testing.T) {
 		},
 	}
 
-	// Test the handler using the utility function.
 	webhandler.HandlerTestWithCases(t, app.ConfirmHandlerPost, tests)
 }
