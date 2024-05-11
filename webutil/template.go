@@ -1,4 +1,4 @@
-// Copyright 2023 Bill Nixon. All rights reserved.
+// Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
 package webutil
@@ -14,7 +14,8 @@ import (
 	"testing"
 )
 
-// funcMapToString returns a comma separated list of names for funcMap.
+// funcMapToString converts a FuncMap to a comma-separated string of
+// function names.
 func funcMapToString(funcMap template.FuncMap) string {
 	var names []string
 	for name := range funcMap {
@@ -24,91 +25,81 @@ func funcMapToString(funcMap template.FuncMap) string {
 	return strings.Join(names, ", ")
 }
 
-// Templates parses the templates matching pattern.
+// Templates parses templates from files matching the given pattern.
 func Templates(pattern string) (*template.Template, error) {
 	return TemplatesWithFuncs(pattern, nil)
 }
 
-// TemplatesWithFuncs parses the templates with FuncMap.
+// TemplatesWithFuncs parses templates from files matching the given pattern
+// and applies a FuncMap.
 func TemplatesWithFuncs(pattern string, funcMap template.FuncMap) (*template.Template, error) {
 	tmpls, err := template.New("tmpl").Funcs(funcMap).ParseGlob(pattern)
 	if err != nil {
 		return nil, err
 	}
 
-	tmplNames := strings.Join(TemplateNames(tmpls), ", ")
-	slog.Debug("parsed templates with functions",
-		slog.String("pattern", pattern),
-		slog.String("templates", tmplNames),
-		slog.String("functions", funcMapToString(funcMap)),
-	)
+	if slog.Default().Enabled(nil, slog.LevelDebug) {
+		tmplNames := strings.Join(TemplateNames(tmpls), ", ")
+		slog.Debug("parsed templates with functions",
+			slog.String("pattern", pattern),
+			slog.String("templates", tmplNames),
+			slog.String("functions", funcMapToString(funcMap)),
+		)
+	}
+
 	return tmpls, nil
 }
 
 const MsgTemplateError = "The server is unable to display this page."
 
-// RenderTemplateOrError executes the named template with the given data and writes
-// the result to the provided HTTP response writer.
-//
-// If an error occurs, sets HTTP response status to 500 and returns the error.
-//
-// The caller must ensure no further writes are done for a non-nil error.
-func RenderTemplateOrError(t *template.Template, w http.ResponseWriter, name string, data interface{}) error {
-	// handle nil template
-	if t == nil {
+// RenderTemplateOrError attempts to render a named template with data,
+// handling errors by responding with HTTP 500.  The caller must ensure no
+// further writes are done for a non-nil error.
+func RenderTemplateOrError(tmpl *template.Template, w http.ResponseWriter, name string, data interface{}) error {
+	if tmpl == nil {
 		http.Error(w, MsgTemplateError, http.StatusInternalServerError)
-		return errors.New("RenderTemplate: nil template")
+		return errors.New("renderTemplate: nil template")
 	}
 
-	if t.Lookup(name) == nil {
+	if tmpl.Lookup(name) == nil {
 		http.Error(w, MsgTemplateError, http.StatusInternalServerError)
-		return fmt.Errorf("RenderTemplate: template %s not found", name)
+		return fmt.Errorf("renderTemplate: template %q not found", name)
 	}
 
-	// Create a buffer to store the template output since if an error
-	// occurs executing the template or writing its output, execution
-	// stops, but partial results may already have been written to the
-	// output writer.
-	var tmplBuffer bytes.Buffer
-
-	// Execute the template with the provided data.
-	err := t.ExecuteTemplate(&tmplBuffer, name, data)
-	if err != nil {
+	var buffer bytes.Buffer
+	if err := tmpl.ExecuteTemplate(&buffer, name, data); err != nil {
 		http.Error(w, MsgTemplateError, http.StatusInternalServerError)
 		return err
 	}
 
-	// Write the template output to response writer and check for errors.
-	_, writeErr := tmplBuffer.WriteTo(w)
-	if writeErr != nil {
+	if _, err := buffer.WriteTo(w); err != nil {
 		http.Error(w, MsgTemplateError, http.StatusInternalServerError)
-		return writeErr
+		return err
 	}
 
 	return nil
 }
 
-// RenderTemplateForTest renders a specific template with the provided
-// data and returns the result as a string. This function is intended for
-// use in tests to verify template output.
+// RenderTemplateForTest executes a template with data for testing purposes,
+// returning the output as a string.
 func RenderTemplateForTest(t *testing.T, tmpl *template.Template, name string, data any) string {
-	var body bytes.Buffer
+	var buffer bytes.Buffer
 
-	if err := tmpl.ExecuteTemplate(&body, name, data); err != nil {
-		t.Fatalf("failed to execute template: %v", err)
+	if err := tmpl.ExecuteTemplate(&buffer, name, data); err != nil {
+		t.Fatalf("failed to execute template %q: %v", name, err)
 	}
 
-	return body.String()
+	return buffer.String()
 }
 
-// TemplateNames returns the names of all templates for t.
-func TemplateNames(t *template.Template) []string {
-	if t == nil {
+// TemplateNames returns a list of all template names within the template tree.
+func TemplateNames(tmpl *template.Template) []string {
+	if tmpl == nil {
 		return nil
 	}
 
-	names := make([]string, 0, len(t.Templates()))
-	for _, tmpl := range t.Templates() {
+	names := make([]string, 0, len(tmpl.Templates()))
+	for _, tmpl := range tmpl.Templates() {
 		names = append(names, tmpl.Name())
 	}
 
