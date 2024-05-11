@@ -180,7 +180,7 @@ func (app *AuthApp) sendRegistrationEmail(username, fullName, email string) erro
 		return err
 	}
 
-	err = app.Cfg.SMTP.SendMessage(app.Cfg.SMTP.User, []string{email}, subj, body)
+	err = app.Cfg.SMTP.SendMessage(app.Cfg.SMTP.Username, []string{email}, subj, body)
 	if err != nil {
 		return err
 	}

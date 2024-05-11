@@ -10,7 +10,7 @@
   "SMTP": {
     "Host": "test SMTP host",
     "Port": "test SMTP port",
-    "User": "test SMTP user",
+    "Username": "test SMTP user",
     "Password": "test SMTP password"
   }
 }

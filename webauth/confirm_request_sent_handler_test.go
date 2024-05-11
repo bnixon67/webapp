@@ -41,7 +41,7 @@ func TestConfirmRequestSentHandlerGet(t *testing.T) {
 					CommonData: webauth.CommonData{
 						Title: app.Cfg.App.Name,
 					},
-					EmailFrom: app.Cfg.SMTP.User,
+					EmailFrom: app.Cfg.SMTP.Username,
 				}),
 		},
 		{

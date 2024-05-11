@@ -8,29 +8,25 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/mail"
 	"net/smtp"
 	"strings"
+
+	"github.com/bnixon67/required"
 )
 
-// SMTPConfig holds SMTP server settings for email functionality.
+// SMTPConfig holds configuration for an SMTP server for sending emails.
 type SMTPConfig struct {
 	Host     string `required:"true"` // Host address.
 	Port     string `required:"true"` // Port number.
-	User     string `required:"true"` // Server username.
-	Password string `required:"true"` // Server password.
+	Username string `required:"true"` // Username for authentication.
+	Password string `required:"true"` // Password for authentication.
 }
 
-var (
-	ErrEmailInvalidFrom       = errors.New("invalid from address")
-	ErrEmailInvalidTo         = errors.New("invalid to address")
-	ErrEmailInvalidSMTPConfig = errors.New("invalid SMTP configuration")
-	ErrEmailSendFailed        = errors.New("failed to send email")
-)
-
-// RedactedSMTPConfig is copy of SMTPConfig that doesn't expose sensitve fields.
+// RedactedSMTPConfig is a copy of SMTPConfig to hide sensitive information.
 type RedactedSMTPConfig SMTPConfig
 
-// redact creates a copy of s that hides sensitive data.
+// redact creates a copy of SMTPConfig with the password field redacted.
 func (s SMTPConfig) redact() RedactedSMTPConfig {
 	r := RedactedSMTPConfig(s)
 	if s.Password != "" {
@@ -39,49 +35,56 @@ func (s SMTPConfig) redact() RedactedSMTPConfig {
 	return r
 }
 
-// MarshalJSON customizes JSON marshalling to redact sensitive data.
+// MarshalJSON redacts sensitive information when marshalling to JSON.
 func (s SMTPConfig) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.redact())
 }
 
-// String returns a string representation of s with sensitive data redacted.
+// String returns a string for SMTPConfig with sensitive data redacted.
 func (s SMTPConfig) String() string {
 	return fmt.Sprintf("%+v", s.redact())
 }
 
-// Valid checks s and returns true if required fields are non-empty.
-func (s SMTPConfig) Valid() bool {
-	if s.Host == "" || s.Port == "" || s.User == "" || s.Password == "" {
-		return false
-	}
-	return true
+// IsValid verifies that SMTPConfig has all required fields populated.
+func (s SMTPConfig) IsValid() (bool, error) {
+	return required.ArePresent(s)
 }
 
-// SendMessage sends an email using the values provided.
-func (s SMTPConfig) SendMessage(from string, to []string, subject, body string) error {
-	if !s.Valid() {
-		return ErrEmailInvalidSMTPConfig
+var (
+	ErrEmailInvalidConfig    = errors.New("invalid SMTP configuration")
+	ErrEmailInvalidFrom      = errors.New("invalid 'from' address")
+	ErrEmailNoRecipients     = errors.New("failed to provide one recipient")
+	ErrEmailInvalidRecipient = errors.New("invalid 'recipient' address")
+	ErrEmailSendFailed       = errors.New("failed to send email")
+)
+
+// SendMessage sends an email using the configured SMTP server settings.
+func (s SMTPConfig) SendMessage(from string, recipients []string, subject, body string) error {
+	if isValid, err := s.IsValid(); !isValid || err != nil {
+		return ErrEmailInvalidConfig
 	}
 
-	if from == "" || !strings.Contains(from, "@") {
+	if _, err := mail.ParseAddress(from); err != nil {
 		return fmt.Errorf("%w: %q", ErrEmailInvalidFrom, from)
 	}
 
-	if len(to) == 0 || to[0] == "" || !strings.Contains(to[0], "@") {
-		return fmt.Errorf("%w: %q", ErrEmailInvalidTo, to)
+	if len(recipients) == 0 {
+		return ErrEmailNoRecipients
+	}
+	for _, recipient := range recipients {
+		if _, err := mail.ParseAddress(recipient); err != nil {
+			return fmt.Errorf("%w: %q", ErrEmailInvalidRecipient, recipient)
+		}
 	}
 
-	// Authenticate to SMTP server.
-	auth := smtp.PlainAuth("", s.User, s.Password, s.Host)
-
 	headers := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n",
-		from, strings.Join(to, ", "), subject)
+		from, strings.Join(recipients, ", "), subject)
+	message := []byte(headers + body)
 
-	msg := []byte(headers + body)
+	serverAddr := net.JoinHostPort(s.Host, s.Port)
 
-	addr := net.JoinHostPort(s.Host, s.Port)
-
-	err := smtp.SendMail(addr, auth, from, to, msg)
+	auth := smtp.PlainAuth("", s.Username, s.Password, s.Host)
+	err := smtp.SendMail(serverAddr, auth, from, recipients, message)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrEmailSendFailed, err)
 	}

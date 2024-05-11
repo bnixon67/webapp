@@ -28,7 +28,7 @@ func (app *AuthApp) ConfirmRequestSentHandlerGet(w http.ResponseWriter, r *http.
 		return
 	}
 
-	data := ConfirmRequestSentData{EmailFrom: app.Cfg.SMTP.User}
+	data := ConfirmRequestSentData{EmailFrom: app.Cfg.SMTP.Username}
 	app.RenderPage(w, logger, ConfirmRequestSentTmpl, &data)
 
 	logger.Info("done")

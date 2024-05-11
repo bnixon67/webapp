@@ -18,7 +18,7 @@
   "SMTP": {
     "Host": "localhost",
     "Port": "2525",
-    "User": "user@domain",
+    "Username": "user@domain",
     "Password": "password"
   },
   "Log": {

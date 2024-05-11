@@ -62,7 +62,7 @@ func TestLoadConfigFromJSON(t *testing.T) {
 				SMTP: webutil.SMTPConfig{
 					Host:     "test SMTP host",
 					Port:     "test SMTP port",
-					User:     "test SMTP user",
+					Username: "test SMTP user",
 					Password: "test SMTP password",
 				},
 			},
@@ -112,7 +112,7 @@ func TestConfigIsValid(t *testing.T) {
 		"SQL.DataSourceName",
 		"SMTP.Host",
 		"SMTP.Port",
-		"SMTP.User",
+		"SMTP.Username",
 		"SMTP.Password",
 	}
 
@@ -173,9 +173,9 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
-	empty := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":""},"SMTP":{"Host":"","Port":"","User":"","Password":""}}`
+	empty := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":""},"SMTP":{"Host":"","Port":"","Username":"","Password":""}}`
 
-	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","User":"","Password":"[REDACTED]"}}`
+	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","Username":"","Password":"[REDACTED]"}}`
 
 	testCases := []struct {
 		name  string
@@ -228,7 +228,7 @@ func TestConfigString(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} Auth:{BaseURL: LoginExpires:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: User: Password:[REDACTED]}}`,
+			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} Auth:{BaseURL: LoginExpires:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: Username: Password:[REDACTED]}}`,
 		},
 	}
 

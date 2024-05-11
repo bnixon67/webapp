@@ -47,16 +47,16 @@ func TestMain(m *testing.M) {
 func TestSendEmail(t *testing.T) {
 	tests := []sendEmailTest{
 		{
-			name:       "empty smtp config",
+			name:       "emptyConfig",
 			smtpConfig: webutil.SMTPConfig{},
-			wantErr:    webutil.ErrEmailInvalidSMTPConfig,
+			wantErr:    webutil.ErrEmailInvalidConfig,
 		},
 		{
-			name: "invalid smtp server",
+			name: "invalidServer",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
-				User:     "smtpuser@example.com",
+				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			from:    "from@example.com",
@@ -64,56 +64,68 @@ func TestSendEmail(t *testing.T) {
 			wantErr: webutil.ErrEmailSendFailed,
 		},
 		{
-			name: "empty from",
+			name: "emptyFrom",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
-				User:     "smtpuser@example.com",
+				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			to:      []string{"to@example.com"},
 			wantErr: webutil.ErrEmailInvalidFrom,
 		},
 		{
-			name: "invalid from",
+			name: "invalidFrom",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
-				User:     "smtpuser@example.com",
+				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			to:      []string{"to"},
 			wantErr: webutil.ErrEmailInvalidFrom,
 		},
 		{
-			name: "empty to",
+			name: "emptyTo",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
-				User:     "smtpuser@example.com",
+				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			from:    "from@example.com",
-			wantErr: webutil.ErrEmailInvalidTo,
+			wantErr: webutil.ErrEmailNoRecipients,
 		},
 		{
-			name: "invalid to",
+			name: "invalidTo0",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
-				User:     "smtpuser@example.com",
+				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			from:    "from@example.com",
 			to:      []string{"to"},
-			wantErr: webutil.ErrEmailInvalidTo,
+			wantErr: webutil.ErrEmailInvalidRecipient,
 		},
 		{
-			name: "valid message",
+			name: "invalidTo1",
+			smtpConfig: webutil.SMTPConfig{
+				Host:     "smtp.example.com",
+				Port:     "587",
+				Username: "smtpuser@example.com",
+				Password: "password",
+			},
+			from:    "from@example.com",
+			to:      []string{"from@exmaple.com", "to"},
+			wantErr: webutil.ErrEmailInvalidRecipient,
+		},
+		{
+			name: "validMessage",
 			smtpConfig: webutil.SMTPConfig{
 				Host:     MockSMTPHost,
 				Port:     MockSMTPPort,
-				User:     "smtpuser@example.com",
+				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			from:    "from@example.com",
@@ -145,24 +157,24 @@ func TestSMTPConfigMarshalJSON(t *testing.T) {
 			input: webutil.SMTPConfig{
 				Password: "supersecret",
 			},
-			want: `{"Host":"","Port":"","User":"","Password":"[REDACTED]"}`,
+			want: `{"Host":"","Port":"","Username":"","Password":"[REDACTED]"}`,
 		},
 		{
 			name: "Host",
 			input: webutil.SMTPConfig{
 				Host: "host",
 			},
-			want: `{"Host":"host","Port":"","User":"","Password":""}`,
+			want: `{"Host":"host","Port":"","Username":"","Password":""}`,
 		},
 		{
 			name: "All",
 			input: webutil.SMTPConfig{
 				Host:     "host",
 				Port:     "25",
-				User:     "user",
+				Username: "user",
 				Password: "supersecret",
 			},
-			want: `{"Host":"host","Port":"25","User":"user","Password":"[REDACTED]"}`,
+			want: `{"Host":"host","Port":"25","Username":"user","Password":"[REDACTED]"}`,
 		},
 	}
 
@@ -191,24 +203,24 @@ func TestSMTPConfigString(t *testing.T) {
 			input: webutil.SMTPConfig{
 				Password: "supersecret",
 			},
-			want: `{Host: Port: User: Password:[REDACTED]}`,
+			want: `{Host: Port: Username: Password:[REDACTED]}`,
 		},
 		{
 			name: "Host",
 			input: webutil.SMTPConfig{
 				Host: "host",
 			},
-			want: `{Host:host Port: User: Password:}`,
+			want: `{Host:host Port: Username: Password:}`,
 		},
 		{
 			name: "All",
 			input: webutil.SMTPConfig{
 				Host:     "host",
 				Port:     "25",
-				User:     "user",
+				Username: "user",
 				Password: "supersecret",
 			},
-			want: `{Host:host Port:25 User:user Password:[REDACTED]}`,
+			want: `{Host:host Port:25 Username:user Password:[REDACTED]}`,
 		},
 	}
 
