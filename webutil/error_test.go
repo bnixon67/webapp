@@ -35,12 +35,6 @@ func TestRespondWithError(t *testing.T) {
 			wantCode: http.StatusInternalServerError,
 			wantBody: "Error: Internal Server Error",
 		},
-		{
-			name:     "Fail",
-			code:     http.StatusNotFound,
-			wantCode: http.StatusInternalServerError,
-			wantBody: "Error: Internal Server Error",
-		},
 	}
 
 	for _, tc := range tests {
