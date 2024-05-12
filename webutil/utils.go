@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// IsMethodOrError verifies if the HTTP request method matches the specified
-// method. It returns true if they match. Otherwise, it sends a 405 Method
+// IsMethodOrError checks if the HTTP request method matches the specified
+// method and returns true if they match. Otherwise, it sends a 405 Method
 // Not Allowed response and returns false. The caller should stop further
 // processing if false is returned.
 func IsMethodOrError(w http.ResponseWriter, r *http.Request, method string) bool {
@@ -26,10 +26,9 @@ func IsMethodOrError(w http.ResponseWriter, r *http.Request, method string) bool
 }
 
 // CheckAllowedMethods validates the request's method against a list of
-// allowed methods. It automatically supports the OPTIONS method. If the
-// method is allowed, it returns true. If the method is not allowed, it sets
-// the 'Allow' header, responds appropriately, and returns false. The caller
-// is advised to halt further processing if false is returned.
+// allowed methods, automatically including the OPTIONS method.
+// It sets the 'Allow' header and sends appropriate responses.
+// The caller should stop further processing if false is returned.
 func CheckAllowedMethods(w http.ResponseWriter, r *http.Request, allowed ...string) bool {
 	if slices.Contains(allowed, r.Method) {
 		return true
@@ -40,7 +39,6 @@ func CheckAllowedMethods(w http.ResponseWriter, r *http.Request, allowed ...stri
 
 	// Inform the client about the allowed methods.
 	w.Header().Set("Allow", strings.Join(allowed, ", "))
-
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusNoContent)
 		return false
@@ -52,17 +50,31 @@ func CheckAllowedMethods(w http.ResponseWriter, r *http.Request, allowed ...stri
 	return false
 }
 
-// SetNoCacheHeaders sets headers for client to not cache the response content.
-func SetNoCacheHeaders(w http.ResponseWriter) {
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Pragma", "no-cache")
-	w.Header().Set("Expires", "0")
+func setHeaders(w http.ResponseWriter, headers map[string]string) {
+	for key, value := range headers {
+		w.Header().Set(key, value)
+	}
 }
 
-// SetContentType sets headers for client to interpret response as contentType.
+// SetNoCacheHeaders instructs the client to not cache the response.
+func SetNoCacheHeaders(w http.ResponseWriter) {
+	headers := map[string]string{
+		"Cache-Control": "no-cache, no-store, must-revalidate",
+		"Pragma":        "no-cache",
+		"Expires":       "0",
+	}
+
+	setHeaders(w, headers)
+}
+
+// SetContentType configures the 'Content-Type' and related headers.
 func SetContentType(w http.ResponseWriter, contentType string) {
-	w.Header().Set("Content-Type", contentType)
-	w.Header().Set("X-Content-Type-Options", "nosniff")
+	headers := map[string]string{
+		"Content-Type":           contentType,
+		"X-Content-Type-Options": "nosniff",
+	}
+
+	setHeaders(w, headers)
 }
 
 // SetContentTypeText sets headers for client to interpret response as plain text.
@@ -75,25 +87,20 @@ func SetContentTypeHTML(w http.ResponseWriter) {
 	SetContentType(w, "text/html;charset=utf-8")
 }
 
-// ClientIP retrieves the client's IP address from the request. It prioritizes
-// the X-Real-IP header value if present; otherwise, it falls back to the
-// request's RemoteAddr.
+// ClientIP retrieves the client's IP address, preferring the X-Real-IP header.
 func ClientIP(r *http.Request) string {
-	clientIP := r.Header.Get("X-Real-IP")
-	if clientIP == "" {
-		clientIP = r.RemoteAddr
+	if ip := r.Header.Get("X-Real-IP"); ip != "" {
+		return ip
 	}
-	return clientIP
+	return r.RemoteAddr
 }
 
-// ServeFileHandler creates an HTTP handler function that serves a specified
-// file. It verifies the file's existence and accessibility before creating
-// the handler. Returns nil if the file does not exist or is not accessible.
+// ServeFileHandler returns an HTTP handler that serves a specified file.
 func ServeFileHandler(filePath string) http.HandlerFunc {
-	// Check if the file exists and is accessible
-	_, err := os.Stat(filePath)
-	if err != nil {
-		slog.Error("does not exist or not accessible", "file", filePath)
+	if _, err := os.Stat(filePath); err != nil {
+		slog.Error("does not exist or not accessible",
+			slog.String("filePath", filePath),
+			slog.Any("error", err))
 		return nil
 	}
 
