@@ -13,14 +13,14 @@ import (
 func TestGetRemoteAddr(t *testing.T) {
 	tests := []webhandler.TestCase{
 		{
-			Name:          "Valid GET Request with no headers",
+			Name:          "GetWithoutHeaders",
 			Target:        "/remote",
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody:      "RemoteAddr: 192.0.2.1:1234\n",
 		},
 		{
-			Name:           "Valid GET Request with headers",
+			Name:           "GetWithHeaders",
 			Target:         "/remote",
 			RequestMethod:  http.MethodGet,
 			RequestHeaders: http.Header{"X-Real-Ip": {"192.0.2.1:5678"}},
@@ -28,11 +28,11 @@ func TestGetRemoteAddr(t *testing.T) {
 			WantBody:       "RemoteAddr: 192.0.2.1:1234\nX-Real-Ip: 192.0.2.1:5678\n",
 		},
 		{
-			Name:          "Invalid Request Method",
+			Name:          "InvalidMethod",
 			Target:        "/remote",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 	}
 

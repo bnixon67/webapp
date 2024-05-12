@@ -5,37 +5,30 @@ package webhandler
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// RemoteGetHandler responds with RemoteAddr and common headers for the
-// actual RemoteAddr if a proxy, load balancer, or similar is used to route
-// the request.
+// RemoteGetHandler responds with the requesting client's RemoteAddr and
+// potentially real IP addresses from common headers used by proxies or
+// load balancers. This handler ensures that it only responds to HTTP GET
+// requests and includes headers to prevent response caching.
 func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+	logger := NewRequestLoggerWithFuncName(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	logger.Debug("response")
-
-	// Set the content type of the response to text.
 	webutil.SetContentTypeText(w)
-
-	// Set no-cache headers to prevent caching of the response.
 	webutil.SetNoCacheHeaders(w)
 
-	// Write the RemoteAddr from the Request.
 	fmt.Fprintf(w, "RemoteAddr: %v\n", r.RemoteAddr)
 
-	// Common headers that may contain the actual remote address.
+	// List of headers that might contain the real client IP if behind
+	// a proxy or load balancer.
 	headers := []string{
 		"Cf-Connecting-Ip",
 		"X-Client-Ip",
@@ -43,11 +36,13 @@ func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 		"X-Real-Ip",
 	}
 
-	// Write common headers that may contain the actual remote address.
+	// Check and write any relevant headers that contain IP information.
 	for _, header := range headers {
 		val := r.Header.Get(header)
 		if val != "" {
 			fmt.Fprintf(w, "%s: %v\n", header, val)
 		}
 	}
+
+	logger.Info("done")
 }
