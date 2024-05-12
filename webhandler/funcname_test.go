@@ -9,24 +9,24 @@ import (
 	"github.com/bnixon67/webapp/webhandler"
 )
 
-func TestGetCallingFuncName(t *testing.T) {
+func TestFuncName(t *testing.T) {
 	funcName := webhandler.FuncName()
-	want := "TestGetCallingFuncName"
+	want := "TestFuncName"
 
 	if funcName != want {
-		t.Errorf("Expected: %s, Got: %s", want, funcName)
+		t.Errorf("got %v, want %v", funcName, want)
 	}
 }
 
-func testParentFunc() string {
+func testFuncNameParent() string {
 	return webhandler.FuncNameParent()
 }
 
-func TestGetCallingFuncNameParent(t *testing.T) {
-	funcName := testParentFunc()
-	want := "TestGetCallingFuncNameParent"
+func TestFuncNameParent(t *testing.T) {
+	funcName := testFuncNameParent()
+	want := "TestFuncNameParent"
 
 	if funcName != want {
-		t.Errorf("Expected: %s, Got: %s", want, funcName)
+		t.Errorf("got %v, want %v", funcName, want)
 	}
 }
