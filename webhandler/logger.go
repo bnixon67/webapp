@@ -11,15 +11,15 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// LoggerKeyType is used to avoid key collisions with other context values.
-type LoggerKeyType struct{}
+// loggerKeyType is a custom type to avoid key collisions in context values.
+type loggerKeyType struct{}
 
-// LoggerKey is the key used to store and retrieve the logger from the context.
-var LoggerKey = LoggerKeyType{}
+// loggerKey is a unique identifier for retrieving a logger from a context.
+var loggerKey = loggerKeyType{}
 
-// NewRequestLogger creates a logger to log HTTP requests with attributes
-// like method, URL, and IP.  This function can be a substitute to AddLogger
-// middleware.
+// NewRequestLogger creates and configures a logger specifically for logging
+// HTTP request details, such as the method, URL, and client IP. It optionally
+// includes a request ID if present.
 func NewRequestLogger(r *http.Request) *slog.Logger {
 	attributes := []any{
 		slog.String("method", r.Method),
@@ -27,6 +27,7 @@ func NewRequestLogger(r *http.Request) *slog.Logger {
 		slog.String("ip", webutil.ClientIP(r)),
 	}
 
+	// Append request ID to the log attributes if available.
 	if id := RequestID(r.Context()); id != "" {
 		attributes = append(attributes, slog.String("id", id))
 	}
@@ -34,29 +35,32 @@ func NewRequestLogger(r *http.Request) *slog.Logger {
 	return slog.With(slog.Group("request", attributes...))
 }
 
-// NewRequestLoggerWithFuncName enhances RequestLogger with the function name.
+// NewRequestLoggerWithFuncName augments a request logger by adding the
+// caller function's name to the log attributes.
 func NewRequestLoggerWithFuncName(r *http.Request) *slog.Logger {
 	return NewRequestLogger(r).With(slog.String("func", FuncNameParent()))
 }
 
-// MiddlewareLogger adds a logger to the request context and passes it down
-// the middleware chain.
+// MiddlewareLogger creates middleware that injects a logger into the request
+// context, enabling subsequent handlers in the chain to log request-specific
+// information.
 func MiddlewareLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := NewRequestLogger(r)
-		ctx := context.WithValue(r.Context(), LoggerKey, logger)
+		ctx := context.WithValue(r.Context(), loggerKey, logger)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// ExtractLogger retrieves the logger from the context. Returns a default
-// logger if none found.
-func ExtractLogger(ctx context.Context) *slog.Logger {
+// Logger attempts to retrieve a logger from the provided context.
+// It returns a default logger if no custom logger is found or if the context
+// is nil.
+func Logger(ctx context.Context) *slog.Logger {
 	if ctx == nil {
 		return slog.Default()
 	}
 
-	if logger, ok := ctx.Value(LoggerKey).(*slog.Logger); ok {
+	if logger, ok := ctx.Value(loggerKey).(*slog.Logger); ok {
 		return logger
 	}
 

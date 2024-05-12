@@ -16,7 +16,7 @@ import (
 // the request.
 func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := ExtractLogger(r.Context()).With(slog.String("func", FuncName()))
+	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
