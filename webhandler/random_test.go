@@ -11,6 +11,16 @@ import (
 	"github.com/bnixon67/webapp/webhandler"
 )
 
+// isSubset checks if all characters in the 'str' are in the 'charset'.
+func isSubset(str, charset string) bool {
+	for _, r := range str {
+		if !strings.ContainsRune(charset, r) {
+			return false
+		}
+	}
+	return true
+}
+
 func TestRandomStringFromCharset(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -56,32 +66,22 @@ func TestRandomStringFromCharset(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := webhandler.RandomStringFromCharset(tt.charset, tt.length)
-			if (err != nil) != tt.expectError {
-				t.Errorf("RandomStringFromCharset() error = %v, expectError %v", err, tt.expectError)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := webhandler.RandomStringFromCharset(tc.charset, tc.length)
+			if (err != nil) != tc.expectError {
+				t.Errorf("RandomStringFromCharset() error = %v, expectError %v", err, tc.expectError)
 				return
 			}
 
 			if err == nil {
-				if utf8.RuneCountInString(got) != tt.length {
-					t.Errorf("RandomStringFromCharset() got = %v (%v), want length %v", utf8.RuneCountInString(got), got, tt.length)
+				if utf8.RuneCountInString(got) != tc.length {
+					t.Errorf("RandomStringFromCharset() got = %v (%v), want length %v", utf8.RuneCountInString(got), got, tc.length)
 				}
-				if !isSubset(got, tt.charset) {
-					t.Errorf("RandomStringFromCharset() got characters not in charset, got = %v, charset = %v", got, tt.charset)
+				if !isSubset(got, tc.charset) {
+					t.Errorf("RandomStringFromCharset() got characters not in charset, got = %v, charset = %v", got, tc.charset)
 				}
 			}
 		})
 	}
-}
-
-// isSubset checks if all characters in the 'str' are in the 'charset'.
-func isSubset(str, charset string) bool {
-	for _, r := range str {
-		if !strings.ContainsRune(charset, r) {
-			return false
-		}
-	}
-	return true
 }

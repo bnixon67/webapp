@@ -38,7 +38,7 @@ func AddMiddleware(h http.Handler) http.Handler {
 	// Functions are executed in reverse, so last added is called first.
 	h = webhandler.LogRequest(h)
 	h = webhandler.MiddlewareLogger(h)
-	h = webhandler.AddRequestID(h)
+	h = webhandler.NewRequestIDMiddleware(h)
 
 	return h
 }

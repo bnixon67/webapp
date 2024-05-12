@@ -45,7 +45,7 @@ func AddMiddleware(h http.Handler) http.Handler {
 	h = webhandler.AddSecurityHeaders(h)
 	h = webhandler.LogRequest(h)
 	h = webhandler.MiddlewareLogger(h)
-	h = webhandler.AddRequestID(h)
+	h = webhandler.NewRequestIDMiddleware(h)
 
 	return h
 }

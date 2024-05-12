@@ -92,7 +92,7 @@ func main() {
 	// Functions are executed in reverse, so last added is called first.
 	h := webhandler.LogRequest(mux)
 	h = webhandler.MiddlewareLogger(h)
-	h = webhandler.AddRequestID(h)
+	h = webhandler.NewRequestIDMiddleware(h)
 
 	sseServer := websse.NewServer()
 	sseServer.RegisterEvents("", "event1", "event2")

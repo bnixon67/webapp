@@ -80,10 +80,10 @@ func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	form := ParseLoginForm(r)
 
-	logger = slog.With(
+	logger = logger.With(
 		slog.Group("form",
 			slog.String("username", form.Username),
-			slog.Bool("password", form.Password != ""),
+			slog.Bool("passwordNotEmpty", form.Password != ""),
 			slog.String("remember", form.Remember),
 		),
 	)
