@@ -95,7 +95,7 @@ func AddRequestID(next http.Handler) http.Handler {
 		// Add the request ID to headers.
 		w.Header().Set("X-Request-ID", reqID)
 
-		logger := RequestLogger(r)
+		logger := NewRequestLogger(r)
 		logger.Debug("executed",
 			slog.String("id", reqID),
 			slog.String("func", "AddRequestID"))

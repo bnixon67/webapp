@@ -91,7 +91,7 @@ func main() {
 	// Add middleware to mux.
 	// Functions are executed in reverse, so last added is called first.
 	h := webhandler.LogRequest(mux)
-	h = webhandler.AddLogger(h)
+	h = webhandler.MiddlewareLogger(h)
 	h = webhandler.AddRequestID(h)
 
 	sseServer := websse.NewServer()

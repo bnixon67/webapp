@@ -32,7 +32,7 @@ type ConfirmRequestPageData struct {
 // token. Submission of the request with an email is via a POST request,
 // which is handled by ConfirmRequestHandlerPost.
 func (app *AuthApp) ConfirmRequestHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
@@ -49,7 +49,7 @@ func (app *AuthApp) ConfirmRequestHandlerGet(w http.ResponseWriter, r *http.Requ
 // confirmation token. It extracts the 'email" from the form data to create
 // the token and then email to the user.
 func (app *AuthApp) ConfirmRequestHandlerPost(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodPost) {
 		logger.Error("invalid method")

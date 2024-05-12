@@ -21,7 +21,7 @@ type ConfirmRequestSentData struct {
 // ConfirmRequestSentHandler handles GET requests for confirm request sent
 // success page.
 func (app *AuthApp) ConfirmRequestSentHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")

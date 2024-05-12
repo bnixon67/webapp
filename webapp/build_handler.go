@@ -17,7 +17,7 @@ const BuildDateTimeFormat = "2006-01-02 15:04:05"
 
 // BuildHandlerGet responds with the application's build date and time.
 func (app *WebApp) BuildHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")

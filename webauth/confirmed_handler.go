@@ -20,7 +20,7 @@ type ConfirmedData struct {
 // ConfirmedHandlerGet handles GET requests for the email confirmation
 // success page.
 func (app *AuthApp) ConfirmedHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")

@@ -15,7 +15,7 @@ func LogRequest(next http.Handler) http.Handler {
 		// Retrieve a logger pre-configured with request information.
 		// GetRequestLogger is used instead of obtaining the logger directly from the context.
 		// This ensures compatibility if AddLogger middleware was not.
-		logger := RequestLogger(r).With(slog.String("func", "LogRequest"))
+		logger := NewRequestLogger(r).With(slog.String("func", "LogRequest"))
 
 		// Log the incoming request.
 		logger.Info("received")

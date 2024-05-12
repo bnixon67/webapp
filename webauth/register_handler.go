@@ -30,7 +30,7 @@ type RegisterPageData struct {
 // RegisterHandler handles requests to register a user.
 func (app *AuthApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet, http.MethodPost) {
@@ -51,7 +51,7 @@ func (app *AuthApp) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 // registerPost handles POST of the registration form.
 func (app *AuthApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	// Get form values and remove leading and trailing white space.
 	username := strings.TrimSpace(r.PostFormValue("username"))

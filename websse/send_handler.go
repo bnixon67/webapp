@@ -19,7 +19,7 @@ import (
 // the message.
 func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodPost) {

@@ -54,7 +54,7 @@ func SortHeaders(httpHeader http.Header) []HeaderPair {
 
 // HeadersHandlerGet shows the headers of the request in sorted order.
 func (app *WebApp) HeadersHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")

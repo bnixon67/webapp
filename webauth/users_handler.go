@@ -23,7 +23,7 @@ type UsersPageData struct {
 // UsersHandler shows a list of the current users.
 func (app *AuthApp) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	logger := webhandler.ExtractLogger(r.Context()).With(slog.String("func", webhandler.FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
@@ -62,7 +62,7 @@ func (app *AuthApp) UsersHandler(w http.ResponseWriter, r *http.Request) {
 // UsersCSVHandler provides list of the current users as a CSV file.
 func (app *AuthApp) UsersCSVHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.LoggerFromContext(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	logger := webhandler.ExtractLogger(r.Context()).With(slog.String("func", webhandler.FuncName()))
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
