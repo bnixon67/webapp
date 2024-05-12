@@ -10,7 +10,6 @@ import (
 	"github.com/bnixon67/webapp/assets"
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/webutil"
 )
 
 func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
@@ -24,8 +23,8 @@ func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 	cssFile := filepath.Join(assetsDir, "css", "w3.css")
 	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")
 
-	mux.HandleFunc("GET /w3.css", webutil.ServeFileHandler(cssFile))
-	mux.HandleFunc("GET /favicon.ico", webutil.ServeFileHandler(icoFile))
+	mux.HandleFunc("GET /w3.css", webhandler.ServeFileHandler(cssFile))
+	mux.HandleFunc("GET /favicon.ico", webhandler.ServeFileHandler(icoFile))
 	mux.HandleFunc("GET /hello", app.HelloTextHandlerGet)
 	mux.HandleFunc("GET /hellohtml", app.HelloHTMLHandlerGet)
 	mux.HandleFunc("GET /build", app.BuildHandlerGet)
