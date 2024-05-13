@@ -5,22 +5,18 @@ package webutil
 
 import (
 	"html/template"
-	"log/slog"
 	"strings"
 	"time"
 )
 
 // ToTimeZone returns time adjusted to the given timezone.
 // If tzName is invalid, then the zero time value is returned.
-func ToTimeZone(t time.Time, tzName string) time.Time {
+func ToTimeZone(t time.Time, tzName string) (time.Time, error) {
 	loc, err := time.LoadLocation(tzName)
 	if err != nil {
-		slog.Error("failed to load location",
-			slog.String("tzName", tzName),
-			slog.Any("error", err))
-		return time.Time{}
+		return time.Time{}, err
 	}
-	return t.In(loc)
+	return t.In(loc), nil
 }
 
 // Join concatenates the elements of a []string into a single string,

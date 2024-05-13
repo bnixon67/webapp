@@ -16,33 +16,45 @@ func TestToTimeZone(t *testing.T) {
 	baseTime := time.Date(2023, time.April, 10, 12, 0, 0, 0, time.UTC)
 
 	tests := []struct {
-		name   string
-		time   time.Time
-		tzName string
-		want   time.Time
+		name    string
+		time    time.Time
+		tzName  string
+		want    time.Time
+		wantErr bool
 	}{
 		{
-			name:   "UTCtoPST",
-			time:   baseTime,
-			tzName: "America/Los_Angeles",
-			want:   baseTime.In(time.FixedZone("PST", -8*3600)),
+			name:    "UTCtoPST",
+			time:    baseTime,
+			tzName:  "America/Los_Angeles",
+			want:    baseTime.In(time.FixedZone("PST", -8*3600)),
+			wantErr: false,
 		},
 		{
-			name:   "UTCtoIST",
-			time:   baseTime,
-			tzName: "Asia/Kolkata",
-			want:   baseTime.In(time.FixedZone("IST", 5*3600+1800)),
+			name:    "UTCtoIST",
+			time:    baseTime,
+			tzName:  "Asia/Kolkata",
+			want:    baseTime.In(time.FixedZone("IST", 5*3600+1800)),
+			wantErr: false,
 		},
 		{
-			name:   "invalidTimezone",
-			time:   baseTime,
-			tzName: "Mars/Phobos",
+			name:    "invalidTimezone",
+			time:    baseTime,
+			tzName:  "Mars/Phobos",
+			wantErr: true,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := webutil.ToTimeZone(tc.time, tc.tzName)
+			got, gotErr := webutil.ToTimeZone(tc.time, tc.tzName)
+
+			if gotErr == nil && tc.wantErr {
+				t.Errorf("Got no error but wanted one")
+			}
+			if gotErr != nil && !tc.wantErr {
+				t.Errorf("Got error %q but wanted none", gotErr)
+			}
+
 			if !got.Equal(tc.want) {
 				t.Errorf("ToTimeZone() = %v, want %v", got, tc.want)
 			}
