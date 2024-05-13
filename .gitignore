@@ -5,7 +5,7 @@
 *.swp
 *.test
 *~
-coverage.html
+cover/
 
 # Ignore all .json files
 *.json
