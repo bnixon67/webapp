@@ -29,7 +29,7 @@ func TestLogRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a request with the specified HTTP method and URL.
-			req, err := http.NewRequest(tt.method, tt.url, nil)
+			req, err := http.NewRequest(tt.method, tt.url, http.NoBody)
 			if err != nil {
 				t.Fatalf("Could not create request: %v", err)
 			}
