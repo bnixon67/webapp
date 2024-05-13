@@ -15,12 +15,12 @@ type EventName string
 
 const (
 	EventLogin     EventName = "login"
-	EventLogout              = "logout"
-	EventRegister            = "register"
-	EventSaveToken           = "save_token"
-	EventResetPass           = "reset_pass"
-	EventConfirmed           = "confirmed"
-	EventMaxName             = "1234567890" // Event defined as varchar(10).
+	EventLogout    EventName = "logout"
+	EventRegister  EventName = "register"
+	EventSaveToken EventName = "save_token"
+	EventResetPass EventName = "reset_pass"
+	EventConfirmed EventName = "confirmed"
+	EventMaxName   EventName = "1234567890" // Event defined as varchar(10).
 )
 
 // Event represents a system event, such as a user login or registration.
