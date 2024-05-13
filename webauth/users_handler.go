@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/bnixon67/webapp/csv"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
@@ -91,7 +92,7 @@ func (app *AuthApp) UsersCSVHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", "attachment;filename=users.csv")
 
-	err = webutil.SliceOfStructsToCSV(w, users)
+	err = csv.SliceOfStructsToCSV(w, users)
 	if err != nil {
 		logger.Error("failed to convert struct to CSV",
 			"err", err, "users", users)

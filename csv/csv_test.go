@@ -1,14 +1,14 @@
 // Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-package webutil_test
+package csv_test
 
 import (
 	"bytes"
 	"errors"
 	"testing"
 
-	"github.com/bnixon67/webapp/webutil"
+	"github.com/bnixon67/webapp/csv"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -46,20 +46,20 @@ func TestSliceOfStructsToCSV(t *testing.T) {
 			name:    "Not a slice",
 			input:   User{1, "Alice", "alice@example.com"},
 			want:    "",
-			wantErr: webutil.ErrCSVNotSlice,
+			wantErr: csv.ErrCSVNotSlice,
 		},
 		{
 			name:    "Slice with non-struct elements",
 			input:   []int{1, 2, 3},
 			want:    "",
-			wantErr: webutil.ErrCSVNotSliceOfStructs,
+			wantErr: csv.ErrCSVNotSliceOfStructs,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			err := webutil.SliceOfStructsToCSV(&buf, tc.input)
+			err := csv.SliceOfStructsToCSV(&buf, tc.input)
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("SliceOfStructsToCSV() error = %v, wantErr %v", err, tc.wantErr)
@@ -73,9 +73,9 @@ func TestSliceOfStructsToCSV(t *testing.T) {
 	}
 
 	t.Run("Error writing CSV", func(t *testing.T) {
-		err := webutil.SliceOfStructsToCSV(&failWriter{}, []User{{1, "Alice", "alice@example.com"}})
-		if !errors.Is(err, webutil.ErrCSVWriteFailed) {
-			t.Errorf("SliceOfStructsToCSV() error = %v, wantErr %v", err, webutil.ErrCSVWriteFailed)
+		err := csv.SliceOfStructsToCSV(&failWriter{}, []User{{1, "Alice", "alice@example.com"}})
+		if !errors.Is(err, csv.ErrCSVWriteFailed) {
+			t.Errorf("SliceOfStructsToCSV() error = %v, wantErr %v", err, csv.ErrCSVWriteFailed)
 		}
 	})
 }

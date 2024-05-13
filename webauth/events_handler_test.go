@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/bnixon67/webapp/assets"
+	"github.com/bnixon67/webapp/csv"
 	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
@@ -158,7 +159,7 @@ func TestEventsCSVHandler(t *testing.T) {
 		t.Fatalf("failed GetEvents: %v", err)
 	}
 	var eventsBody bytes.Buffer
-	err = webutil.SliceOfStructsToCSV(&eventsBody, events)
+	err = csv.SliceOfStructsToCSV(&eventsBody, events)
 	if err != nil {
 		t.Fatalf("failed SliceOfStructsToCSV: %v", err)
 	}

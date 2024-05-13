@@ -6,6 +6,7 @@ package webauth
 import (
 	"net/http"
 
+	"github.com/bnixon67/webapp/csv"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
@@ -86,7 +87,7 @@ func (app *AuthApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", "attachment;filename=events.csv")
 
-	err = webutil.SliceOfStructsToCSV(w, events)
+	err = csv.SliceOfStructsToCSV(w, events)
 	if err != nil {
 		logger.Error("failed to convert struct to CSV",
 			"err", err, "events", events)
