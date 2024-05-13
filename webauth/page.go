@@ -38,6 +38,5 @@ func (app *AuthApp) RenderPage(w http.ResponseWriter, logger *slog.Logger, templ
 	err := webutil.RenderTemplateOrError(app.Tmpl, w, templateName, data)
 	if err != nil {
 		logger.Error("unable to render template", "err", err)
-		webutil.RespondWithError(w, http.StatusInternalServerError)
 	}
 }
