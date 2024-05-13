@@ -1,16 +1,16 @@
 // Copyright 2023 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-package webhandler_test
+package util_test
 
 import (
 	"testing"
 
-	"github.com/bnixon67/webapp/webhandler"
+	"github.com/bnixon67/webapp/util"
 )
 
 func TestFuncName(t *testing.T) {
-	funcName := webhandler.FuncName()
+	funcName := util.FuncName()
 	want := "TestFuncName"
 
 	if funcName != want {
@@ -19,7 +19,7 @@ func TestFuncName(t *testing.T) {
 }
 
 func testFuncNameParent() string {
-	return webhandler.FuncNameParent()
+	return util.FuncNameParent()
 }
 
 func TestFuncNameParent(t *testing.T) {

@@ -8,13 +8,15 @@ import (
 	"fmt"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/bnixon67/webapp/util"
 )
 
-// reqIDPrefix is a random prefix for the request ID set at program startup.
-var reqIDPrefix string = generateRandomPrefix()
+// prefix is a random prefix for the request ID set at program startup.
+var prefix string = generateRandomPrefix()
 
-// reqIDPrefixLength is the length of the random request ID prefix.
-const reqIDPrefixLength = 4
+// prefixLen is the length of the random request ID prefix.
+const prefixLen = 4
 
 // generateRandomPrefix creates a random string to be used as a prefix for
 // generating request IDs.
@@ -23,7 +25,7 @@ const reqIDPrefixLength = 4
 func generateRandomPrefix() string {
 	const lowerLetters = "abcdefghijklmnopqrstuvwxyz"
 
-	prefix, err := RandomStringFromCharset(lowerLetters, reqIDPrefixLength)
+	prefix, err := util.RandomStringFromCharset(lowerLetters, prefixLen)
 	if err != nil {
 		panic("failed to initialize request ID prefix: " + err.Error())
 	}
@@ -36,7 +38,7 @@ func generateRandomPrefix() string {
 // atomically incremented counter.
 func generateRequestID(counter *uint32) string {
 	id := atomic.AddUint32(counter, 1)
-	return fmt.Sprintf("%s%08X", reqIDPrefix, id)
+	return fmt.Sprintf("%s%08X", prefix, id)
 }
 
 // reqIDType is a custom type to avoid collisions in context values.

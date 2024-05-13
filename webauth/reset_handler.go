@@ -22,8 +22,7 @@ type ResetPageData struct {
 
 // ResetHandler handles /reset requests.
 func (app *AuthApp) ResetHandler(w http.ResponseWriter, r *http.Request) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.Logger(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet, http.MethodPost) {
@@ -51,8 +50,7 @@ func (app *AuthApp) ResetHandler(w http.ResponseWriter, r *http.Request) {
 
 // resetPost is called for the POST method of the RegisterHandler.
 func (app *AuthApp) resetPost(w http.ResponseWriter, r *http.Request, tmplFileName string) {
-	// Get logger with request info from request context and add calling function name.
-	logger := webhandler.Logger(r.Context()).With(slog.String("func", webhandler.FuncName()))
+	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
 	// get form values
 	resetToken := strings.TrimSpace(r.PostFormValue("rtoken"))

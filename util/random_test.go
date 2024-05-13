@@ -1,14 +1,14 @@
 // Copyright 2023 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-package webhandler_test
+package util_test
 
 import (
 	"strings"
 	"testing"
 	"unicode/utf8"
 
-	"github.com/bnixon67/webapp/webhandler"
+	"github.com/bnixon67/webapp/util"
 )
 
 // isSubset checks if all characters in the 'str' are in the 'charset'.
@@ -68,7 +68,7 @@ func TestRandomStringFromCharset(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := webhandler.RandomStringFromCharset(tc.charset, tc.length)
+			got, err := util.RandomStringFromCharset(tc.charset, tc.length)
 			if (err != nil) != tc.expectError {
 				t.Errorf("RandomStringFromCharset() error = %v, expectError %v", err, tc.expectError)
 				return

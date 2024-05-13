@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/bnixon67/webapp/util"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -32,7 +33,7 @@ func NewRequestLogger(r *http.Request) *slog.Logger {
 // NewRequestLoggerWithFuncName augments a request logger by adding the
 // caller function's name to the log attributes.
 func NewRequestLoggerWithFuncName(r *http.Request) *slog.Logger {
-	return NewRequestLogger(r).With(slog.String("func", FuncNameParent()))
+	return NewRequestLogger(r).With(slog.String("func", util.FuncNameParent()))
 }
 
 // loggerKeyType is a custom type to avoid key collisions in context values.
