@@ -60,7 +60,7 @@ func (app *AuthApp) registerPost(w http.ResponseWriter, r *http.Request) {
 	password1 := strings.TrimSpace(r.PostFormValue("password1"))
 	password2 := strings.TrimSpace(r.PostFormValue("password2"))
 
-	logger = slog.With(
+	logger = logger.With(
 		slog.Group("form",
 			"username", username,
 			"fullName", fullName,
