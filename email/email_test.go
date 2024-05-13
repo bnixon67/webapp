@@ -1,7 +1,7 @@
 // Copyright 2024 Bill Nixon. All rights reserved.
 // Use of this source code is governed by the license found in the LICENSE file.
 
-package webutil_test
+package email_test
 
 import (
 	"errors"
@@ -9,13 +9,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bnixon67/webapp/webutil"
+	"github.com/bnixon67/webapp/email"
 )
 
 // Define a test struct to hold the test case data
 type sendEmailTest struct {
 	name       string
-	smtpConfig webutil.SMTPConfig
+	smtpConfig email.SMTPConfig
 	from       string
 	to         []string
 	subject    string
@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 	ready := make(chan bool)
 
 	// Start the mock SMTP server in a goroutine.
-	go webutil.MockSMTPServerStart(ready,
+	go email.MockSMTPServerStart(ready,
 		net.JoinHostPort(MockSMTPHost, MockSMTPPort))
 
 	// Wait for the server to signal it is ready.
@@ -48,12 +48,12 @@ func TestSendEmail(t *testing.T) {
 	tests := []sendEmailTest{
 		{
 			name:       "emptyConfig",
-			smtpConfig: webutil.SMTPConfig{},
-			wantErr:    webutil.ErrEmailInvalidConfig,
+			smtpConfig: email.SMTPConfig{},
+			wantErr:    email.ErrEmailInvalidConfig,
 		},
 		{
 			name: "invalidServer",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
 				Username: "smtpuser@example.com",
@@ -61,44 +61,44 @@ func TestSendEmail(t *testing.T) {
 			},
 			from:    "from@example.com",
 			to:      []string{"to@example.com"},
-			wantErr: webutil.ErrEmailSendFailed,
+			wantErr: email.ErrEmailSendFailed,
 		},
 		{
 			name: "emptyFrom",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
 				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			to:      []string{"to@example.com"},
-			wantErr: webutil.ErrEmailInvalidFrom,
+			wantErr: email.ErrEmailInvalidFrom,
 		},
 		{
 			name: "invalidFrom",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
 				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			to:      []string{"to"},
-			wantErr: webutil.ErrEmailInvalidFrom,
+			wantErr: email.ErrEmailInvalidFrom,
 		},
 		{
 			name: "emptyTo",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
 				Username: "smtpuser@example.com",
 				Password: "password",
 			},
 			from:    "from@example.com",
-			wantErr: webutil.ErrEmailNoRecipients,
+			wantErr: email.ErrEmailNoRecipients,
 		},
 		{
 			name: "invalidTo0",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
 				Username: "smtpuser@example.com",
@@ -106,11 +106,11 @@ func TestSendEmail(t *testing.T) {
 			},
 			from:    "from@example.com",
 			to:      []string{"to"},
-			wantErr: webutil.ErrEmailInvalidRecipient,
+			wantErr: email.ErrEmailInvalidRecipient,
 		},
 		{
 			name: "invalidTo1",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     "smtp.example.com",
 				Port:     "587",
 				Username: "smtpuser@example.com",
@@ -118,11 +118,11 @@ func TestSendEmail(t *testing.T) {
 			},
 			from:    "from@example.com",
 			to:      []string{"from@exmaple.com", "to"},
-			wantErr: webutil.ErrEmailInvalidRecipient,
+			wantErr: email.ErrEmailInvalidRecipient,
 		},
 		{
 			name: "validMessage",
-			smtpConfig: webutil.SMTPConfig{
+			smtpConfig: email.SMTPConfig{
 				Host:     MockSMTPHost,
 				Port:     MockSMTPPort,
 				Username: "smtpuser@example.com",
@@ -149,26 +149,26 @@ func TestSendEmail(t *testing.T) {
 func TestSMTPConfigMarshalJSON(t *testing.T) {
 	testCases := []struct {
 		name  string
-		input webutil.SMTPConfig
+		input email.SMTPConfig
 		want  string
 	}{
 		{
 			name: "Password",
-			input: webutil.SMTPConfig{
+			input: email.SMTPConfig{
 				Password: "supersecret",
 			},
 			want: `{"Host":"","Port":"","Username":"","Password":"[REDACTED]"}`,
 		},
 		{
 			name: "Host",
-			input: webutil.SMTPConfig{
+			input: email.SMTPConfig{
 				Host: "host",
 			},
 			want: `{"Host":"host","Port":"","Username":"","Password":""}`,
 		},
 		{
 			name: "All",
-			input: webutil.SMTPConfig{
+			input: email.SMTPConfig{
 				Host:     "host",
 				Port:     "25",
 				Username: "user",
@@ -195,26 +195,26 @@ func TestSMTPConfigMarshalJSON(t *testing.T) {
 func TestSMTPConfigString(t *testing.T) {
 	testCases := []struct {
 		name  string
-		input webutil.SMTPConfig
+		input email.SMTPConfig
 		want  string
 	}{
 		{
 			name: "Password",
-			input: webutil.SMTPConfig{
+			input: email.SMTPConfig{
 				Password: "supersecret",
 			},
 			want: `{Host: Port: Username: Password:[REDACTED]}`,
 		},
 		{
 			name: "Host",
-			input: webutil.SMTPConfig{
+			input: email.SMTPConfig{
 				Host: "host",
 			},
 			want: `{Host:host Port: Username: Password:}`,
 		},
 		{
 			name: "All",
-			input: webutil.SMTPConfig{
+			input: email.SMTPConfig{
 				Host:     "host",
 				Port:     "25",
 				Username: "user",

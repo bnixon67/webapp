@@ -10,8 +10,8 @@ import (
 	"os"
 
 	"github.com/bnixon67/required"
+	"github.com/bnixon67/webapp/email"
 	"github.com/bnixon67/webapp/webapp"
-	"github.com/bnixon67/webapp/webutil"
 )
 
 // ConfigAuth holds settings specific to the auth app.
@@ -28,10 +28,10 @@ type ConfigSQL struct {
 
 // Config represents the overall application configuration.
 type Config struct {
-	webapp.Config                    // Inherit webapp.Config
-	Auth          ConfigAuth         // Auth app configuration.
-	SQL           ConfigSQL          // SQL Database configuration.
-	SMTP          webutil.SMTPConfig // SMTP server configuration.
+	webapp.Config                  // Inherit webapp.Config
+	Auth          ConfigAuth       // Auth app configuration.
+	SQL           ConfigSQL        // SQL Database configuration.
+	SMTP          email.SMTPConfig // SMTP server configuration.
 }
 
 var (

@@ -12,9 +12,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
+	"github.com/bnixon67/webapp/email"
 	"github.com/bnixon67/webapp/webapp"
 	"github.com/bnixon67/webapp/webauth"
-	"github.com/bnixon67/webapp/webutil"
 )
 
 const (
@@ -27,7 +27,7 @@ const (
 )
 
 // SendStartingEmail sends an email indicating the server is starting.
-func SendStartingEmail(to string, cfg webutil.SMTPConfig) error {
+func SendStartingEmail(to string, cfg email.SMTPConfig) error {
 	hostName, err := os.Hostname()
 	if err != nil {
 		return err

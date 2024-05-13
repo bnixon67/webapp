@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bnixon67/webapp/webutil"
+	"github.com/bnixon67/webapp/email"
 )
 
 const (
@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	ready := make(chan bool)
 
 	// Start the mock SMTP server in a goroutine.
-	go webutil.MockSMTPServerStart(ready,
+	go email.MockSMTPServerStart(ready,
 		net.JoinHostPort(MockSMTPHost, MockSMTPPort))
 
 	// Wait for the server to signal it is ready.
