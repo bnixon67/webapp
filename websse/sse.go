@@ -71,8 +71,6 @@ func (s *Server) RegisterEvent(event string) {
 
 	// Register an event using a key in eventClients.
 	s.eventClients[event] = []*Client{}
-
-	return
 }
 
 // RegisterEvents allows the server to accept and respond to multiple events.
