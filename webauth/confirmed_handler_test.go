@@ -57,5 +57,5 @@ func TestConfirmedHandlerGet(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ConfirmedHandlerGet, tests)
+	webhandler.TestHandler(t, app.ConfirmedHandlerGet, tests)
 }

@@ -102,5 +102,5 @@ func TestUserGetHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.UserGetHandler, tests)
+	webhandler.TestHandler(t, app.UserGetHandler, tests)
 }

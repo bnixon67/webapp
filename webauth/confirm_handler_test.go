@@ -52,7 +52,7 @@ func TestConfirmHandlerGet(t *testing.T) {
 		},
 	}
 
-	webhandler.HandlerTestWithCases(t, app.ConfirmHandlerGet, tests)
+	webhandler.TestHandler(t, app.ConfirmHandlerGet, tests)
 }
 
 func TestConfirmHandlerPost(t *testing.T) {
@@ -146,5 +146,5 @@ func TestConfirmHandlerPost(t *testing.T) {
 		},
 	}
 
-	webhandler.HandlerTestWithCases(t, app.ConfirmHandlerPost, tests)
+	webhandler.TestHandler(t, app.ConfirmHandlerPost, tests)
 }

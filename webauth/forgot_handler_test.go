@@ -162,5 +162,5 @@ func TestForgotHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ForgotHandler, tests)
+	webhandler.TestHandler(t, app.ForgotHandler, tests)
 }

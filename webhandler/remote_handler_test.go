@@ -37,5 +37,5 @@ func TestGetRemoteAddr(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, webhandler.RemoteGetHandler, tests)
+	webhandler.TestHandler(t, webhandler.RemoteGetHandler, tests)
 }

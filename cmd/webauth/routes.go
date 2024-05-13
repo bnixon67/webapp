@@ -18,7 +18,7 @@ func AddRoutes(mux *http.ServeMux, app *webauth.AuthApp) {
 		http.RedirectHandler("/user", http.StatusFound))
 	mux.HandleFunc("/events", app.EventsHandler)
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
-	mux.HandleFunc("/favicon.ico", webhandler.ServeFileHandler(icoFile))
+	mux.HandleFunc("/favicon.ico", webhandler.FileHandler(icoFile))
 	mux.HandleFunc("/forgot", app.ForgotHandler)
 	mux.HandleFunc("GET /confirm", app.ConfirmHandlerGet)
 	mux.HandleFunc("GET /confirmed", app.ConfirmedHandlerGet)
@@ -34,7 +34,7 @@ func AddRoutes(mux *http.ServeMux, app *webauth.AuthApp) {
 	mux.HandleFunc("/reset", app.ResetHandler)
 	mux.HandleFunc("/users", app.UsersHandler)
 	mux.HandleFunc("/userscsv", app.UsersCSVHandler)
-	mux.HandleFunc("/w3.css", webhandler.ServeFileHandler(cssFile))
+	mux.HandleFunc("/w3.css", webhandler.FileHandler(cssFile))
 
 	// https://www.w3.org/TR/change-password-url/
 	mux.Handle("/.well-known/change-password",

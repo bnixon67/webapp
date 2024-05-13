@@ -127,7 +127,7 @@ func TestUsersHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.UsersHandler, tests)
+	webhandler.TestHandler(t, app.UsersHandler, tests)
 }
 
 func TestUsersCSVHandler(t *testing.T) {
@@ -202,5 +202,5 @@ func TestUsersCSVHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.UsersCSVHandler, tests)
+	webhandler.TestHandler(t, app.UsersCSVHandler, tests)
 }

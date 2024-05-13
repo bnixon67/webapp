@@ -9,10 +9,9 @@ import (
 	"time"
 )
 
-// LogRequest is a middleware function that logs the start and completion
-// of each HTTP request, along with the duration it took to handle the
-// request. It enhances HTTP handlers by providing detailed logging for
-// debugging and monitoring.
+// LogRequest creates a middleware function that logs the start and
+// completion of each HTTP request, including the duration and status
+// code.
 func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -20,7 +19,7 @@ func LogRequest(next http.Handler) http.Handler {
 		logger := NewRequestLogger(r)
 		logger.Info("HTTP request received")
 
-		// Create a response writer to capture the status code.
+		// Wrap response writer to capture the status code for logging.
 		lw := newLoggingResponseWriter(w)
 
 		// Process the request.
@@ -29,7 +28,7 @@ func LogRequest(next http.Handler) http.Handler {
 		duration := time.Since(start)
 		logger.Info("HTTP request done",
 			slog.String("duration", duration.String()),
-			slog.Int("status", lw.statusCode),
+			slog.Int("statusCode", lw.statusCode),
 		)
 	})
 }
@@ -45,12 +44,15 @@ type loggingResponseWriter struct {
 func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 	// Default to 200 OK, since WriteHeader may not be called explicitly
 	// if there is no error.
-	return &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+	return &loggingResponseWriter{
+		ResponseWriter: w,
+		statusCode:     http.StatusOK,
+	}
 }
 
 // WriteHeader captures the status code and delegates to the original
 // ResponseWriter.
-func (lrw *loggingResponseWriter) WriteHeader(statusCode int) {
-	lrw.statusCode = statusCode
-	lrw.ResponseWriter.WriteHeader(statusCode)
+func (lw *loggingResponseWriter) WriteHeader(statusCode int) {
+	lw.statusCode = statusCode
+	lw.ResponseWriter.WriteHeader(statusCode)
 }

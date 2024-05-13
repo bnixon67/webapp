@@ -35,10 +35,10 @@ func TestGetRequestInfo(t *testing.T) {
 			Target:        "/request",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, webhandler.RequestHandler, tests)
+	webhandler.TestHandler(t, webhandler.RequestGetHandler, tests)
 }

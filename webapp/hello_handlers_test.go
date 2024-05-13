@@ -28,7 +28,7 @@ func TestGetHelloTextMessage(t *testing.T) {
 	}
 
 	app := AppForTest(t)
-	webhandler.HandlerTestWithCases(t, app.HelloTextHandlerGet, tests)
+	webhandler.TestHandler(t, app.HelloTextHandlerGet, tests)
 }
 
 func TestGetHelloHTMLMessage(t *testing.T) {
@@ -48,5 +48,5 @@ func TestGetHelloHTMLMessage(t *testing.T) {
 	}
 
 	app := AppForTest(t)
-	webhandler.HandlerTestWithCases(t, app.HelloHTMLHandlerGet, tests)
+	webhandler.TestHandler(t, app.HelloHTMLHandlerGet, tests)
 }

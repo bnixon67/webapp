@@ -39,5 +39,5 @@ func TestBuildHandler(t *testing.T) {
 
 	app := AppForTest(t)
 
-	webhandler.HandlerTestWithCases(t, app.BuildHandlerGet, tests)
+	webhandler.TestHandler(t, app.BuildHandlerGet, tests)
 }

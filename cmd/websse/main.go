@@ -99,8 +99,8 @@ func main() {
 	sseServer.Run()
 
 	mux.HandleFunc("/", app.RootHandlerGet)
-	mux.HandleFunc("/w3.css", webhandler.ServeFileHandler(cssFile))
-	mux.HandleFunc("/favicon.ico", webhandler.ServeFileHandler(icoFile))
+	mux.HandleFunc("/w3.css", webhandler.FileHandler(cssFile))
+	mux.HandleFunc("/favicon.ico", webhandler.FileHandler(icoFile))
 	mux.HandleFunc("/event", sseServer.EventStreamHandler)
 	mux.HandleFunc("/send", sseServer.SendMessageHandler)
 

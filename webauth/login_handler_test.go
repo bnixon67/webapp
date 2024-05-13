@@ -61,7 +61,7 @@ func TestLoginGetHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.LoginGetHandler, tests)
+	webhandler.TestHandler(t, app.LoginGetHandler, tests)
 }
 
 func TestLoginPostHandler(t *testing.T) {
@@ -181,5 +181,5 @@ func TestLoginPostHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.LoginPostHandler, tests)
+	webhandler.TestHandler(t, app.LoginPostHandler, tests)
 }

@@ -116,5 +116,5 @@ func TestGetHeaders(t *testing.T) {
 		},
 	}
 
-	webhandler.HandlerTestWithCases(t, app.HeadersHandlerGet, tests)
+	webhandler.TestHandler(t, app.HeadersHandlerGet, tests)
 }

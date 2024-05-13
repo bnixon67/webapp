@@ -11,12 +11,6 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// loggerKeyType is a custom type to avoid key collisions in context values.
-type loggerKeyType struct{}
-
-// loggerKey is a unique identifier for retrieving a logger from a context.
-var loggerKey = loggerKeyType{}
-
 // NewRequestLogger creates and configures a logger specifically for logging
 // HTTP request details, such as the method, URL, and client IP. It optionally
 // includes a request ID if present.
@@ -41,20 +35,26 @@ func NewRequestLoggerWithFuncName(r *http.Request) *slog.Logger {
 	return NewRequestLogger(r).With(slog.String("func", FuncNameParent()))
 }
 
+// loggerKeyType is a custom type to avoid key collisions in context values.
+type loggerKeyType struct{}
+
+// loggerKey is a unique identifier for retrieving a logger from a context.
+var loggerKey = loggerKeyType{}
+
 // MiddlewareLogger creates middleware that injects a logger into the request
 // context, enabling subsequent handlers in the chain to log request-specific
 // information.
 func MiddlewareLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := NewRequestLogger(r)
-		ctx := context.WithValue(r.Context(), loggerKey, logger)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		newCtx := context.WithValue(r.Context(), loggerKey, logger)
+		next.ServeHTTP(w, r.WithContext(newCtx))
 	})
 }
 
 // Logger attempts to retrieve a logger from the provided context.
-// It returns a default logger if no custom logger is found or if the context
-// is nil.
+//
+// It returns the default logger if context is nil or does not contain a logger.
 func Logger(ctx context.Context) *slog.Logger {
 	if ctx == nil {
 		return slog.Default()

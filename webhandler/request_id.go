@@ -11,56 +11,62 @@ import (
 )
 
 // reqIDPrefix is a random prefix for the request ID set at program startup.
-var reqIDPrefix string
+var reqIDPrefix string = generateRandomPrefix()
 
 // reqIDPrefixLength is the length of the random request ID prefix.
 const reqIDPrefixLength = 4
 
-// init generates a unique request id prefix at program start.
-func init() {
+// generateRandomPrefix creates a random string to be used as a prefix for
+// generating request IDs.
+//
+// If the random string generation fails, the function will panic.
+func generateRandomPrefix() string {
 	const lowerLetters = "abcdefghijklmnopqrstuvwxyz"
 
-	var err error
-	reqIDPrefix, err = RandomStringFromCharset(lowerLetters, reqIDPrefixLength)
+	prefix, err := RandomStringFromCharset(lowerLetters, reqIDPrefixLength)
 	if err != nil {
 		panic("failed to initialize request ID prefix: " + err.Error())
 	}
+
+	return prefix
 }
 
-// generateRequestID generates a unique request ID by combining a random prefix
-// with a hexadecimal representation of an incremented atomic counter. This
-// ensures that each request ID is both unique and contains some randomization.
+// generateRequestID generates a unique request ID by concatenating a
+// pre-defined random prefix with the hexadecimal representation of an
+// atomically incremented counter.
 func generateRequestID(counter *uint32) string {
-	return fmt.Sprintf("%s%08X", reqIDPrefix, atomic.AddUint32(counter, 1))
+	id := atomic.AddUint32(counter, 1)
+	return fmt.Sprintf("%s%08X", reqIDPrefix, id)
 }
 
-// reqIDType is a unique key type to avoid collisions with other packages.
+// reqIDType is a custom type to avoid collisions in context values.
 type reqIDType struct{}
 
-// reqIDKey is a key instance to store/retrieve request ID from the context.
+// reqIDKey is a unique identifier to store/retrieve request ID from a context.
 var reqIDKey = reqIDType{}
 
-// NewRequestIDMiddleware returns middleware that enhances the incoming
-// HTTP request by adding a unique request ID. This ID is added both to
-// the request's context and as the 'X-Request-ID' header in the response.
-// The request ID is generated using an atomic counter to ensure uniqueness.
+// NewRequestIDMiddleware creates middleware that assigns a unique request
+// ID to every incoming HTTP request. This ID is added to the request's
+// context and set as the 'X-Request-ID' header in the HTTP response.
+//
+// It uses an atomic counter to ensure each ID is unique across all requests.
 func NewRequestIDMiddleware(next http.Handler) http.Handler {
-	var counter uint32 // Persist across requests
+	var counter uint32 // Counter to generate unique IDs, persistent across requests.
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := generateRequestID(&counter)
 
-		ctx := context.WithValue(r.Context(), reqIDKey, reqID)
-
 		w.Header().Set("X-Request-ID", reqID)
 
+		ctx := context.WithValue(r.Context(), reqIDKey, reqID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// RequestID extracts the request ID from the provided context. If the context
-// is nil or does not include a request ID, the function returns an empty
-// string.
+// RequestID extracts the request ID from the provided context.
+//
+// If the context is nil or does not include a request ID, the function
+// returns an empty string.
 func RequestID(ctx context.Context) string {
 	if ctx == nil {
 		return ""

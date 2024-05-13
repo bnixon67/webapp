@@ -43,5 +43,5 @@ func TestRootHandler(t *testing.T) {
 		},
 	}
 
-	webhandler.HandlerTestWithCases(t, app.RootHandlerGet, tests)
+	webhandler.TestHandler(t, app.RootHandlerGet, tests)
 }

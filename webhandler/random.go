@@ -15,8 +15,13 @@ import (
 // correctly with multi-byte characters.
 func RandomStringFromCharset(charset string, length int) (string, error) {
 	if utf8.RuneCountInString(charset) == 0 {
-		return "", errors.New("empty or invalid charset")
+		return "", errors.New("empty charset")
 	}
+
+	if !utf8.ValidString(charset) {
+		return "", errors.New("invalid charset")
+	}
+
 	if length <= 0 {
 		return "", errors.New("invalid length")
 	}

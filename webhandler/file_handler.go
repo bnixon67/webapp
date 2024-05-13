@@ -9,15 +9,18 @@ import (
 	"os"
 )
 
-// ServeFileHandler creates an HTTP handler that serves a static file from
-// the specified filePath. If the file does not exist or cannot be accessed,
-// it logs an error and returns an HTTP handler that responds with an HTTP
-// 404 (Not Found) error for all requests.
-func ServeFileHandler(filePath string) http.HandlerFunc {
-	if _, err := os.Stat(filePath); err != nil {
-		slog.Error("file does not exist or not accessible",
-			slog.String("filePath", filePath),
-			slog.Any("error", err))
+// FileHandler returns a HTTP handler that serves a specified file from the
+// provided name. This handler uses http.ServeFile to serve the file directly.
+//
+// If the file specified by name does not exist or is not accessible, the
+// handler logs the error and returns an HTTP 404 (Not Found) response for
+// all incoming requests.
+func FileHandler(name string) http.HandlerFunc {
+	// Check if the file exists and is accessible.
+	if _, err := os.Stat(name); err != nil {
+		slog.Error("file check failed",
+			slog.String("filePath", name),
+			slog.String("error", err.Error()))
 
 		// Return a handler that issues an HTTP 404 response.
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +29,6 @@ func ServeFileHandler(filePath string) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filePath)
+		http.ServeFile(w, r, name)
 	}
 }

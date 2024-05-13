@@ -75,7 +75,7 @@ func TestConfirmRequestHandlerGet(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ConfirmRequestHandlerGet, tests)
+	webhandler.TestHandler(t, app.ConfirmRequestHandlerGet, tests)
 }
 
 func TestConfirmRequestHandlerPost(t *testing.T) {
@@ -116,5 +116,5 @@ func TestConfirmRequestHandlerPost(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ConfirmRequestHandlerPost, tests)
+	webhandler.TestHandler(t, app.ConfirmRequestHandlerPost, tests)
 }

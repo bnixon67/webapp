@@ -12,34 +12,29 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// RequestHandler responds with a dump of the HTTP request.
-func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the logger from the request context and add calling function name.
-	logger := Logger(r.Context()).With(slog.String("func", FuncName()))
+// RequestGetHandler serves as an HTTP handler that responds by providing
+// a detailed dump of the incoming HTTP request.
+func RequestGetHandler(w http.ResponseWriter, r *http.Request) {
+	logger := NewRequestLoggerWithFuncName(r)
 
-	// Check if the HTTP method is valid.
-	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	// Get the request information.
+	// Attempt to dump the complete request for logging.
 	b, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error:\n%v\n", err), http.StatusInternalServerError)
-		logger.Error("failed to DumpRequest", "err", err)
+		errMsg := fmt.Sprintf("error dumping request: %v", err)
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		logger.Error("failed to dump request",
+			slog.String("error", err.Error()))
 		return
 	}
 
-	// Log that the handler is executing.
-	logger.Debug("response", slog.Any("request", string(b)))
-
-	// Set the content type to plain text.
 	webutil.SetContentTypeText(w)
-
-	// Set no-cache headers to prevent caching.
 	webutil.SetNoCacheHeaders(w)
-
-	// Write the request information to the response.
 	fmt.Fprintln(w, string(b))
+
+	logger.Info("handler done")
 }

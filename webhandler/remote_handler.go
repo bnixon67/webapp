@@ -12,8 +12,10 @@ import (
 
 // RemoteGetHandler responds with the requesting client's RemoteAddr and
 // potentially real IP addresses from common headers used by proxies or
-// load balancers. This handler ensures that it only responds to HTTP GET
-// requests and includes headers to prevent response caching.
+// load balancers.
+//
+// This handler ensures that it only responds to HTTP GET requests and
+// includes headers to prevent response caching.
 func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 	logger := NewRequestLoggerWithFuncName(r)
 
@@ -27,13 +29,15 @@ func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "RemoteAddr: %v\n", r.RemoteAddr)
 
-	// List of headers that might contain the real client IP if behind
-	// a proxy or load balancer.
+	// Headers that may have actual IP if behind a proxy or load balancer.
 	headers := []string{
-		"Cf-Connecting-Ip",
-		"X-Client-Ip",
 		"X-Forwarded-For",
 		"X-Real-Ip",
+		"X-Client-Ip",
+		"Cf-Connecting-Ip",
+		"True-Client-Ip",
+		"Forwarded",
+		"X-ProxyUser-IP",
 	}
 
 	// Check and write any relevant headers that contain IP information.
@@ -44,5 +48,5 @@ func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	logger.Info("done")
+	logger.Info("handler done")
 }
