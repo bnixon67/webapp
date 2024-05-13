@@ -18,8 +18,8 @@ type ConfirmRequestSentData struct {
 	EmailFrom string // The email address that sends the confirm message.
 }
 
-// ConfirmRequestSentHandler handles GET requests for confirm request sent
-// success page.
+// ConfirmRequestSentHandlerGet handles GET requests for confirm request
+// sent success page.
 func (app *AuthApp) ConfirmRequestSentHandlerGet(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.NewRequestLoggerWithFuncName(r)
 
