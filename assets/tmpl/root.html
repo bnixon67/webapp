@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{.Title}}</title>
-    <link rel="stylesheet" href="/w3.css">
-  </head>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+</head>
+<body>
+  <header class="container-fluid">
+    <h1>Functions</h1>
+  </header>
 
-  <body>
-    <div class="w3-container">
-      <header class="w3-container w3-indigo">
-        <h1>Functions</h1>
-      </header>
-
-      <div class="w3-container">
-        <ul class="w3-ul">
-          <li><a href=/hello>Hello</a></li>
-          <li><a href=/hellohtml>Hello HTML</a></li>
-          <li><a href=/headers>Headers</a></li>
-          <li><a href=/remote>Remote Address</a></li>
-          <li><a href=/request>Request</a></li>
-          <li><a href=/build>Build</a></li>
+  <main class="container">
+    <aside>
+      <nav>
+        <ul>
+          <li> <a href="/hello">Hello</a> </li>
+          <li> <a href="/hellohtml">Hello HTML</a> </li>
+          <li> <a href="/headers">Headers</a> </li>
+          <li> <a href="/remote">Remote Address</a> </li>
+          <li> <a href="/request">Request</a> </li>
+          <li> <a href="/build">Build</a> </li>
         </ul>
-      </div>
-    </div>
-  </body>
+      </nav>
+    </aside>
+  </main>
+</body>
 </html>

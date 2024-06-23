@@ -20,10 +20,10 @@ func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 	}
 	assetsDir := app.Config.App.AssetsDir
 
-	cssFile := filepath.Join(assetsDir, "css", "w3.css")
+	cssFile := filepath.Join(assetsDir, "css", "pico.min.css")
 	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")
 
-	mux.HandleFunc("GET /w3.css", webhandler.FileHandler(cssFile))
+	mux.HandleFunc("GET /pico.min.css", webhandler.FileHandler(cssFile))
 	mux.HandleFunc("GET /favicon.ico", webhandler.FileHandler(icoFile))
 	mux.HandleFunc("GET /hello", app.HelloTextHandlerGet)
 	mux.HandleFunc("GET /hellohtml", app.HelloHTMLHandlerGet)

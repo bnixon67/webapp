@@ -1,47 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{ .Title }} Events</b>
-    </div>
-    {{ if .User.IsAdmin }}
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile">
-        <a href="/">Home</a>
-      </div>
-      <div class="w3-bar-item w3-mobile">
-        <a href="/eventscsv">Download</a>
-      </div>
-      <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout {{.User.Username}}</a>
-      </div>
-    </div>
-    {{ end }} {{ if .User.IsAdmin }}
-    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
-      <tr>
-        <th>Name</th>
-        <th class="w3-center">Succeeded</th>
-        <th>Username</th>
-        <th>Message</th>
-        <th>Created</th>
-      </tr>
-      {{ range .Events }}
-      <tr>
-        <td>{{ .Name }}</td>
-        <td class="w3-center">{{ .Succeeded }}</td>
-        <td>{{ .Username }}</td>
-        <td>{{ .Message }}</td>
-        <td>{{ (ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
-      </tr>
-      {{ end }}
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+</head>
+<body>
+  <header class="container-fluid">
+    <nav>
+      <ul> <li> <a href="/">{{.Title}}</a> </li> </ul>
+      {{if .User.IsAdmin}}
+      <ul> <li> <a href="/eventscsv">Download</a> </li> </ul>
+      {{end}}
+      <ul>
+        {{if .User.IsAdmin}}
+        <li> <a href="/users">Users</a> </li>
+        {{end}}
+        {{if .User.Username}}
+        <li> <a href="/logout">Logout</a> </li>
+        {{else}}
+        <li> <a href="/login?r=/events">Login</a> </li>
+        {{end}}
+      </ul>
+    </nav>
+  </header>
+   
+  {{ if .User.IsAdmin }}
+  <main class="container-fluid">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col" style="text-align:center">Succeeded</th>
+          <th scope="col">Username</th>
+          <th scope="col">Message</th>
+          <th scope="col">Created</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{ range .Events }}
+        <tr>
+          <td>{{.Name}}</td>
+          <td style="text-align:center">{{.Succeeded}}</td>
+          <td>{{.Username}}</td>
+          <td>{{.Message}}</td>
+          <td>{{(ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST"}}</td>
+        </tr>
+        {{end}}
+      </tbody>
     </table>
-    {{ else }}
-    <div class="w3-panel w3-pale-red">You must <a href="/login?r=/events">Login</a> as an administrator to see events.</div>
-    {{ end }}
-  </body>
+  </main>
+  {{else}}
+  <main class="container">
+    <p>You must logged in as an administrative user to view events.</p>
+  </main>
+  {{end}}
+</body>
 </html>

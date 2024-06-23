@@ -1,62 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-indigo w3-large w3-padding">
-      <b>User</b>
-    </div>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+</head>
+<body>
+  <header class="container-fluid">
+    <nav>
+      <ul>
+        <li> <a href="/">{{.Title}}</a> </li>
+      </ul>
+      {{if .User.Username}}
+      <ul>
+        <li> <a href="/users">Users</a> </li>
+        {{if .User.IsAdmin}}
+        <li> <a href="/events">Events</a> </li>
+        {{end}}
+        <li> <a href="/logout">Logout</a> </li>
+      </ul>
+      {{else}}
+      <ul>
+        <li> <a href="/forgot">Forgot</a> </li>
+        <li> <a href="/register">Register</a> </li>
+        <li> <a href="/login">Login</a> </li>
+      </ul>
+      {{end}}
+    </nav>
+  </header>
 
-    {{ if .User.Username }}
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile">
-        <a href="/users">Users</a>
-      </div>
-      {{- if .User.IsAdmin }}
-      <div class="w3-bar-item w3-mobile">
-        <a href="/events">Events</a>
-      </div>
-      {{ end -}}
-      <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout {{.User.Username}}</a>
-      </div>
-    </div>
-    {{ end }} {{ if .User.Username }}
-    <table class="w3-container w3-mobile w3-table w3-responsive">
-      <tr>
-        <th>User Name</th>
-        <td>{{ .User.Username }}</td>
-      </tr>
-      <tr>
-        <th>Full Name</th>
-        <td>{{ .User.FullName }}</td>
-      </tr>
-      <tr>
-        <th>Email</th>
-        <td>{{ .User.Email }}</td>
-      </tr>
-      <tr>
-        <th>IsAdmin</th>
-        <td>{{ .User.IsAdmin }}</td>
-      </tr>
-      <tr>
-        <th>Confirmed</th>
-        <td>{{ .User.Confirmed }}</td>
-      </tr>
-      <tr>
-        <th>Created</th>
-        <td>{{ .User.Created.Format "2006-01-02 03:04 PM" }}</td>
-      </tr>
-      <tr>
-        <th>Last Login</th>
-        <td>{{ .User.LastLoginTime.Format "2006-01-02 03:04 PM" }}</td>
-      </tr>
+  <main class="container">
+    {{if .User.Username}}
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Attribute</th>
+          <th scope="col">Value</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>User Name</td>
+          <td>{{ .User.Username }}</td>
+        </tr>
+
+        <tr>
+          <td>Full Name</td>
+          <td>{{ .User.FullName }}</td>
+        </tr>
+
+        <tr>
+          <td>Email</td>
+          <td>{{ .User.Email }}</td>
+        </tr>
+
+        <tr>
+          <td>IsAdmin</td>
+          <td>{{ .User.IsAdmin }}</td>
+        </tr>
+
+        <tr>
+          <td>Confirmed</td>
+          <td>{{ .User.Confirmed }}</td>
+        </tr>
+
+        <tr>
+          <td>Created</td>
+          <td>{{ .User.Created.Format "2006-01-02 03:04 PM" }}</td>
+        </tr>
+
+        <tr>
+          <td>Last Login</td>
+          <td>{{ .User.LastLoginTime.Format "2006-01-02 03:04 PM" }}</td>
+        </tr>
+      </tbody>
     </table>
     {{ else }}
-    <div class="w3-panel w3-pale-red">You must <a href="/login?r=/hello">Login</a></div>
+    <p> You must <a href="/login?r=/hello">Login</a> </p>
     {{ end }}
-  </body>
+  </main>
+</body>
 </html>

@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{.Title}}</title>
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-
-  <body>
-    <table class="w3-table w3-striped w3-bordered">
-      <caption>
-        <h1>Response Headers</h1>
-      </caption>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+</head>
+<body>
+  <main class="container-fluid">
+    <table>
+      <caption> <h1>Response Headers</h1> </caption>
       <thead>
-        <tr class="w3-indigo">
-          <th>Key</th>
-          <th>Value(s)</th>
+        <tr>
+          <th scope="col">Key</th>
+          <th scope="col">Value(s)</th>
         </tr>
       </thead>
       <tbody>
@@ -25,5 +26,6 @@
         {{- end}}
       </tbody>
     </table>
-  </body>
+  </main>
+</body>
 </html>

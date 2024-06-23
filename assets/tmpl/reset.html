@@ -1,64 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-    <style>
-      input:required:invalid {
-        background-color: #ffdddd;
-      }
-    </style>
-  </head>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+</head>
+<body>
+  <header class="container-fluid">
+    <nav>
+      <ul>
+        <li> <a href="/">{{.Title}}</a> </li>
+      </ul>
+      <ul>
+        <li> <a href="/forgot">Forgot</a> </li>
+        <li> <a href="/login">Login</a> </li>
+        <li> <a href="/register">Register</a> </li>
+      </ul>
+    </nav>
+  </header>
 
-  <body>
-    <header class="w3-container w3-indigo w3-large w3-padding">
-      <b>{{.Title}}</b>
-    </header>
+  <main class="container">
+    <p>Enter the token sent to your email and your new password to reset your password.</p>
 
-    <div class="w3-content" style="width: 320px;">
-      <div class="w3-container w3-margin-top">
-        <div class="w3-container w3-card">
-          <form method="post" autocomplete="off">
-            <div class="w3-section">Enter the token sent to your email to reset your password.</div>
-
-            <div class="w3-section">
-              <label for="rtoken"><b>Reset Token (required):</b></label>
-              <input class="w3-input" type="text" placeholder="Enter your Reset Token" id="rtoken" name="rtoken" maxlength="44" required value="{{.ResetToken}}">
-            </div>
-
-            <div class="w3-section">
-              <label for="password1"><b>New Password (required):</b></label> <input class="w3-input" type="password" placeholder="Enter your desired password" id="password1" name="password1" required autofocus minlength="8">
-              <div>Eight or more characters.</div>
-            </div>
-
-            <div class="w3-section">
-              <label for="password2"><b>Repeat Password (required):</b></label>
-              <input class="w3-input" type="password" placeholder="Repeat your desired password" id="password2" name="password2" required minlength="8">
-              <div>Must match New Password.</div>
-            </div>
-
-            {{ if .Message }}
-            <div class="w3-section w3-text-red">
-              <b><span class="w3-badge w3-red">!</span> {{ .Message }}</b>
-            </div>
-            {{ end }}
-
-            <button type="submit" class="w3-button w3-block w3-indigo">
-              Reset Password
-            </button>
-          </form>
-
-          <div class="w3-center">
-            <div class="w3-section w3-bar">
-              <div class="w3-bar-item"><a href="/forgot">Forgot</a></div>
-              <div class="w3-bar-item"><a href="/login">Login</a></div>
-              <div class="w3-bar-item"><a href="/register">Register</a></div>
-              <div class="w3-bar-item"><a href="/">Cancel</a></div>
-            </div>
-          </div>
-        </div>
+    <form method="post" autocomplete="off">
+      <div>
+        <label for="rtoken"><b>Reset Token (required):</b></label>
+        <input type="text" placeholder="Enter your Reset Token" id="rtoken" name="rtoken" maxlength="44" required value="{{.ResetToken}}">
       </div>
-    </div>
-  </body>
+
+      <div>
+        <label for="password1"><b>New Password (required):</b></label>
+        <input type="password" placeholder="Enter your desired password" id="password1" name="password1" required autofocus minlength="8">
+        <small>Eight or more characters.</small>
+      </div>
+
+      <div>
+        <label for="password2"><b>Repeat Password (required):</b></label>
+        <input type="password" placeholder="Repeat your desired password" id="password2" name="password2" required minlength="8">
+        <small>Must match New Password.</small>
+      </div>
+
+      {{if .Message}}<p><mark>{{.Message}}</mark></p>{{end}}
+
+      <div> <button type="submit">Reset Password</button> </div>
+    </form>
+  </main>
+</body>
 </html>

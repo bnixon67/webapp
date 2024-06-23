@@ -1,52 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{ .Title }} Users</b>
-    </div>
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile"><a href="/">Home</a></div>
-      {{ if .User.IsAdmin }}
-      <div class="w3-bar-item w3-mobile">
-        <a href="/userscsv">Download</a>
-      </div>
-      {{ end }} {{ if .User.Username }}
-      <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout {{.User.Username}}</a>
-      </div>
-      {{ end}}
-    </div>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+</head>
+<body>
+  <header class="container-fluid">
+    <nav>
+      <ul> <li> <a href="/">{{.Title}}</a> </li> </ul>
+      {{if .User.IsAdmin}}
+      <ul> <li> <a href="/userscsv">Download</a> </li> </ul>
+      {{end}}
+      <ul>
+        {{if .User.IsAdmin}}
+        <li> <a href="/events">Events</a> </li>
+        {{end}}
+        <li> <a href="/logout">Logout</a> </li>
+      </ul>
+    </nav>
+  </header>
 
+  <main class="container-fluid">
     {{ if .User.Username }}
-    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
-      <tr>
-        <th>User Name</th>
-        <th>Full Name</th>
-        {{ if $.User.IsAdmin }}
-        <th>Email</th>
-        <th class="w3-center">IsAdmin</th>
-        <th>Created</th>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">User Name</th>
+          <th scope="col">Full Name</th>
+          {{ if $.User.IsAdmin }}
+          <th scope="col">Email</th>
+          <th scope="col" style="text-align:center">IsAdmin</th>
+          <th scope="col">Created</th>
+          {{ end }}
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Users }}
+        <tr>
+          <td>{{.Username}}</td>
+          <td>{{.FullName}}</td>
+          {{if $.User.IsAdmin}}
+          <td>{{.Email}}</td>
+          <td style="text-align:center">{{.IsAdmin}}</td>
+          <td>{{.Created.Format "2006-01-02 03:04 PM"}}</td>
+          {{ end }}
+        </tr>
         {{ end }}
-      </tr>
-      {{ range .Users }}
-      <tr>
-        <td>{{ .Username }}</td>
-        <td>{{ .FullName }}</td>
-        {{ if $.User.IsAdmin }}
-        <td>{{ .Email }}</td>
-        <td class="w3-center">{{ .IsAdmin }}</td>
-        <td>{{ .Created.Format "2006-01-02 03:04 PM" }}</td>
-        {{ end }}
-      </tr>
-      {{ end }}
+      </tbody>
     </table>
     {{ else }}
-    <div class="w3-panel w3-pale-red">You must <a href="/login?r=/users">Login</a></div>
+    <p>You must <a href="/login?r=/users">Login</a></p>
     {{ end }}
-  </body>
+  </main>
+</body>
 </html>
