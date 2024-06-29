@@ -118,7 +118,7 @@ func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect to the specified "r" query parameter or default to root.
 	redirect := r.URL.Query().Get("r")
-	if redirect == "" {
+	if redirect == "" || !webutil.IsLocalSafeURL(redirect) {
 		redirect = "/"
 	}
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
