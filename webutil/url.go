@@ -29,7 +29,7 @@ func IsLocalSafeURL(redirectURL string) bool {
 	}
 
 	// Ensure the URL path starts with "/"
-	if len(u.Path) == 0 || u.Path[0] != '/' {
+	if u.Path == "" || u.Path[0] != '/' {
 		return false
 	}
 
