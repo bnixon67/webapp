@@ -6,7 +6,7 @@
 *.test
 *~
 cover/
-*.log.*.gz
+*.log-*.gz
 *.logrotate
 
 # Ignore all .json files
