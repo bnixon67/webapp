@@ -3,12 +3,6 @@
 
 package webauth
 
-import (
-	"errors"
-)
-
-var ErrAppNil = errors.New("app is nil")
-
 const LoginTokenSize = 32
 const LoginTokenKind = "login"
 
@@ -24,19 +18,20 @@ func (app *AuthApp) CreateLoginToken(username string) (Token, error) {
 
 // LoginUser returns a login token if the username and password are correct.
 func (app *AuthApp) LoginUser(username, password string) (Token, error) {
-	if app == nil {
-		return Token{}, ErrAppNil
-	}
+	db := app.DB
 
-	err := app.DB.AuthenticateUser(username, password)
+	err := db.CheckPassword(username, password)
 	if err != nil {
+		db.WriteEvent(EventLogin, false, username, err.Error())
 		return Token{}, err
 	}
 
 	token, err := app.CreateLoginToken(username)
 	if err != nil {
+		db.WriteEvent(EventLogin, false, username, err.Error())
 		return Token{}, err
 	}
 
+	db.WriteEvent(EventLogin, true, username, "logged in user")
 	return token, nil
 }

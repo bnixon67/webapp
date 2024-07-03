@@ -77,8 +77,8 @@ func TestLoginPostHandler(t *testing.T) {
 	}
 	expires := time.Now().Add(d)
 
-	sessionCookie := webauth.LoginCookie("value", time.Time{}, true)
-	rememberCookie := webauth.LoginCookie("value", expires, false)
+	sessionCookie := webauth.LoginCookie("value", time.Time{}, false)
+	rememberCookie := webauth.LoginCookie("value", expires, true)
 
 	tests := []webhandler.TestCase{
 		{

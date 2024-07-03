@@ -16,7 +16,7 @@ func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		logger := NewRequestLogger(r)
+		logger := RequestLogger(r)
 		logger.Info("HTTP request received")
 
 		// Wrap response writer to capture the status code for logging.

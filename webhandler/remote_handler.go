@@ -17,7 +17,7 @@ import (
 // This handler ensures that it only responds to HTTP GET requests and
 // includes headers to prevent response caching.
 func RemoteGetHandler(w http.ResponseWriter, r *http.Request) {
-	logger := NewRequestLoggerWithFuncName(r)
+	logger := RequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")

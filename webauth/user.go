@@ -213,32 +213,45 @@ func (db *AuthDB) UsernameForConfirmToken(tokenValue string) (string, error) {
 	return username, nil
 }
 
-var ErrIncorrectPassword = errors.New("incorrect password")
+var ErrInvalidPassword = errors.New("invalid password")
 
-// AuthenticateUser compares the password and hashed password for the user.
-// Returns nil on success or an error on failure.
-func (db *AuthDB) AuthenticateUser(username, password string) error {
+// HashedPassword retrieves the hashed password for a given username.
+func (db *AuthDB) HashedPassword(username string) (string, error) {
+	var hashedPassword string
+	qry := `SELECT hashedPassword FROM users WHERE username=? LIMIT 1`
+	row := db.QueryRow(qry, username)
+
+	if err := row.Scan(&hashedPassword); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", ErrUserNotFound
+		}
+		return "", err
+	}
+
+	return hashedPassword, nil
+}
+
+// comparePasswords compares the hashed password with the given password.
+func comparePasswords(hashedPassword, password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+		return fmt.Errorf("%w: %v", ErrInvalidPassword, err)
+	}
+	return nil
+}
+
+// CheckPassword validates the password for a user.
+func (db *AuthDB) CheckPassword(username, password string) error {
 	if db == nil {
 		return errors.New("invalid db")
 	}
 
-	// get hashed password for the given user
-	qry := `SELECT hashedPassword FROM users WHERE username=? LIMIT 1`
-	result := db.QueryRow(qry, username)
-
-	var hashedPassword string
-	err := result.Scan(&hashedPassword)
+	hashedPassword, err := db.HashedPassword(username)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrUserNotFound
-		}
 		return err
 	}
 
-	// compared hashed password with given password
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrIncorrectPassword, err)
+	if err := comparePasswords(hashedPassword, password); err != nil {
+		return err
 	}
 
 	return nil

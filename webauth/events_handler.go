@@ -21,7 +21,7 @@ type EventsPageData struct {
 // EventsHandler displays a list of events.
 func (app *AuthApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.NewRequestLoggerWithFuncName(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {
@@ -56,7 +56,7 @@ func (app *AuthApp) EventsHandler(w http.ResponseWriter, r *http.Request) {
 // EventsCSVHandler provides list of events as a CSV file.
 func (app *AuthApp) EventsCSVHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.NewRequestLoggerWithFuncName(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
 	if !webutil.CheckAllowedMethods(w, r, http.MethodGet) {

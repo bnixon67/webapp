@@ -28,7 +28,7 @@ func TestLoginUser(t *testing.T) {
 			name:     "Incorrect password",
 			username: "test",
 			password: "invalid",
-			wantErr:  webauth.ErrIncorrectPassword,
+			wantErr:  webauth.ErrInvalidPassword,
 		},
 		// Add more test cases for different scenarios
 	}

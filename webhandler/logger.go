@@ -12,10 +12,10 @@ import (
 	"github.com/bnixon67/webapp/webutil"
 )
 
-// NewRequestLogger creates and configures a logger specifically for logging
+// RequestLogger creates and configures a logger specifically for logging
 // HTTP request details, such as the method, URL, and client IP. It optionally
 // includes a request ID if present.
-func NewRequestLogger(r *http.Request) *slog.Logger {
+func RequestLogger(r *http.Request) *slog.Logger {
 	attributes := []any{
 		slog.String("method", r.Method),
 		slog.String("url", r.URL.String()),
@@ -30,10 +30,10 @@ func NewRequestLogger(r *http.Request) *slog.Logger {
 	return slog.With(slog.Group("request", attributes...))
 }
 
-// NewRequestLoggerWithFuncName augments a request logger by adding the
+// RequestLoggerWithFuncName augments a request logger by adding the
 // caller function's name to the log attributes.
-func NewRequestLoggerWithFuncName(r *http.Request) *slog.Logger {
-	return NewRequestLogger(r).With(slog.String("func", util.FuncNameParent()))
+func RequestLoggerWithFuncName(r *http.Request) *slog.Logger {
+	return RequestLogger(r).With(slog.String("func", util.FuncNameParent()))
 }
 
 // loggerKeyType is a custom type to avoid key collisions in context values.
@@ -47,7 +47,7 @@ var loggerKey = loggerKeyType{}
 // information.
 func MiddlewareLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := NewRequestLogger(r)
+		logger := RequestLogger(r)
 		newCtx := context.WithValue(r.Context(), loggerKey, logger)
 		next.ServeHTTP(w, r.WithContext(newCtx))
 	})

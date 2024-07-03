@@ -30,7 +30,7 @@ type ConfirmData struct {
 // Submission of the token is via a POST request, which is handled by
 // ConfirmHandlerPost, which completes the email confirmation process.
 func (app *AuthApp) ConfirmHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.NewRequestLoggerWithFuncName(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
@@ -75,7 +75,7 @@ func (app *AuthApp) respondWithError(w http.ResponseWriter, logger *slog.Logger,
 // and confirm the associated user. If the token is valid, the user's status
 // is updated to confirmed.
 func (app *AuthApp) ConfirmHandlerPost(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.NewRequestLoggerWithFuncName(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodPost) {
 		logger.Error("invalid method")

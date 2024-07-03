@@ -21,7 +21,7 @@ type RootPageData struct {
 
 // RootHandlerGet handles GET requests to the root ("/") route.
 func (app *WebApp) RootHandlerGet(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.NewRequestLoggerWithFuncName(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")

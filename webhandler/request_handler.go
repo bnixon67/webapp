@@ -15,7 +15,7 @@ import (
 // RequestGetHandler serves as an HTTP handler that responds by providing
 // a detailed dump of the incoming HTTP request.
 func RequestGetHandler(w http.ResponseWriter, r *http.Request) {
-	logger := NewRequestLoggerWithFuncName(r)
+	logger := RequestLoggerWithFuncName(r)
 
 	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
