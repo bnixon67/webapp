@@ -128,7 +128,7 @@ func (app *AuthApp) forgotPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := ForgotPageData{EmailFrom: app.Cfg.SMTP.Username}
+	data := ForgotPageData{EmailFrom: app.Cfg.EmailFrom}
 	app.RenderPage(w, logger, TemplateForgotSent, &data)
 
 	logger.Info("done")
@@ -219,7 +219,7 @@ func sendEmailForAction(action, username, email string, token Token, cfg Config)
 		return err
 	}
 
-	err = cfg.SMTP.SendMessage(cfg.SMTP.Username, []string{email}, subj, body)
+	err = cfg.SMTP.SendMessage(cfg.EmailFrom, []string{email}, subj, body)
 	if err != nil {
 		return err
 	}

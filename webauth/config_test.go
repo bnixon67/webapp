@@ -173,9 +173,9 @@ func TestConfigMarshalJSON(t *testing.T) {
 		},
 	}
 
-	empty := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":""},"SMTP":{"Host":"","Port":"","Username":"","Password":""}}`
+	empty := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":""},"SMTP":{"Host":"","Port":"","Username":"","Password":""},"EmailFrom":""}`
 
-	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","Username":"","Password":"[REDACTED]"}}`
+	want := `{"App":{"Name":"","AssetsDir":"","TmplPattern":""},"Server":{"Host":"","Port":"","CertFile":"","KeyFile":""},"Log":{"Filename":"","Type":"","Level":"","AddSource":false},"Auth":{"BaseURL":"","LoginExpires":""},"SQL":{"DriverName":"","DataSourceName":"[REDACTED]"},"SMTP":{"Host":"","Port":"","Username":"","Password":"[REDACTED]"},"EmailFrom":""}`
 
 	testCases := []struct {
 		name  string
@@ -228,7 +228,7 @@ func TestConfigString(t *testing.T) {
 					Password: "supersecret",
 				},
 			},
-			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} Auth:{BaseURL: LoginExpires:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: Username: Password:[REDACTED]}}`,
+			want: `{Config:{App:{Name: AssetsDir: TmplPattern:} Server:{Host: Port: CertFile: KeyFile:} Log:{Filename: Type: Level: AddSource:false}} Auth:{BaseURL: LoginExpires:} SQL:{DriverName: DataSourceName:[REDACTED]} SMTP:{Host: Port: Username: Password:[REDACTED]} EmailFrom:}`,
 		},
 	}
 

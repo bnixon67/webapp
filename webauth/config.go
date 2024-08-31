@@ -32,6 +32,7 @@ type Config struct {
 	Auth          ConfigAuth       // Auth app configuration.
 	SQL           ConfigSQL        // SQL Database configuration.
 	SMTP          email.SMTPConfig // SMTP server configuration.
+	EmailFrom     string           `required:"true"` // From address for emails.
 }
 
 var (

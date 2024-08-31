@@ -27,7 +27,7 @@ const (
 )
 
 // SendStartingEmail sends an email indicating the server is starting.
-func SendStartingEmail(to string, cfg email.SMTPConfig) error {
+func SendStartingEmail(to, from string, cfg email.SMTPConfig) error {
 	hostName, err := os.Hostname()
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func SendStartingEmail(to string, cfg email.SMTPConfig) error {
 	subj := "starting webauth"
 	body := "starting webauth on" + hostName
 
-	err = cfg.SendMessage(cfg.Username, []string{to}, subj, body)
+	err = cfg.SendMessage(from, []string{to}, subj, body)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func main() {
 	}
 
 	// Send starting email to confirm SMTP configuration is valid.
-	err = SendStartingEmail("bnixon67@gmail.com", cfg.SMTP)
+	err = SendStartingEmail("bnixon67@gmail.com", cfg.EmailFrom, cfg.SMTP)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(ExitEmail)

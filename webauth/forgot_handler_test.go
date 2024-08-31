@@ -126,7 +126,7 @@ func TestForgotHandler(t *testing.T) {
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(webauth.ForgotPageData{
 				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
-				EmailFrom:  app.Cfg.SMTP.Username,
+				EmailFrom:  app.Cfg.EmailFrom,
 			}),
 		},
 		{
@@ -141,7 +141,7 @@ func TestForgotHandler(t *testing.T) {
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(webauth.ForgotPageData{
 				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
-				EmailFrom:  app.Cfg.SMTP.Username,
+				EmailFrom:  app.Cfg.EmailFrom,
 			}),
 		},
 		{
@@ -156,7 +156,7 @@ func TestForgotHandler(t *testing.T) {
 			WantStatus: http.StatusOK,
 			WantBody: sentBody(webauth.ForgotPageData{
 				CommonData: webauth.CommonData{Title: app.Cfg.App.Name},
-				EmailFrom:  app.Cfg.SMTP.Username,
+				EmailFrom:  app.Cfg.EmailFrom,
 			}),
 		},
 	}

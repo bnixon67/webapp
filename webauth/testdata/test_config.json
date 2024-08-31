@@ -24,5 +24,6 @@
   "Log": {
     "Filename": "test.log",
     "AddSource": true
-  }
+  },
+  "EmailFrom": "webauthtest@bn67.net"
 }
