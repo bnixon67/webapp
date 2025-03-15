@@ -22,9 +22,14 @@ func AddRoutes(mux *http.ServeMux, app *webapp.WebApp) {
 
 	cssFile := filepath.Join(assetsDir, "css", "pico.min.css")
 	icoFile := filepath.Join(assetsDir, "ico", "webapp.ico")
+	pngFile := filepath.Join(assetsDir, "png", "webapp.png")
+	manifestFile := filepath.Join(assetsDir, "json", "webapp.manifest.json")
 
 	mux.HandleFunc("GET /pico.min.css", webhandler.FileHandler(cssFile))
 	mux.HandleFunc("GET /favicon.ico", webhandler.FileHandler(icoFile))
+	mux.HandleFunc("GET /webapp.png", webhandler.FileHandler(pngFile))
+	mux.HandleFunc("GET /webapp.manifest.json", webhandler.FileHandler(manifestFile))
+
 	mux.HandleFunc("GET /hello", app.HelloTextHandlerGet)
 	mux.HandleFunc("GET /hellohtml", app.HelloHTMLHandlerGet)
 	mux.HandleFunc("GET /build", app.BuildHandlerGet)
