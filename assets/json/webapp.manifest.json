@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "Web App",
+  "short_name": "WebApp",
+  "start_url": "/",
+  "display": "minimal-ui",
+  "icons": [
+    {
+      "src": "/webapp.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
