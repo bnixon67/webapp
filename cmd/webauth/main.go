@@ -100,11 +100,13 @@ func main() {
 	}
 
 	// Send starting email to confirm SMTP configuration is valid.
-	err = SendStartingEmail("bnixon67@gmail.com", cfg.EmailFrom, cfg.SMTP)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(ExitEmail)
-	}
+	/*
+		err = SendStartingEmail("bnixon67@gmail.com", cfg.EmailFrom, cfg.SMTP)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(ExitEmail)
+		}
+	*/
 
 	// Create a new context.
 	ctx := context.Background()
