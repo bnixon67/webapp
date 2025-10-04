@@ -4,7 +4,7 @@
 package webauth
 
 import (
-	"log/slog"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -19,10 +19,10 @@ const LoginPageName = "login.html"
 // LoginPageData contains data passed to the login HTML template.
 type LoginPageData struct {
 	CommonData
-	Message string
+	Alert Alert
 }
 
-// LoginGetHandler handles login GET requests.
+// LoginGetHandler renders the login page.
 func (app *AuthApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
@@ -31,46 +31,108 @@ func (app *AuthApp) LoginGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: add a CSRF token and valid on POST.
 	app.RenderPage(w, logger, LoginPageName, &LoginPageData{})
 }
-
-const (
-	MsgMissingUsernameAndPassword = "Missing username and password."
-	MsgMissingUsername            = "Missing username."
-	MsgMissingPassword            = "Missing password."
-	MsgLoginFailed                = "Login failed."
-)
 
 type loginForm struct {
 	Username string
 	Password string
-	Remember string
-	Message  string
+	Remember bool
 }
 
+// Validation errors.
+var (
+	ErrMissingUsername = errors.New("missing username")
+	ErrMissingPassword = errors.New("missing password")
+	ErrMissingBoth     = errors.New("missing username and password")
+)
+
 // parseLoginForm extracts and validates the login form fields.
-// loginForm.Message will contain any errors related to the validation.
-func parseLoginForm(r *http.Request) loginForm {
-	form := loginForm{
-		Username: strings.TrimSpace(r.PostFormValue("username")),
-		Password: strings.TrimSpace(r.PostFormValue("password")),
-		Remember: r.PostFormValue("remember"),
-	}
+func parseLoginForm(r *http.Request) (loginForm, error) {
+	// Extract values.
+	username := strings.TrimSpace(r.PostFormValue("username"))
+	password := r.PostFormValue("password") // don't trim passwords
+	remember := r.PostFormValue("remember") == "on"
 
 	// Check for missing values.
 	switch {
-	case form.Username == "" && form.Password == "":
-		form.Message = MsgMissingUsernameAndPassword
-	case form.Username == "":
-		form.Message = MsgMissingUsername
-	case form.Password == "":
-		form.Message = MsgMissingPassword
+	case username == "" && password == "":
+		return loginForm{}, ErrMissingBoth
+	case username == "":
+		return loginForm{}, ErrMissingUsername
+	case password == "":
+		return loginForm{}, ErrMissingPassword
 	}
 
-	return form
+	return loginForm{
+		Username: username,
+		Password: password,
+		Remember: remember,
+	}, nil
 }
 
-// LoginCookie creates and return a login cookie.
+const (
+	MsgMissingBoth     = "Missing username and password."
+	MsgMissingUsername = "Missing username."
+	MsgMissingPassword = "Missing password."
+	MsgLoginFailed     = "Login failed."
+)
+
+var validationAlerts = map[error]Alert{
+	ErrMissingBoth:     {Type: AlertError, Text: MsgMissingBoth},
+	ErrMissingUsername: {Type: AlertError, Text: MsgMissingUsername},
+	ErrMissingPassword: {Type: AlertError, Text: MsgMissingPassword},
+}
+
+func mapValidationErr(err error) Alert {
+	for e, alert := range validationAlerts {
+		if errors.Is(err, e) {
+			return alert
+		}
+	}
+	return Alert{Type: AlertError, Text: "Invalid input."}
+}
+
+// LoginPostHandler processes login.
+func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
+	logger := webhandler.RequestLoggerWithFuncName(r)
+
+	if !webutil.IsMethodOrError(w, r, http.MethodPost) {
+		logger.Error("invalid method")
+		return
+	}
+
+	form, err := parseLoginForm(r)
+	if err != nil {
+		logger.Warn("invalid form", "err", err)
+		app.RenderPage(w, logger, LoginPageName, &LoginPageData{
+			Alert: mapValidationErr(err),
+		})
+		return
+	}
+
+	token, err := app.LoginUser(form.Username, form.Password)
+	if err != nil {
+		logger.Error("failed to login user", "err", err, "username", form.Username)
+
+		app.RenderPage(w, logger, LoginPageName,
+			&LoginPageData{Alert: Alert{Type: AlertError, Text: MsgLoginFailed}})
+
+		return
+	}
+
+	http.SetCookie(w, LoginCookie(token.Value, token.Expires, form.Remember))
+
+	redirect := r.URL.Query().Get("r")
+	if redirect == "" || !webutil.IsLocalSafeURL(redirect) {
+		redirect = "/"
+	}
+
+	http.Redirect(w, r, redirect, http.StatusSeeOther)
+}
+
+// LoginCookie creates the login cookie. Session if remember is false.
 func LoginCookie(value string, expires time.Time, remember bool) *http.Cookie {
 	if !remember {
 		expires = time.Time{}
@@ -84,54 +146,4 @@ func LoginCookie(value string, expires time.Time, remember bool) *http.Cookie {
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	}
-}
-
-// LoginPostHandler handles login POST requests.
-func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
-	logger := webhandler.RequestLoggerWithFuncName(r)
-
-	if !webutil.IsMethodOrError(w, r, http.MethodPost) {
-		logger.Error("invalid method")
-		return
-	}
-
-	form := parseLoginForm(r)
-
-	logger = logger.With(
-		slog.Group("form",
-			slog.String("username", form.Username),
-			slog.Bool("passwordEmpty", form.Password == ""),
-			slog.String("remember", form.Remember),
-		),
-	)
-
-	if form.Message != "" {
-		logger.Error("missing form values",
-			slog.String("message", form.Message))
-
-		data := LoginPageData{Message: form.Message}
-		app.RenderPage(w, logger, LoginPageName, &data)
-
-		return
-	}
-
-	token, err := app.LoginUser(form.Username, form.Password)
-	if err != nil {
-		logger.Error("failed to login user", "err", err)
-
-		data := LoginPageData{Message: MsgLoginFailed}
-		app.RenderPage(w, logger, LoginPageName, &data)
-
-		return
-	}
-
-	cookie := LoginCookie(token.Value, token.Expires, form.Remember == "on")
-	http.SetCookie(w, cookie)
-
-	redirect := r.URL.Query().Get("r")
-	if redirect == "" || !webutil.IsLocalSafeURL(redirect) {
-		redirect = "/"
-	}
-
-	http.Redirect(w, r, redirect, http.StatusSeeOther)
 }

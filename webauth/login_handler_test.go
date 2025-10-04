@@ -99,7 +99,8 @@ func TestLoginPostHandler(t *testing.T) {
 				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
-				Message: webauth.MsgMissingUsernameAndPassword,
+				Alert: webauth.Alert{
+					Type: webauth.AlertError, Text: webauth.MsgMissingBoth},
 			}),
 		},
 		{
@@ -113,7 +114,8 @@ func TestLoginPostHandler(t *testing.T) {
 				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
-				Message: webauth.MsgMissingUsername,
+				Alert: webauth.Alert{
+					Type: webauth.AlertError, Text: webauth.MsgMissingUsername},
 			}),
 		},
 		{
@@ -127,7 +129,8 @@ func TestLoginPostHandler(t *testing.T) {
 				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
-				Message: webauth.MsgMissingPassword,
+				Alert: webauth.Alert{
+					Type: webauth.AlertError, Text: webauth.MsgMissingPassword},
 			}),
 		},
 		{
@@ -142,7 +145,8 @@ func TestLoginPostHandler(t *testing.T) {
 				CommonData: webauth.CommonData{
 					Title: app.Cfg.App.Name,
 				},
-				Message: webauth.MsgLoginFailed,
+				Alert: webauth.Alert{
+					Type: webauth.AlertError, Text: webauth.MsgLoginFailed},
 			}),
 		},
 		{
