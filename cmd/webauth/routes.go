@@ -11,11 +11,12 @@ import (
 
 func AddRoutes(mux *http.ServeMux, app *webauth.AuthApp) {
 	assetDir := assets.AssetPath()
-	cssFile := filepath.Join(assetDir, "css", "pico.min.css")
+	cssDir := filepath.Join(assetDir, "css")
 	icoFile := filepath.Join(assetDir, "ico", "favicon.ico")
 
-	mux.Handle("/",
-		http.RedirectHandler("/user", http.StatusFound))
+	mux.Handle("/", http.RedirectHandler("/user", http.StatusFound))
+	mux.Handle("/css/", webhandler.FilesFromDir("/css/", cssDir))
+
 	mux.HandleFunc("/events", app.EventsHandler)
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
 	mux.HandleFunc("/favicon.ico", webhandler.FileHandler(icoFile))
@@ -34,7 +35,6 @@ func AddRoutes(mux *http.ServeMux, app *webauth.AuthApp) {
 	mux.HandleFunc("/reset", app.ResetHandler)
 	mux.HandleFunc("/users", app.UsersHandler)
 	mux.HandleFunc("/userscsv", app.UsersCSVHandler)
-	mux.HandleFunc("/pico.min.css", webhandler.FileHandler(cssFile))
 
 	// https://www.w3.org/TR/change-password-url/
 	mux.Handle("/.well-known/change-password",

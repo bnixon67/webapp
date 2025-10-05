@@ -1,33 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{.Title}}</title>
-  <link rel="stylesheet" href="/pico.min.css">
-  <style>
-/* Base alert */
-.alert {
-  padding: calc(var(--pico-spacing) / 2);
-  background: color-mix(in oklab, currentColor 14%, transparent);
-  font-weight: 500;        /* slightly bolder than normal text */
-}
-
-.alert.info { color: var(--pico-primary); }
-.alert.warn  { color: #a15c00; }   /* amber */
-.alert.error { color: #b00020; }   /* red */
-
-
-/* Better contrast in dark mode */
-@media (prefers-color-scheme: dark) {
-  .alert.warn  { color: #ffb74d; }   /* lighter amber */
-  .alert.error { color: #ff6b6b; }   /* lighter red  */
-}
-  </style>
+  <meta name="description" content="Log in to your account.">
+  <title>{{.Title}} - Login</title>
+  <link rel="stylesheet" href="/css/pico.min.css">
+  <link rel="stylesheet" href="/css/alert.css">
 </head>
 <body>
-  <header class="container-fluid">
+  <header class="container">
     <nav>
       <ul>
         <li> <a href="/">{{.Title}}</a> </li>
