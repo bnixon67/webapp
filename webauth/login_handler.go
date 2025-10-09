@@ -125,7 +125,9 @@ func (app *AuthApp) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, LoginCookie(token.Value, token.Expires, form.Remember))
 
 	redirect := r.URL.Query().Get("r")
-	if redirect == "" || !webutil.IsLocalSafeURL(redirect) {
+	if safe, ok := webutil.ValidateLocalRedirect(redirect); ok {
+		redirect = safe
+	} else {
 		redirect = "/"
 	}
 

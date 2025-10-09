@@ -9,6 +9,8 @@ cover/
 *.log-*.gz
 *.logrotate
 
+**/testdata/fuzz/
+
 # Ignore all .json files
 *.json
 # But not those in a testdata directory at any level
