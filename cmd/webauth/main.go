@@ -93,11 +93,7 @@ func main() {
 	handler := AddMiddleware(mux)
 
 	// Create the web server.
-	srv, err := cfg.Server.Create(handler)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(ExitServer)
-	}
+	srv := cfg.Server.Create(handler)
 
 	// Send starting email to confirm SMTP configuration is valid.
 	/*

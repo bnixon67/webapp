@@ -17,27 +17,30 @@ import (
 	"time"
 )
 
-// Config holds the web server configuration.
+// Config holds the web server configuration. Use Config.Create to construct
+// a WebServer from it. Use New with Option functions for custom tuning.
 type Config struct {
-	Host     string // Server host address.
-	Port     string // Server port.
-	CertFile string // CertFile is path to the cert file.
-	KeyFile  string // KeyFile is path to the key file.
+	Host        string        // host address to listen on
+	Port        string        // port to listen on
+	CertFile    string        // path to the TLS certificate file
+	KeyFile     string        // path to the TLS key file
+	IdleTimeout time.Duration // keep-alive timeout; defaults to 120s if zero.
 }
 
-// WebServer represents an HTTP server.
+// WebServer is an HTTP server that supports graceful shutdown and optional TLS.
 type WebServer struct {
-	Config
+	certFile         string
+	keyFile          string
 	HTTPServer       http.Server
-	shutdownComplete chan struct{} // Channel to signal shutdown completion
-
+	shutdownComplete chan struct{} // closed when shutdown is complete
 }
 
 // Option is a function type for configuring the HTTP server.
-// This follows the Option pattern from https://commandcenter.blogspot.com/2014/01/self-referential-functions-and-design.html and elsewhere.
 type Option func(*WebServer)
 
-// WithAddr returns an Option to set the address the server will bind to.
+// WithAddr returns an Option to set the listen address directly.
+// Use WithHostPort instead when host and port are separate values,
+// as it correctly handles IPv6 addresses via net.JoinHostPort.
 func WithAddr(addr string) Option {
 	return func(s *WebServer) {
 		s.HTTPServer.Addr = addr
@@ -45,6 +48,7 @@ func WithAddr(addr string) Option {
 }
 
 // WithHostPort returns an Option to set the address the server will bind to.
+// It uses net.JoinHostPort to correctly format IPv6 addresses.
 func WithHostPort(host, port string) Option {
 	return func(s *WebServer) {
 		s.HTTPServer.Addr = net.JoinHostPort(host, port)
@@ -61,8 +65,8 @@ func WithHandler(h http.Handler) Option {
 // WithTLS returns an Option to set TLS configuration for the server.
 func WithTLS(certFile, keyFile string) Option {
 	return func(s *WebServer) {
-		s.CertFile = certFile
-		s.KeyFile = keyFile
+		s.certFile = certFile
+		s.keyFile = keyFile
 	}
 }
 
@@ -80,14 +84,22 @@ func WithWriteTimeout(d time.Duration) Option {
 	}
 }
 
-// New creates a new HTTP server with the given options and returns it.
-func New(opts ...Option) (*WebServer, error) {
+// WithIdleTimeout returns an Option to set the IdleTimeout of the server.
+func WithIdleTimeout(d time.Duration) Option {
+	return func(s *WebServer) {
+		s.HTTPServer.IdleTimeout = d
+	}
+}
+
+// New creates a new WebServer with the given options and returns it.
+func New(opts ...Option) *WebServer {
 	s := &WebServer{
 		HTTPServer: http.Server{
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  120 * time.Second,
 		},
+		shutdownComplete: make(chan struct{}),
 	}
 
 	// Apply configuration options to the server.
@@ -95,43 +107,62 @@ func New(opts ...Option) (*WebServer, error) {
 		opt(s)
 	}
 
-	return s, nil
+	return s
 }
 
-func (cfg Config) Create(h http.Handler) (*WebServer, error) {
-	return New(
-		WithHostPort(cfg.Host, cfg.Port),
+// Create constructs a WebServer from cfg. It is equivalent to calling New
+// with WithHostPort, WithHandler, WithTLS, and (if non-zero) WithIdleTimeout,
+// keeping Config as the single source of truth for those settings.
+func (cfg Config) Create(h http.Handler) *WebServer {
+	opts := []Option{
 		WithHandler(h),
+		WithHostPort(cfg.Host, cfg.Port),
 		WithTLS(cfg.CertFile, cfg.KeyFile),
-	)
+	}
+
+	if cfg.IdleTimeout != 0 {
+		opts = append(opts, WithIdleTimeout(cfg.IdleTimeout))
+	}
+
+	return New(opts...)
 }
 
-var ErrServerStart = errors.New("failed to start server")
+// ErrServerListen is returned when the server cannot bind to the requested
+// address.
+var ErrServerListen = errors.New("failed to listen")
 
-// Run starts the HTTP server and waits for a shutdown signal.
+// ErrServerServe is returned when the server encounters a fatal error
+// while serving.
+var ErrServerServe = errors.New("server error")
+
+// Run starts the HTTP server and blocks until the server exits.
 // It returns an error if there's an issue starting or stopping the server.
+// Shutdown is triggered by ctx cancellation or an OS interrupt/SIGTERM signal.
 func (s *WebServer) Run(ctx context.Context) error {
 	ln, err := net.Listen("tcp", s.HTTPServer.Addr)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrServerStart, err)
+		return fmt.Errorf("%w: %w", ErrServerListen, err)
 	}
 
-	// Initialize the channels
+	// Register for OS shutdown signals before starting the goroutine to
+	// avoid a race where a signal arrives before Notify is called.
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigChan)
+
+	// Initialize the serve-error channel.
 	errCh := make(chan error, 1)
-	s.shutdownComplete = make(chan struct{})
 
 	// Start the server in a separate goroutine.
 	go func() {
 		var serverErr error
-		if s.CertFile != "" && s.KeyFile != "" {
+		if s.certFile != "" && s.keyFile != "" {
 			slog.Info("starting https server",
 				slog.String("addr", ln.Addr().String()))
-
-			serverErr = s.HTTPServer.ServeTLS(ln, s.CertFile, s.KeyFile)
+			serverErr = s.HTTPServer.ServeTLS(ln, s.certFile, s.keyFile)
 		} else {
 			slog.Info("starting http server",
 				slog.String("addr", ln.Addr().String()))
-
 			serverErr = s.HTTPServer.Serve(ln)
 		}
 
@@ -140,31 +171,35 @@ func (s *WebServer) Run(ctx context.Context) error {
 		}
 	}()
 
-	// Ask for notification of shutdown signals to shut down server.
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
 	select {
+
 	case <-ctx.Done():
-		// If the context is done, return its error.
-		return ctx.Err()
-	case sig := <-sigChan:
-		// If a shutdown signal, gracefully shut down the server.
-		slog.Info("shutting down server", "signal", sig)
-		err := s.shutdownServer(ctx)
-		if err != nil {
+		// Context cancelled: shut down gracefully so in-flight requests drain.
+		// context.WithoutCancel preserves trace/values but strips cancellation,
+		// giving shutdownServer its own 5s window independent of the caller.
+		slog.Info("context done, shutting down server")
+		if err := s.shutdownServer(context.WithoutCancel(ctx)); err != nil {
 			return err
 		}
+
+	case sig := <-sigChan:
+		// OS signal received: gracefully shut down the server.
+		slog.Info("shutting down server", "signal", sig)
+		if err := s.shutdownServer(ctx); err != nil {
+			return err
+		}
+
 	case err := <-errCh:
-		// Handle the error that occurred during server startup.
-		return fmt.Errorf("%w: %v", ErrServerStart, err)
+		// Fatal serve error.
+		return fmt.Errorf("%w: %w", ErrServerServe, err)
 	}
 
-	<-s.shutdownComplete // Wait for shutdown to complete
+	<-s.shutdownComplete // Wait for shutdown to complete.
+
 	return nil
 }
 
-// shutdownServer attempts to gracefully shut down the server.
+// shutdownServer gracefully stops the server and signals completion.
 func (s *WebServer) shutdownServer(ctx context.Context) error {
 	// Create a context with timeout to shut down within a reasonable time.
 	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)

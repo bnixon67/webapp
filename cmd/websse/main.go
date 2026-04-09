@@ -105,16 +105,12 @@ func main() {
 	mux.HandleFunc("/send", sseServer.SendMessageHandler)
 
 	// Create the web server.
-	srv, err := webserver.New(
+	srv := webserver.New(
 		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
 		webserver.WithHandler(h),
 		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
 		webserver.WithWriteTimeout(0),
 	)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating server:", err)
-		os.Exit(ExitServer)
-	}
 
 	// Create a new context.
 	ctx := context.Background()

@@ -54,7 +54,7 @@ func TestWebServer(t *testing.T) {
 			options: []webserver.Option{
 				webserver.WithAddr("invalid address"),
 			},
-			expectedErr: webserver.ErrServerStart,
+			expectedErr: webserver.ErrServerListen,
 		},
 		{
 			name: "Invalid TLS Configuration",
@@ -63,16 +63,13 @@ func TestWebServer(t *testing.T) {
 				webserver.WithTLS(
 					"cert.none", "key.none"),
 			},
-			expectedErr: webserver.ErrServerStart,
+			expectedErr: webserver.ErrServerServe,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server, err := webserver.New(tt.options...)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
+			server := webserver.New(tt.options...)
 
 			ctx := context.Background()
 			ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
